@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { loginThunk } from '@/redux/slice/authSlice';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -50,26 +52,20 @@ export default function LoginPage() {
 
           {/* Form Section */}
           <form className="flex flex-col gap-md" onSubmit={handleLogin}>
-            {/* Email Field */}
-            <div className="flex flex-col gap-base">
-              <label className="font-label-caps text-label-caps text-on-surface" htmlFor="email">
-                Tài khoản / Email
-              </label>
-              <input
-                className="w-full bg-transparent border border-outline/20 font-body-md text-body-md p-sm text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors rounded-none"
-                id="email"
-                placeholder="associate@atelier.com"
-                required
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
+            <Input
+              id="email"
+              label="Tài khoản / Email"
+              type="text"
+              placeholder="associate@atelier.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              className="rounded-none"
+            />
 
-            {/* Password Field */}
-            <div className="flex flex-col gap-base">
-              <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-1">
+              <div className="flex justify-between items-center mb-1">
                 <label className="font-label-caps text-label-caps text-on-surface" htmlFor="password">
                   Mật khẩu
                 </label>
@@ -77,27 +73,27 @@ export default function LoginPage() {
                   Quên mật khẩu?
                 </a>
               </div>
-              <input
-                className="w-full bg-transparent border border-outline/20 font-body-md text-body-md p-sm text-on-surface placeholder:text-outline-variant focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors rounded-none"
+              <Input
                 id="password"
+                type="password"
                 placeholder="••••••••"
                 required
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                className="rounded-none"
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              className="mt-sm w-full bg-primary-container text-on-primary-container font-button text-button py-sm flex items-center justify-center gap-base transition-opacity hover:opacity-90 rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+            <Button
               type="submit"
-              disabled={isLoading}
+              variant="secondary"
+              className="mt-sm w-full py-sm rounded-none bg-primary-container text-on-primary-container hover:bg-primary-container/90"
+              isLoading={isLoading}
+              rightIcon={!isLoading && <span className="material-symbols-outlined text-[18px]">arrow_forward</span>}
             >
               {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </button>
+            </Button>
           </form>
 
           <div className="mt-lg pt-md border-t border-t-outline/10 text-center">

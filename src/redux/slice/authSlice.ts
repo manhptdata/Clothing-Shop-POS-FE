@@ -3,8 +3,18 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from '@/config/api';
 import type { AuthState, LoginRequest, UserLogin } from '@/types/auth.types';
 
+const savedUser = localStorage.getItem('user');
+let parsedUser = null;
+try {
+  if (savedUser && savedUser !== 'undefined') {
+    parsedUser = JSON.parse(savedUser);
+  }
+} catch (e) {
+  console.error('Failed to parse user from localStorage', e);
+}
+
 const initialState: AuthState = {
-  user: null,
+  user: parsedUser,
   accessToken: localStorage.getItem('access_token'),
   isAuthenticated: !!localStorage.getItem('access_token'),
   isLoading: false,
@@ -62,6 +72,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.isAuthenticated = true;
         localStorage.setItem('access_token', action.payload.accessToken);
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.isLoading = false;
@@ -69,12 +80,14 @@ const authSlice = createSlice({
       })
       .addCase(getAccountThunk.fulfilled, (state, action) => {
         state.user = action.payload;
+        localStorage.setItem('user', JSON.stringify(action.payload));
       })
       .addCase(logoutThunk.fulfilled, (state) => {
         state.user = null;
         state.accessToken = null;
         state.isAuthenticated = false;
         localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
       });
   },
 });

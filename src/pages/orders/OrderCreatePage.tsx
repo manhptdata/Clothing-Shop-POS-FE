@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/Button';
 
 export default function OrderCreatePage() {
   return (
@@ -131,10 +132,9 @@ export default function OrderCreatePage() {
                 <span className="font-headline-md text-headline-md text-primary-fixed">302.400đ</span>
               </div>
             </div>
-            <button className="w-full py-4 bg-primary text-on-primary rounded-xl font-title-sm text-title-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-              <span className="material-symbols-outlined">credit_card</span>
-              <span>Thanh toán</span>
-            </button>
+            <Button className="w-full py-4 bg-primary text-on-primary rounded-xl" size="lg" leftIcon={<span className="material-symbols-outlined">credit_card</span>}>
+              Thanh toán
+            </Button>
           </div>
         </section>
       </div>

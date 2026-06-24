@@ -1,8 +1,33 @@
 import { Link } from 'react-router-dom';
-import { useAppDispatch } from '@/redux/hooks';
-import { logoutThunk } from '@/redux/slice/authSlice';
+import { Button } from '@/components/ui/Button';
+import { Table, Column } from '@/components/ui/Table';
+import { Badge } from '@/components/ui/Badge';
 
 export default function DashboardPage() {
+  const recentOrders = [
+    { id: '#ORD-0091', customer: 'Eleanor Vance', product: 'Khăn lụa - Xanh ngọc', total: '€350', status: 'Hoàn thành' },
+    { id: '#ORD-0092', customer: 'Arthur Pendelton', product: 'Cặp da', total: '€1,200', status: 'Đang xử lý' },
+    { id: '#ORD-0093', customer: 'Sophia Lauren', product: 'Áo khoác len Cashmere', total: '€2,850', status: 'Đặt trước VIP' },
+    { id: '#ORD-0094', customer: 'Marcus Reed', product: 'Khuy măng sét bạc', total: '€420', status: 'Hoàn thành' },
+  ];
+
+  const columns: Column<typeof recentOrders[0]>[] = [
+    { key: 'id', header: 'Mã Đơn', render: (row) => <span className="font-medium text-on-surface">{row.id}</span> },
+    { key: 'customer', header: 'Khách hàng', render: (row) => <span className="text-on-surface">{row.customer}</span> },
+    { key: 'product', header: 'Sản phẩm', render: (row) => <span className="text-on-surface-variant">{row.product}</span> },
+    { key: 'total', header: 'Tổng tiền', render: (row) => <span className="text-on-surface">{row.total}</span> },
+    {
+      key: 'status',
+      header: 'Trạng thái',
+      render: (row) => {
+        let variant: 'success' | 'warning' | 'info' = 'info';
+        if (row.status === 'Hoàn thành') variant = 'success';
+        else if (row.status === 'Đặt trước VIP') variant = 'warning';
+        return <Badge variant={variant}>{row.status}</Badge>;
+      },
+    },
+  ];
+
   return (
     <div className="max-w-[1440px] mx-auto">
       {/* Summary Cards */}
@@ -49,9 +74,9 @@ export default function DashboardPage() {
       <section className="mb-8 bg-surface rounded-xl border border-outline/10 p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-headline-md text-headline-md text-on-surface">Xu hướng bán hàng tuần</h2>
-          <button className="font-button text-button border border-primary text-primary px-4 py-2 rounded-lg hover:bg-surface-container-low transition-colors">
+          <Button variant="outline">
             Xuất báo cáo
-          </button>
+          </Button>
         </div>
         <div className="h-72 w-full relative flex items-center justify-center border-dashed border-2 border-outline/20 rounded-lg">
           <p className="text-on-surface-variant font-body-sm">Biểu đồ (Cần cài đặt Chart.js)</p>
@@ -66,75 +91,7 @@ export default function DashboardPage() {
             Xem tất cả
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline/10 bg-surface-container-low/50">
-                <th className="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Mã Đơn
-                </th>
-                <th className="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Khách hàng
-                </th>
-                <th className="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Sản phẩm
-                </th>
-                <th className="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Tổng tiền
-                </th>
-                <th className="py-4 px-6 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Trạng thái
-                </th>
-              </tr>
-            </thead>
-            <tbody className="font-body-sm text-body-sm">
-              <tr className="border-b border-outline/5 hover:bg-surface-container-lowest transition-colors">
-                <td className="py-4 px-6 text-on-surface font-medium">#ORD-0091</td>
-                <td className="py-4 px-6 text-on-surface">Eleanor Vance</td>
-                <td className="py-4 px-6 text-on-surface-variant">Khăn lụa - Xanh ngọc</td>
-                <td className="py-4 px-6 text-on-surface">€350</td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-primary-fixed/30 text-primary-container">
-                    Hoàn thành
-                  </span>
-                </td>
-              </tr>
-              <tr className="border-b border-outline/5 hover:bg-surface-container-lowest transition-colors">
-                <td className="py-4 px-6 text-on-surface font-medium">#ORD-0092</td>
-                <td className="py-4 px-6 text-on-surface">Arthur Pendelton</td>
-                <td className="py-4 px-6 text-on-surface-variant">Cặp da</td>
-                <td className="py-4 px-6 text-on-surface">€1,200</td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-secondary-container/50 text-on-secondary-container">
-                    Đang xử lý
-                  </span>
-                </td>
-              </tr>
-              <tr className="border-b border-outline/5 hover:bg-surface-container-lowest transition-colors">
-                <td className="py-4 px-6 text-on-surface font-medium">#ORD-0093</td>
-                <td className="py-4 px-6 text-on-surface">Sophia Lauren</td>
-                <td className="py-4 px-6 text-on-surface-variant">Áo khoác len Cashmere</td>
-                <td className="py-4 px-6 text-on-surface">€2,850</td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#D4AF37]/20 text-[#574500]">
-                    Đặt trước VIP
-                  </span>
-                </td>
-              </tr>
-              <tr className="hover:bg-surface-container-lowest transition-colors">
-                <td className="py-4 px-6 text-on-surface font-medium">#ORD-0094</td>
-                <td className="py-4 px-6 text-on-surface">Marcus Reed</td>
-                <td className="py-4 px-6 text-on-surface-variant">Khuy măng sét bạc</td>
-                <td className="py-4 px-6 text-on-surface">€420</td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-primary-fixed/30 text-primary-container">
-                    Hoàn thành
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Table columns={columns} data={recentOrders} rowKey={(row) => row.id} />
       </section>
     </div>
   );

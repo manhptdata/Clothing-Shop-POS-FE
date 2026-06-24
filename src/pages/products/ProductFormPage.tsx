@@ -1,6 +1,24 @@
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Table, Column } from '@/components/ui/Table';
 
 export default function ProductFormPage() {
+  const variants = [
+    { variant: 'Ngọc lục bảo / Nhỏ', sku: 'SS-EM-S', sale: '250.000đ', imp: '85.000đ', stock: 12 },
+    { variant: 'Ngọc lục bảo / Vừa', sku: 'SS-EM-M', sale: '250.000đ', imp: '85.000đ', stock: 8 },
+    { variant: 'Ngà / Nhỏ', sku: 'SS-IV-S', sale: '250.000đ', imp: '85.000đ', stock: 24 },
+  ];
+
+  const columns: Column<typeof variants[0]>[] = [
+    { key: 'variant', header: 'Biến thể', render: (row) => <span className="font-body-md text-body-md">{row.variant}</span> },
+    { key: 'sku', header: 'Mã SP', render: (row) => <Input id={`sku-${row.sku}`} defaultValue={row.sku} className="py-xs text-sm" /> },
+    { key: 'sale', header: 'Giá Bán', className: 'w-32', render: (row) => <Input id={`sale-${row.sku}`} defaultValue={row.sale} className="py-xs text-sm text-right" /> },
+    { key: 'imp', header: 'Giá Nhập', className: 'w-32', render: (row) => <Input id={`imp-${row.sku}`} defaultValue={row.imp} className="py-xs text-sm text-right" /> },
+    { key: 'stock', header: 'Tồn kho', className: 'w-24', render: (row) => <Input id={`stock-${row.sku}`} type="number" defaultValue={row.stock} className="py-xs text-sm text-right" /> },
+  ];
+
   return (
     <div className="max-w-[1440px] mx-auto w-full">
       <div className="flex justify-between items-end mb-lg">
@@ -9,8 +27,8 @@ export default function ProductFormPage() {
           <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Thiết lập chi tiết sản phẩm và các biến thể kho hàng.</p>
         </div>
         <div className="flex gap-sm">
-          <button className="px-md py-sm rounded border border-outline-variant text-on-surface font-button text-button hover:bg-surface-container transition-colors">Lưu Nháp</button>
-          <button className="px-md py-sm rounded bg-primary-container text-on-primary font-button text-button hover:bg-primary transition-colors">Đăng Sản phẩm</button>
+          <Button variant="outline">Lưu Nháp</Button>
+          <Button>Đăng Sản phẩm</Button>
         </div>
       </div>
 
@@ -19,59 +37,41 @@ export default function ProductFormPage() {
           <div className="bg-surface-container-lowest rounded-lg p-md border border-outline/10">
             <h3 className="font-title-sm text-title-sm text-on-background mb-md">Chi tiết Cốt lõi</h3>
             <div className="space-y-sm">
-              <div className="flex flex-col gap-xs">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="pt">Tên Sản phẩm</label>
-                <input className="w-full px-sm py-sm rounded border border-outline-variant bg-transparent font-body-md text-body-md focus:outline-none focus:border-primary focus:border-2 transition-colors" id="pt" placeholder="VD: Khăn lụa" type="text" />
-              </div>
+              <Input
+                id="pt"
+                label="Tên Sản phẩm"
+                placeholder="VD: Khăn lụa"
+              />
               <div className="flex flex-col gap-xs">
                 <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="pd">Mô tả</label>
                 <textarea className="w-full px-sm py-sm rounded border border-outline-variant bg-transparent font-body-md text-body-md focus:outline-none focus:border-primary focus:border-2 transition-colors resize-none" id="pd" placeholder="Mô tả chi tiết sản phẩm..." rows={4}></textarea>
               </div>
-              <div className="flex flex-col gap-xs w-1/2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="pc">Danh mục</label>
-                <select className="w-full px-sm py-sm rounded border border-outline-variant bg-transparent font-body-md text-body-md focus:outline-none" id="pc">
-                  <option disabled value="">Chọn danh mục...</option>
-                  <option>Phụ kiện</option>
-                  <option>Quần áo</option>
-                  <option>Giày dép</option>
-                </select>
-              </div>
+              <Select
+                id="pc"
+                label="Danh mục"
+                options={[
+                  { value: 'phukien', label: 'Phụ kiện' },
+                  { value: 'quanao', label: 'Quần áo' },
+                  { value: 'giaydep', label: 'Giày dép' },
+                ]}
+                placeholder="Chọn danh mục..."
+                className="w-1/2"
+              />
             </div>
           </div>
 
           <div className="bg-surface-container-lowest rounded-lg p-md border border-outline/10">
             <div className="flex justify-between items-center mb-md">
               <h3 className="font-title-sm text-title-sm text-on-background">Ma trận Biến thể</h3>
-              <button className="flex items-center gap-xs px-sm py-xs rounded border border-primary text-primary font-button text-button hover:bg-surface-container-low transition-colors">
-                <span className="material-symbols-outlined text-sm">add</span> Thêm Thuộc tính
-              </button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+              >
+                Thêm Thuộc tính
+              </Button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-outline/10">
-                    {['Biến thể', 'Mã SP', 'Giá Bán', 'Giá Nhập', 'Tồn kho'].map((h) => (
-                      <th key={h} className="py-sm px-sm font-label-caps text-label-caps text-on-surface-variant uppercase">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { variant: 'Ngọc lục bảo / Nhỏ', sku: 'SS-EM-S', sale: '250.000đ', imp: '85.000đ', stock: 12 },
-                    { variant: 'Ngọc lục bảo / Vừa', sku: 'SS-EM-M', sale: '250.000đ', imp: '85.000đ', stock: 8 },
-                    { variant: 'Ngà / Nhỏ', sku: 'SS-IV-S', sale: '250.000đ', imp: '85.000đ', stock: 24 },
-                  ].map((r) => (
-                    <tr key={r.sku} className="border-b border-outline/5 hover:bg-surface-container-low/30 transition-colors h-[56px]">
-                      <td className="py-sm px-sm font-body-md text-body-md">{r.variant}</td>
-                      <td className="py-sm px-sm"><input className="w-full px-xs py-xs rounded border border-outline-variant/50 bg-transparent font-body-sm" defaultValue={r.sku} /></td>
-                      <td className="py-sm px-sm"><input className="w-24 text-right px-xs py-xs rounded border border-outline-variant/50 bg-transparent font-body-sm" defaultValue={r.sale} /></td>
-                      <td className="py-sm px-sm"><input className="w-24 text-right px-xs py-xs rounded border border-outline-variant/50 bg-transparent font-body-sm" defaultValue={r.imp} /></td>
-                      <td className="py-sm px-sm"><input className="w-20 text-right px-xs py-xs rounded border border-outline-variant/50 bg-transparent font-body-sm" defaultValue={r.stock} type="number" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table columns={columns} data={variants} rowKey={(row) => row.sku} />
           </div>
         </div>
 
