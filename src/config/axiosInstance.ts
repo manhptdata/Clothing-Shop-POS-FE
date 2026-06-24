@@ -34,10 +34,10 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const res = await axios.get(`${ENV.API_BASE_URL}/api/v1/auth/refresh`, {
+        const res = await axios.get(`${ENV.API_BASE_URL}/api/auth/refresh`, {
           withCredentials: true,
         });
-        const newToken: string = res.data?.data?.accessToken;
+        const newToken: string = res.data?.data?.access_token || res.data?.data?.accessToken;
         if (newToken) {
           localStorage.setItem(ACCESS_TOKEN_KEY, newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;

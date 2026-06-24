@@ -44,10 +44,11 @@ const authSlice = createSlice({
       .addMatcher(authApi.endpoints.login.matchFulfilled, (state, action) => {
         state.isLoading = false;
         const data = action.payload.data;
-        state.accessToken = data.accessToken;
+        const token = data.access_token || data.accessToken || '';
+        state.accessToken = token;
         state.user = data.user;
         state.isAuthenticated = true;
-        localStorage.setItem('access_token', data.accessToken);
+        localStorage.setItem('access_token', token);
         localStorage.setItem('user', JSON.stringify(data.user));
       })
       .addMatcher(authApi.endpoints.login.matchRejected, (state, action: any) => {

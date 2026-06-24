@@ -13,7 +13,8 @@ export interface UserLogin {
 }
 
 export interface LoginResponse {
-  accessToken: string;
+  accessToken?: string;
+  access_token?: string;
   user: UserLogin;
 }
 
