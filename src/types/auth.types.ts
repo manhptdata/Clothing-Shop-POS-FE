@@ -1,4 +1,4 @@
-export type RoleEnum = 'ADMIN' | 'MANAGER' | 'STAFF';
+export type RoleEnum = 'ROLE_ADMIN' | 'ROLE_SALE' | 'ROLE_CS' | 'ROLE_WH';
 
 export interface LoginRequest {
   username: string;

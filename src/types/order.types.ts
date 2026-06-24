@@ -1,19 +1,19 @@
-export type InvoiceStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
 
-export interface InvoiceItem {
+export interface OrderItem {
   id?: number;
   productId: number;
   quantity: number;
   price: number;
 }
 
-export interface Invoice {
+export interface Order {
   id: number;
   code: string;
   totalAmount: number;
   customerPaid: number;
   changeAmount: number;
-  status: InvoiceStatus;
+  status: OrderStatus;
   customerId: number;
   customerName?: string;
   warehouseId: number;
@@ -21,15 +21,15 @@ export interface Invoice {
   createdById: number;
   note?: string;
   createdAt: string;
-  items: InvoiceItem[];
+  items: OrderItem[];
 }
 
-export interface InvoiceRequest {
+export interface OrderRequest {
   customerId: number;
   warehouseId: number;
   totalAmount: number;
   customerPaid: number;
   changeAmount: number;
   note?: string;
-  items: InvoiceItem[];
+  items: OrderItem[];
 }

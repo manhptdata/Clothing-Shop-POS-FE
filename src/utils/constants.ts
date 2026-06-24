@@ -4,7 +4,7 @@ export const ACCESS_TOKEN_KEY = 'access_token' as const;
 
 export const DEFAULT_PAGE_SIZE = 10 as const;
 
-/** Mapping InvoiceStatus → tiếng Việt */
+/** Mapping OrderStatus → tiếng Việt */
 export const INVOICE_STATUS_LABEL: Record<string, string> = {
   COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã hủy',

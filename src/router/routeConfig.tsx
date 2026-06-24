@@ -4,7 +4,7 @@ import type { RouteObject } from 'react-router-dom';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import MainLayout from '@/components/layouts/MainLayout/MainLayout';
 import PrivateRoute from './PrivateRoute';
-import AdminRoute from './AdminRoute';
+import RoleRoute from './RoleRoute';
 
 // ── Lazy load features ────────────────────────────────────────────────────────
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -20,18 +20,10 @@ const CustomerListPage = lazy(() => import('@/pages/customers/CustomerListPage')
 const CustomerFormPage = lazy(() => import('@/pages/customers/CustomerFormPage'));
 const CustomerGroupListPage = lazy(() => import('@/pages/customers/CustomerGroupListPage'));
 
-// Invoices
-const InvoiceListPage = lazy(() => import('@/pages/invoices/InvoiceListPage'));
-const InvoiceCreatePage = lazy(() => import('@/pages/invoices/InvoiceCreatePage'));
-const InvoiceDetailPage = lazy(() => import('@/pages/invoices/InvoiceDetailPage'));
-
-// Warehouse
-const WarehouseListPage = lazy(() => import('@/pages/warehouse/WarehouseListPage'));
-const SupplierListPage = lazy(() => import('@/pages/warehouse/SupplierListPage'));
-const StockReceiptListPage = lazy(() => import('@/pages/warehouse/StockReceiptListPage'));
-const StockReceiptFormPage = lazy(() => import('@/pages/warehouse/StockReceiptFormPage'));
-const ReturnTicketListPage = lazy(() => import('@/pages/warehouse/ReturnTicketListPage'));
-const ReturnTicketFormPage = lazy(() => import('@/pages/warehouse/ReturnTicketFormPage'));
+// Orders
+const OrderListPage = lazy(() => import('@/pages/orders/OrderListPage'));
+const OrderCreatePage = lazy(() => import('@/pages/orders/OrderCreatePage'));
+const OrderDetailPage = lazy(() => import('@/pages/orders/OrderDetailPage'));
 
 // Users
 const UserListPage = lazy(() => import('@/pages/users/UserListPage'));
@@ -56,34 +48,41 @@ export const routes: RouteObject[] = [
           { index: true, element: <DashboardPage /> },
           { path: 'dashboard', element: <DashboardPage /> },
 
-          // Products
-          { path: 'products', element: <ProductListPage /> },
-          { path: 'products/new', element: <ProductFormPage /> },
-          { path: 'products/:id', element: <ProductDetailPage /> },
-          { path: 'products/:id/edit', element: <ProductFormPage /> },
-
-          // Customers
-          { path: 'customers', element: <CustomerListPage /> },
-          { path: 'customers/new', element: <CustomerFormPage /> },
-          { path: 'customers/:id/edit', element: <CustomerFormPage /> },
-          { path: 'customers/groups', element: <CustomerGroupListPage /> },
-
-          // Invoices
-          { path: 'invoices', element: <InvoiceListPage /> },
-          { path: 'invoices/new', element: <InvoiceCreatePage /> },
-          { path: 'invoices/:id', element: <InvoiceDetailPage /> },
-
-          // Warehouse
-          { path: 'warehouse/warehouses', element: <WarehouseListPage /> },
-          { path: 'warehouse/suppliers', element: <SupplierListPage /> },
-          { path: 'warehouse/receipts', element: <StockReceiptListPage /> },
-          { path: 'warehouse/receipts/new', element: <StockReceiptFormPage /> },
-          { path: 'warehouse/returns', element: <ReturnTicketListPage /> },
-          { path: 'warehouse/returns/new', element: <ReturnTicketFormPage /> },
-
-          // Users (ADMIN ONLY)
+          // Products (Admin, Kho)
           {
-            element: <AdminRoute />,
+            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_WH']} />,
+            children: [
+              { path: 'products', element: <ProductListPage /> },
+              { path: 'products/new', element: <ProductFormPage /> },
+              { path: 'products/:id', element: <ProductDetailPage /> },
+              { path: 'products/:id/edit', element: <ProductFormPage /> },
+            ]
+          },
+
+          // Customers (Admin, Sale, CS)
+          {
+            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE', 'ROLE_CS']} />,
+            children: [
+              { path: 'customers', element: <CustomerListPage /> },
+              { path: 'customers/new', element: <CustomerFormPage /> },
+              { path: 'customers/:id/edit', element: <CustomerFormPage /> },
+              { path: 'customers/groups', element: <CustomerGroupListPage /> },
+            ]
+          },
+
+          // Orders (Admin, Sale)
+          {
+            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE']} />,
+            children: [
+              { path: 'orders', element: <OrderListPage /> },
+              { path: 'orders/new', element: <OrderCreatePage /> },
+              { path: 'orders/:id', element: <OrderDetailPage /> },
+            ]
+          },
+
+          // Users (Admin ONLY)
+          {
+            element: <RoleRoute allowedRoles={['ROLE_ADMIN']} />,
             children: [
               { path: 'users', element: <UserListPage /> },
               { path: 'users/new', element: <UserFormPage /> },
@@ -95,5 +94,5 @@ export const routes: RouteObject[] = [
     ]
   },
   // Fallback
-  { path: '*', element: <DashboardPage /> } // Redirect tạm, TODO: Thêm NotFoundPage
+  { path: '*', element: <DashboardPage /> } // Redirect tạm
 ];

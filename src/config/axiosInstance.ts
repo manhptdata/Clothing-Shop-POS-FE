@@ -8,7 +8,7 @@ import { ENV } from '@/config/env';
 // - Interceptor response: tự động refresh token khi gặp 401
 
 const axiosInstance = axios.create({
-  baseURL: `${ENV.API_BASE_URL}/api/v1`,
+  baseURL: `${ENV.API_BASE_URL}/api/`,
   timeout: 10_000,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,

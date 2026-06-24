@@ -1,10 +1,9 @@
 import axiosInstance from '@/config/axiosInstance';
 import type { LoginRequest, LoginResponse, UserLogin } from '@/types/auth.types';
 import type { Customer, CustomerGroup, CustomerRequest } from '@/types/customer.types';
-import type { Invoice, InvoiceRequest } from '@/types/invoice.types';
+import type { Order, OrderRequest } from '@/types/order.types';
 import type { Product, ProductRequest, ProductUpdateRequest, ProductFilterParams } from '@/types/product.types';
 import type { User, UserRequest } from '@/types/user.types';
-import type { Warehouse, Supplier } from '@/types/warehouse.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
 // ─── Auth API ───────────────────────────────────────────────────────────────
@@ -40,19 +39,19 @@ export const customerApi = {
     axiosInstance.get<RestResponse<CustomerGroup[]>>('/customer-groups'),
 };
 
-// ─── Invoice API ────────────────────────────────────────────────────────────
-export const invoiceApi = {
+// ─── Order API ────────────────────────────────────────────────────────────
+export const orderApi = {
   getAll: (params?: PaginationParams & { status?: string; warehouseId?: number }) =>
-    axiosInstance.get<RestResponse<PageResponse<Invoice>>>('/invoices', { params }),
+    axiosInstance.get<RestResponse<PageResponse<Order>>>('/orders', { params }),
 
   getById: (id: number) =>
-    axiosInstance.get<RestResponse<Invoice>>(`/invoices/${id}`),
+    axiosInstance.get<RestResponse<Order>>(`/orders/${id}`),
 
-  create: (data: InvoiceRequest) =>
-    axiosInstance.post<RestResponse<Invoice>>('/invoices', data),
+  create: (data: OrderRequest) =>
+    axiosInstance.post<RestResponse<Order>>('/orders', data),
 
   cancel: (id: number) =>
-    axiosInstance.put<RestResponse<Invoice>>(`/invoices/${id}/cancel`),
+    axiosInstance.put<RestResponse<Order>>(`/orders/${id}/cancel`),
 };
 
 // ─── Product API ────────────────────────────────────────────────────────────
@@ -95,10 +94,3 @@ export const userApi = {
 };
 
 // ─── Warehouse API ──────────────────────────────────────────────────────────
-export const warehouseApi = {
-  getWarehouses: () =>
-    axiosInstance.get<RestResponse<Warehouse[]>>('/warehouses'),
-
-  getSuppliers: (params?: PaginationParams) =>
-    axiosInstance.get<RestResponse<PageResponse<Supplier>>>('/suppliers', { params }),
-};
