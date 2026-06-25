@@ -60,6 +60,8 @@ export function useOrderCreate() {
   // Modals state
   const [variantSelectorProduct, setVariantSelectorProduct] = useState<Product | null>(null);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QR_PAYOS'>('CASH');
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // New Customer Form State
   const [newCustomerForm, setNewCustomerForm] = useState({
@@ -238,15 +240,24 @@ export function useOrderCreate() {
       alert('Vui lòng chọn khách hàng thành viên để thanh toán.');
       return;
     }
-    if (customerPaid === '' || customerPaid < total) {
-      alert('Số tiền khách thanh toán không hợp lệ hoặc thiếu.');
-      return;
-    }
 
+    if (paymentMethod === 'CASH') {
+      if (customerPaid === '' || customerPaid < total) {
+        alert('Số tiền khách thanh toán không hợp lệ hoặc thiếu.');
+        return;
+      }
+      await confirmCheckout();
+    } else {
+      setIsQRModalOpen(true);
+    }
+  };
+
+  const confirmCheckout = async () => {
     try {
       const orderPayload = {
         customerId: customerType === 'GUEST' ? 1 : (selectedCustomer?.id || 1),
-        paidAmount: Number(customerPaid),
+        paidAmount: paymentMethod === 'QR_PAYOS' ? total : Number(customerPaid),
+        paymentMethod,
         note: note || undefined,
         pointsToUse: customerType === 'MEMBER' ? pointsToUse : 0,
         voucherCode: (customerType === 'MEMBER' && isVoucherValid && voucherCode) ? voucherCode.trim() : undefined,
@@ -259,6 +270,7 @@ export function useOrderCreate() {
       const response = await createOrder(orderPayload).unwrap();
       if (response.data) {
         alert(`Thanh toán thành công! Mã hóa đơn: ${response.data.orderNumber}`);
+        setIsQRModalOpen(false);
         navigate('/orders');
       }
     } catch (error: any) {
@@ -300,7 +312,9 @@ export function useOrderCreate() {
       subtotal,
       tax,
       note,
-      isCreatingOrder
+      isCreatingOrder,
+      paymentMethod,
+      isQRModalOpen
     },
     actions: {
       setActiveCategory,
@@ -322,7 +336,10 @@ export function useOrderCreate() {
       setCustomerPaid,
       setIsPaidModified,
       setNote,
-      handleCheckout
+      handleCheckout,
+      setPaymentMethod,
+      setIsQRModalOpen,
+      confirmCheckout
     }
   };
 }

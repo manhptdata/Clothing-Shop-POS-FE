@@ -18,6 +18,7 @@ export interface Order {
   paidAmount: number;
   changeAmount: number;
   status: OrderStatus;
+  paymentMethod?: 'CASH' | 'QR_PAYOS';
   customerId: number;
   customerName?: string;
   pointsUsed?: number;
@@ -35,6 +36,7 @@ export interface Order {
 export interface OrderRequest {
   customerId: number;
   paidAmount: number;
+  paymentMethod?: 'CASH' | 'QR_PAYOS';
   note?: string;
   pointsToUse?: number;
   voucherCode?: string;

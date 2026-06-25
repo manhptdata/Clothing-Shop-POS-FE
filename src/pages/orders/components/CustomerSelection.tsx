@@ -127,7 +127,7 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                 <Button
                   onClick={() => setIsCustomerModalOpen(true)}
                   variant="outline"
-                  className="bg-[#2ecc71]/15 text-[#4ade80] border border-[#2ecc71] hover:bg-[#2ecc71] hover:text-white active:scale-95 transition-all text-xs px-3.5 font-semibold rounded-lg flex-shrink-0 h-[36px] flex items-center justify-center gap-1"
+                  className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/50 hover:!bg-[#2ecc71] hover:!text-white hover:!border-[#2ecc71] active:scale-95 transition-all text-xs px-3.5 font-semibold rounded-lg flex-shrink-0 h-[36px] flex items-center justify-center gap-1"
                   leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
                 >
                   Tạo khách

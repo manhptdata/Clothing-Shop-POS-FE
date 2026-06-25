@@ -24,6 +24,8 @@ interface CheckoutPanelProps {
   voucherCode: string;
   handleCheckout: () => void;
   isCreatingOrder: boolean;
+  paymentMethod: 'CASH' | 'QR_PAYOS';
+  setPaymentMethod: (method: 'CASH' | 'QR_PAYOS') => void;
 }
 
 export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
@@ -47,6 +49,8 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   voucherCode,
   handleCheckout,
   isCreatingOrder,
+  paymentMethod,
+  setPaymentMethod,
 }) => {
   return (
     <section className="w-full lg:w-[35%] bg-[#1a1d21] border-l border-outline/10 flex flex-col rounded-xl overflow-hidden h-full">
@@ -134,28 +138,68 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
 
       {/* Checkout Footer Section */}
       <div className="p-md border-t border-outline/20 bg-[#15181c] flex-shrink-0">
+        {/* Payment Methods */}
+        <div className="mb-4">
+          <label className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Phương thức thanh toán</label>
+          <div className="flex bg-[#16191c] rounded-lg p-1 border border-[#2d3238]">
+            <button
+              onClick={() => setPaymentMethod('CASH')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
+                paymentMethod === 'CASH' 
+                  ? 'bg-[#2ecc71] text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">payments</span>
+              Tiền mặt
+            </button>
+            <button
+              onClick={() => {
+                setPaymentMethod('QR_PAYOS');
+                setCustomerPaid('');
+                setIsPaidModified(false);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
+                paymentMethod === 'QR_PAYOS' 
+                  ? 'bg-[#1a73e8] text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+              Chuyển khoản QR
+            </button>
+          </div>
+        </div>
+
         {/* Payment Fields */}
         <div className="space-y-sm mb-4">
-          <div className="grid grid-cols-2 gap-sm">
-            <Input
-              label="Khách trả tiền"
-              type="number"
-              placeholder="0"
-              value={customerPaid}
-              onChange={(e) => {
-                setIsPaidModified(true);
-                setCustomerPaid(e.target.value === '' ? '' : Number(e.target.value));
-              }}
-              error={customerPaid !== '' && customerPaid < total ? 'Khách trả chưa đủ tiền' : undefined}
-              className="bg-[#16191c] border-[#2d3238] text-white"
-            />
-            <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Tiền trả lại</label>
-              <div className="w-full bg-[#16191c]/50 border border-[#2d3238] rounded-lg px-3 py-2 text-xs text-[#2ecc71] font-bold h-[34px] flex items-center">
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(changeAmount)}
+          {paymentMethod === 'CASH' ? (
+            <div className="grid grid-cols-2 gap-sm">
+              <Input
+                label="Khách trả tiền"
+                type="number"
+                placeholder="0"
+                value={customerPaid}
+                onChange={(e) => {
+                  setIsPaidModified(true);
+                  setCustomerPaid(e.target.value === '' ? '' : Number(e.target.value));
+                }}
+                error={customerPaid !== '' && customerPaid < total ? 'Khách trả chưa đủ tiền' : undefined}
+                className="bg-[#16191c] border-[#2d3238] text-white"
+              />
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Tiền trả lại</label>
+                <div className="w-full bg-[#16191c]/50 border border-[#2d3238] rounded-lg px-3 py-2 text-xs text-[#2ecc71] font-bold h-[34px] flex items-center">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(changeAmount)}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-[#1a73e8]/10 border border-[#1a73e8]/30 rounded-lg p-3 text-center">
+              <p className="text-sm text-[#1a73e8] font-medium">Khách hàng sẽ quét mã QR thanh toán sau khi bạn chốt đơn.</p>
+            </div>
+          )}
+          
           <Input
             type="text"
             placeholder="Ghi chú đơn hàng..."

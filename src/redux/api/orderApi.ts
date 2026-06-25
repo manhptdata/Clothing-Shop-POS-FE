@@ -33,7 +33,7 @@ export const orderApi = baseApi.injectEndpoints({
         method: 'POST',
         data,
       }),
-      invalidatesTags: [{ type: 'Order', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Order', id: 'LIST' }, { type: 'Statistic', id: 'LIST' }],
     }),
     cancelOrder: builder.mutation<RestResponse<Order>, number>({
       query: (id) => ({
@@ -43,6 +43,7 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: 'Order', id },
         { type: 'Order', id: 'LIST' },
+        { type: 'Statistic', id: 'LIST' },
       ],
     }),
   }),

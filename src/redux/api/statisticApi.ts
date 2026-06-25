@@ -9,14 +9,14 @@ export const statisticApi = baseApi.injectEndpoints({
         url: '/statistics/daily',
         method: 'GET',
       }),
-      providesTags: ['Statistic'],
+      providesTags: [{ type: 'Statistic', id: 'LIST' }],
     }),
     getWeeklyStatistics: builder.query<RestResponse<DailyStatisticItemResponse[]>, void>({
       query: () => ({
         url: '/statistics/weekly',
         method: 'GET',
       }),
-      providesTags: ['Statistic'],
+      providesTags: [{ type: 'Statistic', id: 'LIST' }],
     }),
   }),
   overrideExisting: false,
