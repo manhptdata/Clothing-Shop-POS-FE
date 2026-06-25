@@ -1,5 +1,13 @@
 import { baseApi } from './baseApi';
-import type { Customer, CustomerGroup, CustomerRequest } from '@/types/customer.types';
+import type { 
+  Customer, 
+  CustomerGroup, 
+  CustomerRequest, 
+  CustomerVoucher, 
+  CustomerUpdateRequest, 
+  CustomerOrderHistory, 
+  CustomerCareLog 
+} from '@/types/customer.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
 export const customerApi = baseApi.injectEndpoints({
@@ -58,7 +66,71 @@ export const customerApi = baseApi.injectEndpoints({
         },
       }),
     }),
-  }),
+
+
+
+    searchCustomers: builder.query<RestResponse<PageResponse<Customer>>, { keyword?: string; page?: number; size?: number }>({
+      query: (params) => ({
+        url: '/crm/customers/search',
+        method: 'GET',
+        params: {
+          keyword: params.keyword || '',
+          page: params.page || 0,
+          size: params.size || 10,
+        },
+      }),
+      providesTags: (result) =>
+        result?.data?.content
+          ? [
+              ...result.data.content.map(({ id }) => ({ type: 'Customer' as const, id })),
+              { type: 'Customer', id: 'LIST' },
+            ]
+          : [{ type: 'Customer', id: 'LIST' }],
+    }),
+
+    deactivateCustomer: builder.mutation<RestResponse<void>, number>({
+      query: (id) => ({
+        url: `/crm/customers/${id}/deactivate`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Customer', id },
+        { type: 'Customer', id: 'LIST' },
+      ],
+    }),
+
+    activateCustomer: builder.mutation<RestResponse<void>, number>({
+      query: (id) => ({
+        url: `/crm/customers/${id}/activate`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Customer', id },
+        { type: 'Customer', id: 'LIST' },
+      ],
+    }),
+
+    getCustomerOrders: builder.query<RestResponse<PageResponse<CustomerOrderHistory>>, { id: string | number; page?: number; size?: number }>({
+      query: ({ id, page = 0, size = 5 }) => ({
+        url: `/crm/customers/${id}/orders`,
+        method: 'GET',
+        params: { page, size },
+      }),
+      providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `ORDERS_${id}` }],
+    }),
+
+    getCustomerCareLogs: builder.query<RestResponse<PageResponse<CustomerCareLog>>, { id: string | number; page?: number; size?: number }>({
+      query: ({ id, page = 0, size = 5 }) => ({
+        url: `/crm/campaigns/customers/${id}/care-logs`, // ĐÃ SỬA URL VÀO ĐÂY
+        method: 'GET',
+        params: { page, size },
+      }),
+      providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `CARE_LOGS_${id}` }],
+    }),
+
+
+  }), // <--- Lưu ý: Dấu đóng ngoặc nhọn này phải nằm dưới cùng của khối endpoints
+  
   overrideExisting: false,
 });
 
@@ -68,4 +140,9 @@ export const {
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useGetCustomerGroupsQuery,
+  useSearchCustomersQuery,
+  useDeactivateCustomerMutation,
+  useActivateCustomerMutation,
+  useGetCustomerOrdersQuery,
+  useGetCustomerCareLogsQuery,
 } = customerApi;

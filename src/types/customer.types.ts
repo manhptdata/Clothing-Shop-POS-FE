@@ -43,3 +43,47 @@ export interface CustomerRequest {
   note?: string;
   customerGroupId?: number;
 }
+
+
+export type CustomerVoucher = VoucherInfo;
+
+export interface CustomerUpdateRequest extends CustomerRequest {
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+
+export interface OrderItem {
+  id: number;
+  productName: string;
+  productSku: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface CustomerOrderHistory {
+  id: number;
+  orderNumber: string;
+  createdAt: string;
+  status: string;
+  printed: boolean;
+  items: OrderItem[];
+  createdByUsername: string;
+  createdById: number;
+  note?: string;
+  totalAmount: number;
+  paidAmount: number;
+  changeAmount: number;
+}
+
+
+export interface CustomerCareLog {
+  id: number;
+  calledBy?: { fullName: string };
+  calledAt?: string;
+  campaign?: { name: string };
+  result: string;
+  order?: any;
+  note?: string;
+  createdAt: string;
+}

@@ -15,10 +15,13 @@ const ProductListPage = lazy(() => import('@/pages/products/ProductListPage'));
 const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'));
 const ProductFormPage = lazy(() => import('@/pages/products/ProductFormPage'));
 
-// Customers
-const CustomerListPage = lazy(() => import('@/pages/customers/CustomerListPage'));
-const CustomerFormPage = lazy(() => import('@/pages/customers/CustomerFormPage'));
-const CustomerGroupListPage = lazy(() => import('@/pages/customers/CustomerGroupListPage'));
+// Customers 
+const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
+const CustomerGroupListPage = lazy(() => import('@/pages/customers/groups/CustomerGroupListPage'));
+const CustomerListPage = lazy(() => import('@/pages/customers/list/CustomerListPage'));
+const CustomerDetailPage = lazy(() => import('@/pages/customers/list/CustomerDetailPage'));
+const CustomerFormPage = lazy(() => import('@/pages/customers/list/CustomerFormPage'));
+const CustomerEditPage = lazy(() => import('@/pages/customers/list/CustomerEditPage'));
 
 // Orders
 const OrderListPage = lazy(() => import('@/pages/orders/OrderListPage'));
@@ -59,15 +62,22 @@ export const routes: RouteObject[] = [
             ]
           },
 
-          // Customers (Admin, Sale, CS)
+          // Customers (Admin, Sale, CS) 
           {
             element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE', 'ROLE_CS']} />,
             children: [
-              { path: 'customers', element: <CustomerListPage /> },
-              { path: 'customers/new', element: <CustomerFormPage /> },
-              { path: 'customers/:id/edit', element: <CustomerFormPage /> },
-              { path: 'customers/groups', element: <CustomerGroupListPage /> },
-            ]
+              {
+                path: 'customers',
+                children: [
+                  { index: true, element: <CustomerCenterPage /> },
+                  { path: 'groups', element: <CustomerGroupListPage /> },
+                  { path: 'list', element: <CustomerListPage /> },
+                  { path: 'new', element: <CustomerFormPage /> },
+                  { path: ':id', element: <CustomerDetailPage /> },
+                  { path: 'edit/:id', element: <CustomerEditPage /> },
+                ],
+              },
+            ],
           },
 
           // Orders (Admin, Sale)
@@ -94,5 +104,5 @@ export const routes: RouteObject[] = [
     ]
   },
   // Fallback
-  { path: '*', element: <DashboardPage /> } // Redirect tạm
+  { path: '*', element: <DashboardPage /> }
 ];
