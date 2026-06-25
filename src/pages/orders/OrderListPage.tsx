@@ -17,7 +17,7 @@ export default function OrderListPage() {
 
   // --- Fetch Orders from RTK Query ---
   const { data: orderResponse, isLoading } = useGetOrdersQuery({
-    page: currentPage,
+    page: currentPage + 1,
     size: pageSize,
     status: activeTab === 'Tất cả' ? undefined : activeTab,
     sort: 'createdAt,desc',
