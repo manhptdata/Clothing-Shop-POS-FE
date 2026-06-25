@@ -4,6 +4,20 @@ import { RoleEnum } from '@/types/auth.types';
 import { useEffect, useState } from 'react';
 import { useLazyGetAccountQuery } from '@/redux/api/authApi';
 
+export const getDefaultRouteForRole = (role: RoleEnum): string => {
+  switch (role) {
+    case 'ROLE_ADMIN':
+    case 'ROLE_SALE':
+      return '/dashboard';
+    case 'ROLE_CS':
+      return '/customers';
+    case 'ROLE_WH':
+      return '/products';
+    default:
+      return '/login';
+  }
+};
+
 interface RoleRouteProps {
   allowedRoles: RoleEnum[];
 }
@@ -34,8 +48,8 @@ export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
   }
 
   if (user && !allowedRoles.includes(user.role)) {
-    // Chuyển về dashboard nếu không có quyền
-    return <Navigate to="/dashboard" replace />;
+    // Chuyển hướng động về trang chủ tương ứng của vai trò
+    return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
   }
 
   return <Outlet />;

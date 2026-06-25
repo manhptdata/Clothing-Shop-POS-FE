@@ -22,6 +22,7 @@ export interface Customer {
   updatedAt: string;
   rewardPoints?: number;
   vouchers?: VoucherInfo[];
+  customerGroup?: CustomerGroup;
 }
 
 export interface VoucherInfo {

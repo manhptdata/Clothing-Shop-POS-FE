@@ -17,7 +17,7 @@ export default function CustomerDetailPage() {
 
   // Gọi API lấy dữ liệu chi tiết
   const { data: responseData, isLoading, error } = useGetCustomerByIdQuery(
-    id as string,
+    Number(id),
     {
       skip: !id,
     },

@@ -5,6 +5,7 @@ import type { ProductOption, ProductOptionValue, ProductVariant } from '@/types/
 export type VariantFormData = Partial<ProductVariant> & { _selected?: boolean };
 
 interface VariantMatrixProps {
+  productName: string;
   options: ProductOption[];
   variants: VariantFormData[];
   onChange: (variants: VariantFormData[]) => void;
@@ -29,7 +30,32 @@ function comboKey(combo: ProductOptionValue[]): string {
   return combo.map(v => v.value).join('|||');
 }
 
-export function VariantMatrix({ options, variants, onChange }: VariantMatrixProps) {
+function generateProductInitials(name: string): string {
+  if (!name) return '';
+  const noTone = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+  
+  return noTone
+    .split(/[^a-zA-Z0-9]/)
+    .filter(Boolean)
+    .map(w => w[0].toUpperCase())
+    .join('');
+}
+
+function generateOptionValueCode(val: string): string {
+  if (!val) return '';
+  const noTone = val
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+  return noTone.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+}
+
+export function VariantMatrix({ productName, options, variants, onChange }: VariantMatrixProps) {
   // Lọc options hợp lệ (có name + ít nhất 1 value)
   const activeOptions = useMemo(
     () => options.filter(o => o.name.trim() && o.values.length > 0),
@@ -49,6 +75,8 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
       return;
     }
 
+    const prodInitials = generateProductInitials(productName);
+
     const newVariants: VariantFormData[] = combinations.map(combo => {
       const variant: VariantFormData = {
         option1Value: combo[0] || undefined,
@@ -65,10 +93,14 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
         return comboKey(vCombo) === existingKey;
       });
 
+      // Tạo gợi ý SKU
+      const optionCodes = combo.map(v => generateOptionValueCode(v.value));
+      const suggestedSku = [prodInitials, ...optionCodes].filter(Boolean).join('-');
+
       if (existing) {
         return {
           ...variant,
-          sku: existing.sku,
+          sku: existing.sku || suggestedSku,
           salePrice: existing.salePrice,
           importPrice: existing.importPrice,
           quantity: existing.quantity,
@@ -81,7 +113,7 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
       // Defaults cho variant mới
       return {
         ...variant,
-        sku: '',
+        sku: suggestedSku,
         salePrice: 0,
         importPrice: 0,
         quantity: 0,
@@ -92,7 +124,7 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
     // Chỉ trigger onChange nếu có sự thay đổi thực sự về số lượng hoặc cấu trúc
     onChange(newVariants);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeOptions, combinations]);
+  }, [activeOptions, combinations, productName]);
 
   const updateVariant = (index: number, field: keyof VariantFormData, value: any) => {
     const updated = [...variants];
@@ -152,7 +184,7 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
                 Mã SKU
               </th>
               <th className="text-right px-3 py-2.5 text-xs font-semibold text-on-surface-variant/80 uppercase tracking-wider whitespace-nowrap">
-                Giá bán (₫)
+                Giá bán (₫) *
               </th>
               <th className="text-right px-3 py-2.5 text-xs font-semibold text-on-surface-variant/80 uppercase tracking-wider whitespace-nowrap">
                 Giá nhập (₫)
@@ -205,7 +237,7 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
                       onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                       placeholder="SKU"
                       disabled={!isSelected}
-                      className="py-1 text-xs w-28"
+                      className="py-1 text-xs w-28 placeholder:text-[10px]"
                     />
                   </td>
 
@@ -243,7 +275,7 @@ export function VariantMatrix({ options, variants, onChange }: VariantMatrixProp
                       value={variant.quantity ?? 0}
                       onChange={(e) => updateVariant(index, 'quantity', parseInt(e.target.value) || 0)}
                       placeholder="0"
-                      disabled={!isSelected}
+                      disabled={true}
                       className="py-1 text-xs w-20 text-right"
                     />
                   </td>

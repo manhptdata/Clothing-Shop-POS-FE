@@ -8,9 +8,10 @@ interface ProductTableProps {
     getStatus: (variants: ProductVariant[]) => { text: string; class: 'success' | 'warning' | 'danger' | 'default' };
     getVariantStatus: (quantity: number, threshold?: number) => any;
     onEdit: (product: any) => void;
+    onDelete: (id: number, name: string) => void;
 }
 
-export default function ProductTable({ products, getStatus, getVariantStatus, onEdit }: ProductTableProps) {
+export default function ProductTable({ products, getStatus, getVariantStatus, onEdit, onDelete }: ProductTableProps) {
     if (products.length === 0) {
         return (
             <div className="text-center py-16 text-on-surface-variant">
@@ -46,8 +47,12 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                                 <tr key={product.id} className={`hover:bg-surface-container/50 transition-colors ${product.isDeleted ? 'opacity-50 bg-error-container/10' : ''}`}>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-on-surface-variant flex-shrink-0">
-                                                <span className="material-symbols-outlined text-2xl">checkroom</span>
+                                            <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-on-surface-variant flex-shrink-0 overflow-hidden border border-outline/10">
+                                                {product.imageUrls && product.imageUrls.length > 0 ? (
+                                                    <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-2xl">checkroom</span>
+                                                )}
                                             </div>
                                             <div>
                                                 <Link to={`/products/${product.id}`} className="font-title-sm text-title-sm text-on-surface hover:text-primary transition-colors">
@@ -127,12 +132,27 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
-                                            <Link to={`/products/${product.id}`} className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                            <Link to={`/products/${product.id}`} className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem chi tiết">
                                                 <span className="material-symbols-outlined text-sm">visibility</span>
                                             </Link>
-                                            <Link to={`/products/${product.id}/edit`} className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                            <button
+                                                type="button"
+                                                onClick={() => onEdit(product)}
+                                                className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
+                                                title="Sửa sản phẩm"
+                                            >
                                                 <span className="material-symbols-outlined text-sm">edit</span>
-                                            </Link>
+                                            </button>
+                                            {!product.isDeleted && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onDelete(product.id, product.name)}
+                                                    className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-error transition-colors"
+                                                    title="Xóa sản phẩm"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

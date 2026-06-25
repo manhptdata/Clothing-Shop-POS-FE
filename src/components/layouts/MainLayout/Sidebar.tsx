@@ -15,7 +15,7 @@ const menuItems: MenuItem[] = [
     path: '/dashboard',
     label: 'Bảng điều khiển',
     icon: 'dashboard',
-    roles: ['ROLE_ADMIN', 'ROLE_SALE', 'ROLE_CS', 'ROLE_WH'],
+    roles: ['ROLE_ADMIN', 'ROLE_SALE'],
   },
   {
     path: '/orders',

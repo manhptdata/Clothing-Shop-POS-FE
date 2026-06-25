@@ -8,6 +8,7 @@ export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: categoriesData } = useGetCategoriesQuery();
   const categories = categoriesData || [];
@@ -43,7 +44,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const mainImage = product.imageUrls?.[0];
+  const mainImage = selectedImage || product.imageUrls?.[0];
   const lowestPrice = Math.min(...product.variants.map(v => v.salePrice || 0));
   const highestPrice = Math.max(...product.variants.map(v => v.salePrice || 0));
   const priceDisplay = lowestPrice === highestPrice
@@ -138,12 +139,19 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Gallery */}
-              {product.imageUrls && product.imageUrls.length > 1 && (
+              {product.imageUrls && product.imageUrls.length > 0 && (
                 <div className="grid grid-cols-4 gap-sm md:gap-gutter">
-                  {product.imageUrls.slice(1).map((img, i) => (
-                    <div key={i} className="aspect-square bg-surface-container-low border border-on-surface/10 rounded overflow-hidden flex items-center justify-center">
-                      <img src={img} alt={`Detail ${i}`} className="w-full h-full object-cover" />
-                    </div>
+                  {product.imageUrls.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedImage(img)}
+                      className={`aspect-square bg-surface-container-low border rounded overflow-hidden flex items-center justify-center transition-all duration-200 ${mainImage === img
+                          ? 'border-primary ring-2 ring-primary/20 scale-95'
+                          : 'border-on-surface/10 hover:border-primary/50'
+                        }`}
+                    >
+                      <img src={img} alt={`Detail ${i}`} className="w-full h-full object-cover select-none" />
+                    </button>
                   ))}
                 </div>
               )}
@@ -155,11 +163,11 @@ export default function ProductDetailPage() {
                     <span className="material-symbols-outlined text-primary">label</span>
                     Đặc điểm chung
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="divide-y divide-on-surface/5 font-body-md text-body-md text-on-surface">
                     {product.attributes.map((attr, idx) => (
-                      <div key={idx} className="flex flex-col border-b border-on-surface/5 pb-2">
-                        <span className="text-xs text-on-surface-variant uppercase tracking-wider">{attr.attrKey}</span>
-                        <span className="text-sm font-medium text-on-surface">{attr.attrValue}</span>
+                      <div key={idx} className="grid grid-cols-3 py-2.5 last:pb-0 first:pt-0 gap-4">
+                        <span className="font-semibold text-on-surface col-span-1">{attr.attrKey}</span>
+                        <span className="text-on-surface-variant font-normal col-span-2">{attr.attrValue}</span>
                       </div>
                     ))}
                   </div>

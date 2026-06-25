@@ -1,8 +1,8 @@
 
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
-import { useGetProductsQuery } from '@/redux/api/productApi';
-import { useState } from 'react';
+import { useGetProductsQuery, useDeleteProductMutation } from '@/redux/api/productApi';
+import { useState, useEffect } from 'react';
 import { Product, ProductVariant } from '@/types/product.types';
 import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import ProductFilterSidebar from './ProductFilterSidebar';
@@ -30,15 +30,32 @@ export default function ProductListPage() {
   const [tempCategoryID, setTempCategoryID] = useState<number | undefined>(undefined);
   const [tempStatus, setTempStatus] = useState('Tất cả');
 
+  const [deleteProduct] = useDeleteProductMutation();
+
   // Hàm mở modal khi sửa
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setIsModalOpen(true);
   };
 
+  // Hàm xóa mềm sản phẩm
+  const handleDeleteProduct = async (id: number, name: string) => {
+    const isConfirmed = window.confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${name}"?`);
+    if (!isConfirmed) return;
+
+    try {
+      await deleteProduct(id).unwrap();
+      alert('Xóa sản phẩm thành công!');
+    } catch (err: any) {
+      console.error('Lỗi khi xóa sản phẩm:', err);
+      const errorMsg = err?.data?.message || err?.message || 'Đã xảy ra lỗi không xác định';
+      alert(`Xóa thất bại! Lỗi: ${errorMsg}`);
+    }
+  };
+
   // ===== API CALLS =====
   const productFilterParams = {
-    page,
+    page: page + 1, // Backend configured as 1-based page index (one-indexed-parameters=true)
     size,
     search: search || undefined,
     productName: productName || undefined,
@@ -54,6 +71,16 @@ export default function ProductListPage() {
   const products = responseData?.data?.content || [];
   const pagination = responseData?.data;
   const categories = categoriesData || [];
+  const totalElements = responseData?.data?.totalElements || 0;
+  const totalPages = responseData?.data?.totalPages || 0;
+
+  const [cachedProducts, setCachedProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setCachedProducts(products);
+    }
+  }, [products]);
 
   // ===== HELPER FUNCTIONS =====
   // Định nghĩa type ở đầu file
@@ -242,33 +269,26 @@ export default function ProductListPage() {
           </div>
         </div>
 
-        {isLoading ? (
+        {products.length === 0 && isFetching && cachedProducts.length === 0 ? (
           <div className="text-center py-20 text-on-surface-variant">Đang tải danh sách...</div>
         ) : (
           <>
             <ProductTable
-              products={products}
+              products={products.length === 0 && (isFetching || isLoading) ? cachedProducts : products}
               getStatus={getStatus}
               getVariantStatus={getVariantStatus}
               onEdit={handleEditProduct}
+              onDelete={handleDeleteProduct}
             />
-            <div className="mt-xl flex justify-end items-center gap-4">
-              <select
-                value={size}
-                onChange={handleSizeChange}
-                className="px-5 py-1.5 border border-outline/30 rounded-lg bg-surface-container-lowest text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
-                <option value="5">5 / trang</option>
-                <option value="10">10 / trang</option>
-                <option value="20">20 / trang</option>
-                <option value="50">50 / trang</option>
-              </select>
-
+            <div className="mt-xl">
               <Pagination
-                totalPages={pagination?.totalPages || 0}
                 currentPage={page}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                pageSize={size}
                 onPageChange={setPage}
-                className="bg-transparent border-t border-on-surface/10 px-0"
+                onSizeChange={setSize}
+                className="bg-transparent border-t border-on-surface/10 px-0 w-full"
               />
             </div>
           </>

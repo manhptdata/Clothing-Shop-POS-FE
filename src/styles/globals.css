@@ -14,25 +14,32 @@
 
 :root {
   /* Brand Colors - High-End Minimalism (Atelier OS) */
-  --color-bg: #FDFBF7; /* Warm cream */
+  --color-bg: #FDFBF7;
+  /* Warm cream */
   --color-surface: #ffffff;
-  --color-border: rgba(33, 37, 41, 0.1); /* 1px border at 10% opacity */
+  --color-border: rgba(33, 37, 41, 0.1);
+  /* 1px border at 10% opacity */
   --color-border-active: #0F5132;
-  --color-text: #212529; /* Dark charcoal */
+  --color-text: #212529;
+  /* Dark charcoal */
   --color-text-muted: #707971;
-  --color-primary: #0F5132; /* Deep Forest Green */
+  --color-primary: #0F5132;
+  /* Deep Forest Green */
   --color-primary-light: rgba(15, 81, 50, 0.1);
-  --color-accent: #D4AF37; /* Soft Gold */
+  --color-accent: #D4AF37;
+  /* Soft Gold */
   --color-success: #84c39b;
   --color-warning: #fed65b;
   --color-danger: #ba1a1a;
-  
+
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
+
   /* Shapes - Tailored */
-  --radius-sm: 8px; /* Standard */
+  --radius-sm: 8px;
+  /* Standard */
   --radius-md: 12px;
-  --radius-lg: 16px; /* Large */
+  --radius-lg: 16px;
+  /* Large */
   --radius-xl: 24px;
 
   /* Spacing Rhythm */
@@ -44,22 +51,36 @@
   --spacing-xl: 80px;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: var(--font-family);
   background-color: var(--color-bg);
   background-image: radial-gradient(circle at top right, rgba(212, 175, 55, 0.03), transparent 40%),
-                    radial-gradient(circle at bottom left, rgba(15, 81, 50, 0.03), transparent 40%);
+    radial-gradient(circle at bottom left, rgba(15, 81, 50, 0.03), transparent 40%);
   background-attachment: fixed;
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
 
-#root { height: 100%; }
-a { text-decoration: none; color: inherit; }
-ul, ol { list-style: none; }
-button { font-family: inherit; }
+#root {
+  height: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+}
 
 /* Premium Utility Classes */
 .glass-panel {
@@ -82,16 +103,30 @@ button { font-family: inherit; }
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(33, 37, 41, 0.2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(33, 37, 41, 0.3); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(33, 37, 41, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(33, 37, 41, 0.3);
+}
 
 /* ─── Print Styles ──────────────────────────────────────────────────────────
    Khi user nhấn "In hóa đơn", ẩn toàn bộ chrome của app (sidebar, header,
    nút bấm, navigation) và chỉ giữ lại phần nội dung hóa đơn.
 ─────────────────────────────────────────────────────────────────────────── */
 @media print {
+
   /* Ẩn sidebar và header được đánh dấu bằng data attribute */
   [data-sidebar],
   [data-header] {
@@ -110,7 +145,8 @@ button { font-family: inherit; }
   }
 
   /* Đảm bảo nội dung in trắng, không có gradient nền */
-  body, html {
+  body,
+  html {
     background: white !important;
     background-image: none !important;
   }
@@ -120,8 +156,9 @@ button { font-family: inherit; }
   }
 
   /* Tránh ngắt trang bên trong các block quan trọng */
-  table, tr, .print-block {
+  table,
+  tr,
+  .print-block {
     page-break-inside: avoid;
   }
 }
-

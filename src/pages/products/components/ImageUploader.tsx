@@ -7,6 +7,7 @@ interface ImageUploaderProps {
 
 export function ImageUploader({ images, onChange }: ImageUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -19,6 +20,30 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
 
     const removeImage = (index: number) => {
         onChange(images.filter((_, i) => i !== index));
+    };
+
+    // Drag and Drop handlers
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (index: number) => {
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const updatedImages = [...images];
+        const temp = updatedImages[draggedIndex];
+        updatedImages[draggedIndex] = updatedImages[index];
+        updatedImages[index] = temp;
+
+        onChange(updatedImages);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
     };
 
     return (
@@ -50,14 +75,31 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
             {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-4">
                     {images.map((url, index) => (
-                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
-                            <button
-                                onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 p-0.5 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <span className="material-symbols-outlined text-sm">close</span>
-                            </button>
+                        <div
+                            key={index}
+                            draggable
+                            onDragStart={() => handleDragStart(index)}
+                            onDragOver={(e) => handleDragOver(e, index)}
+                            onDrop={() => handleDrop(index)}
+                            onDragEnd={handleDragEnd}
+                            className={`relative aspect-square rounded-lg overflow-hidden group cursor-move border-2 transition-all duration-200 ${draggedIndex === index
+                                ? 'border-primary opacity-40 scale-95'
+                                : 'border-transparent hover:border-outline-variant'
+                                }`}
+                        >
+                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover select-none pointer-events-none" />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between p-1.5 items-start">
+                                <span className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded font-mono select-none">
+                                    #{index + 1}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); removeImage(index); }}
+                                    className="p-1 bg-black/60 hover:bg-error rounded-full text-white transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-xs">close</span>
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

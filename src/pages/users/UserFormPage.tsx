@@ -26,6 +26,7 @@ export default function UserFormPage() {
     username: '',
     password: '',
     role: 'ROLE_SALE' as RoleEnum,
+    phone: '',
   });
 
   const [active, setActive] = useState(true);
@@ -38,6 +39,7 @@ export default function UserFormPage() {
         username: employee.username || '',
         password: '', // We don't load password
         role: employee.role || 'ROLE_SALE',
+        phone: employee.phone || '',
       });
       setActive(employee.active);
     }
@@ -55,7 +57,7 @@ export default function UserFormPage() {
         // Update
         const payload = {
           fullName: formData.fullName,
-          phone: '', // Optional
+          phone: formData.phone,
           role: formData.role,
         };
         await updateUser({ id: userId, data: payload }).unwrap();
@@ -75,7 +77,7 @@ export default function UserFormPage() {
           fullName: formData.fullName,
           username: formData.username,
           password: formData.password,
-          phone: '', // Optional
+          phone: formData.phone,
           role: formData.role,
         };
         await createUser(payload).unwrap();
@@ -135,6 +137,18 @@ export default function UserFormPage() {
                 onChange={handleInputChange}
                 placeholder="VD: nva@atelier.com"
                 className={`w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded ${isEdit ? 'opacity-50 cursor-not-allowed text-on-surface-variant' : ''}`}
+                type="text"
+              />
+            </div>
+
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Số điện thoại</label>
+              <input
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="VD: 0987654321"
+                className="w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded"
                 type="text"
               />
             </div>
