@@ -45,7 +45,7 @@ export default function CustomerListPage() {
     setPage(0);
   };
 
-  const openVoucherModal = (customer: Customer) => {
+  const openVoucherModal = (customer: import("@/types/customer.types").CustomerWithGroup) => {
     setSelectedVoucherData({
       name: customer.fullName,
       group: customer.customerGroup?.code || "GỖ MỚI",
@@ -114,13 +114,13 @@ export default function CustomerListPage() {
     },
     {
       key: "info",
-      header: "Thông tin phụ",
+      header: "Thông tin",
       render: (row) => (
-        <div className="font-normal text-gray-500 whitespace-nowrap">
-          <span className="inline-flex items-center gap-1">
+        <div className="font-normal text-gray-500 flex flex-col lg:flex-row lg:items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 whitespace-nowrap">
             <i className="fa-solid fa-cake-candles text-gray-400 text-[10px]"></i> {row.dateOfBirth}
           </span>
-          <span className="ml-2 font-bold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded text-[10px]">
+          <span className="font-bold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded text-[10px] w-fit">
             {row.gender}
           </span>
         </div>
@@ -130,7 +130,8 @@ export default function CustomerListPage() {
       key: "group",
       header: "Hạng",
       render: (row) => {
-        const code = row.customerGroup?.code || "GỖ MỚI";
+        const cus = row as import("@/types/customer.types").CustomerWithGroup;
+        const code = cus.customerGroup?.code || "GỖ MỚI";
         const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
         return (
           <Badge variant={variant as any}>
@@ -262,11 +263,7 @@ export default function CustomerListPage() {
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title={
-            <div className="flex items-center gap-2">
-              <i className="fa-solid fa-ticket text-red-500"></i> Danh sách ưu đãi
-            </div>
-          }
+          title="Danh sách ưu đãi"
           size="md"
         >
           <div className="mb-4">

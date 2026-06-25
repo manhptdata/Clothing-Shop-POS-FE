@@ -1,12 +1,13 @@
 import { baseApi } from './baseApi';
-import type { 
-  Customer, 
-  CustomerGroup, 
-  CustomerRequest, 
-  CustomerVoucher, 
-  CustomerUpdateRequest, 
-  CustomerOrderHistory, 
-  CustomerCareLog 
+import type {
+  Customer,
+  CustomerGroup,
+  CustomerRequest,
+  CustomerVoucher,
+  CustomerUpdateRequest,
+  CustomerOrderHistory,
+  CustomerCareLog,
+  CustomerGroups
 } from '@/types/customer.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
@@ -25,9 +26,9 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result?.data?.content
           ? [
-              ...result.data.content.map(({ id }) => ({ type: 'Customer' as const, id })),
-              { type: 'Customer', id: 'LIST' },
-            ]
+            ...result.data.content.map(({ id }) => ({ type: 'Customer' as const, id })),
+            { type: 'Customer', id: 'LIST' },
+          ]
           : [{ type: 'Customer', id: 'LIST' }],
     }),
     getCustomerById: builder.query<RestResponse<Customer>, number>({
@@ -82,9 +83,9 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result?.data?.content
           ? [
-              ...result.data.content.map(({ id }) => ({ type: 'Customer' as const, id })),
-              { type: 'Customer', id: 'LIST' },
-            ]
+            ...result.data.content.map(({ id }) => ({ type: 'Customer' as const, id })),
+            { type: 'Customer', id: 'LIST' },
+          ]
           : [{ type: 'Customer', id: 'LIST' }],
     }),
 
@@ -128,9 +129,53 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `CARE_LOGS_${id}` }],
     }),
 
+    // Dùng interface mới: CustomerGroups
+    searchCustomerGroups: builder.query<
+      RestResponse<PageResponse<CustomerGroups>>,
+      { keyword?: string; page?: number; size?: number }
+    >({
+      query: (params) => ({
+        url: '/crm/customer-groups/search', // <-- ĐÃ SỬA: Thêm /search vào đuôi
+        method: 'GET',
+        params: {
+          keyword: params.keyword || '',
+          page: params.page || 0,
+          size: params.size || 10,
+        },
+      }),
+    }),
+
+    // Lấy chi tiết 1 nhóm khách hàng
+    getCustomerGroupById: builder.query<RestResponse<CustomerGroups>, string | number>({
+      query: (id) => ({
+        url: `/crm/customer-groups/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['Customer'],
+    }),
+
+
+    getCustomerGroupMembers: builder.query<
+      RestResponse<PageResponse<Customer>>,
+      { id: string | number; keyword?: string; page?: number; size?: number }
+    >({
+      query: ({ id, ...params }) => ({
+        url: `/crm/customer-groups/${id}/members`,
+        method: 'GET',
+        params: {
+          keyword: params.keyword || '',
+          page: params.page || 0,
+          size: params.size || 10,
+        },
+      }),
+      providesTags: ['Customer'],
+    }),
+
+
+
 
   }), // <--- Lưu ý: Dấu đóng ngoặc nhọn này phải nằm dưới cùng của khối endpoints
-  
+
   overrideExisting: false,
 });
 
@@ -145,4 +190,7 @@ export const {
   useActivateCustomerMutation,
   useGetCustomerOrdersQuery,
   useGetCustomerCareLogsQuery,
+  useSearchCustomerGroupsQuery,
+  useGetCustomerGroupByIdQuery,
+  useGetCustomerGroupMembersQuery,
 } = customerApi;

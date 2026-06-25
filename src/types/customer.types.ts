@@ -88,3 +88,23 @@ export interface CustomerCareLog {
   note?: string;
   createdAt: string;
 }
+
+
+// Kế thừa CustomerGroup của đồng nghiệp để tránh conflict
+export interface CustomerGroups extends CustomerGroup {
+  status: 'ACTIVE' | 'INACTIVE';
+  totalCustomers: number;
+  note?: string;
+  minSpending: number;
+  maxSpending: number;
+  createdAt: string;
+}
+
+// Kế thừa Customer của đồng nghiệp để bổ sung thêm Group object trả về từ API
+export interface CustomerWithGroup extends Customer {
+  customerGroup?: {
+    id: number;
+    name: string;
+    code: string;
+  };
+}

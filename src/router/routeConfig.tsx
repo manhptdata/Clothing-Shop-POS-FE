@@ -17,11 +17,14 @@ const ProductFormPage = lazy(() => import('@/pages/products/ProductFormPage'));
 
 // Customers 
 const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
-const CustomerGroupListPage = lazy(() => import('@/pages/customers/groups/CustomerGroupListPage'));
 const CustomerListPage = lazy(() => import('@/pages/customers/list/CustomerListPage'));
 const CustomerDetailPage = lazy(() => import('@/pages/customers/list/CustomerDetailPage'));
 const CustomerFormPage = lazy(() => import('@/pages/customers/list/CustomerFormPage'));
 const CustomerEditPage = lazy(() => import('@/pages/customers/list/CustomerEditPage'));
+const CustomerGroupListPage = lazy(() => import("@/pages/customers/groups/CustomerGroupListPage"));
+const CustomerGroupDetailPage = lazy(() => import("@/pages/customers/groups/CustomerGroupDetailPage"));
+const CustomerGroupMembersPage = lazy(() => import("@/pages/customers/groups/CustomerGroupMembersPage"));
+
 
 // Orders
 const OrderListPage = lazy(() => import('@/pages/orders/OrderListPage'));
@@ -37,9 +40,7 @@ export const routes: RouteObject[] = [
   // Public Routes
   {
     element: <AuthLayout />,
-    children: [
-      { path: 'login', element: <LoginPage /> },
-    ],
+    children: [{ path: "login", element: <LoginPage /> }],
   },
   // Protected Routes
   {
@@ -48,6 +49,7 @@ export const routes: RouteObject[] = [
       {
         element: <MainLayout />,
         children: [
+<<<<<<< Updated upstream
           // Dashboard (Admin, Sale)
           {
             element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE']} />,
@@ -56,31 +58,43 @@ export const routes: RouteObject[] = [
               { path: 'dashboard', element: <DashboardPage /> },
             ]
           },
+=======
+          { index: true, element: <DashboardPage /> },
+          { path: "dashboard", element: <DashboardPage /> },
+>>>>>>> Stashed changes
 
           // Products (Admin, Kho)
           {
-            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_WH']} />,
+            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_WH"]} />,
             children: [
-              { path: 'products', element: <ProductListPage /> },
-              { path: 'products/new', element: <ProductFormPage /> },
-              { path: 'products/:id', element: <ProductDetailPage /> },
-              { path: 'products/:id/edit', element: <ProductFormPage /> },
-            ]
+              { path: "products", element: <ProductListPage /> },
+              { path: "products/new", element: <ProductFormPage /> },
+              { path: "products/:id", element: <ProductDetailPage /> },
+              { path: "products/:id/edit", element: <ProductFormPage /> },
+            ],
           },
 
-          // Customers (Admin, Sale, CS) 
+          // Customers (Admin, Sale, CS)
           {
-            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE', 'ROLE_CS']} />,
+            element: (
+              <RoleRoute
+                allowedRoles={["ROLE_ADMIN", "ROLE_SALE", "ROLE_CS"]}
+              />
+            ),
             children: [
               {
-                path: 'customers',
+                path: "customers",
                 children: [
                   { index: true, element: <CustomerCenterPage /> },
-                  { path: 'groups', element: <CustomerGroupListPage /> },
-                  { path: 'list', element: <CustomerListPage /> },
-                  { path: 'new', element: <CustomerFormPage /> },
-                  { path: ':id', element: <CustomerDetailPage /> },
-                  { path: 'edit/:id', element: <CustomerEditPage /> },
+                  { path: "list", element: <CustomerListPage /> },
+                  { path: "new", element: <CustomerFormPage /> },
+                  { path: ":id", element: <CustomerDetailPage /> },
+                  { path: "edit/:id", element: <CustomerEditPage /> },
+                  { path: "groups", element: <CustomerGroupListPage /> },
+                  { path: "groups/:id", element: <CustomerGroupDetailPage /> },
+                  {
+                    path: "groups/:id/members", element: <CustomerGroupMembersPage />,
+                  },
                 ],
               },
             ],
@@ -88,27 +102,27 @@ export const routes: RouteObject[] = [
 
           // Orders (Admin, Sale)
           {
-            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE']} />,
+            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_SALE"]} />,
             children: [
-              { path: 'orders', element: <OrderListPage /> },
-              { path: 'orders/new', element: <OrderCreatePage /> },
-              { path: 'orders/:id', element: <OrderDetailPage /> },
-            ]
+              { path: "orders", element: <OrderListPage /> },
+              { path: "orders/new", element: <OrderCreatePage /> },
+              { path: "orders/:id", element: <OrderDetailPage /> },
+            ],
           },
 
           // Users (Admin ONLY)
           {
-            element: <RoleRoute allowedRoles={['ROLE_ADMIN']} />,
+            element: <RoleRoute allowedRoles={["ROLE_ADMIN"]} />,
             children: [
-              { path: 'users', element: <UserListPage /> },
-              { path: 'users/new', element: <UserFormPage /> },
-              { path: 'users/:id/edit', element: <UserFormPage /> },
-            ]
-          }
-        ]
-      }
-    ]
+              { path: "users", element: <UserListPage /> },
+              { path: "users/new", element: <UserFormPage /> },
+              { path: "users/:id/edit", element: <UserFormPage /> },
+            ],
+          },
+        ],
+      },
+    ],
   },
   // Fallback
-  { path: '*', element: <DashboardPage /> }
+  { path: "*", element: <DashboardPage /> },
 ];
