@@ -10,13 +10,15 @@ export const orderApi = baseApi.injectEndpoints({
         method: 'GET',
         params,
       }),
-      providesTags: (result) =>
-        result?.data?.content
+      providesTags: (result) => {
+        const list = (result?.data as any)?.result || (result?.data as any)?.content;
+        return list && Array.isArray(list)
           ? [
-              ...result.data.content.map(({ id }) => ({ type: 'Order' as const, id })),
+              ...list.map(({ id }) => ({ type: 'Order' as const, id })),
               { type: 'Order', id: 'LIST' },
             ]
-          : [{ type: 'Order', id: 'LIST' }],
+          : [{ type: 'Order', id: 'LIST' }];
+      }
     }),
     getOrderById: builder.query<RestResponse<Order>, number>({
       query: (id) => ({

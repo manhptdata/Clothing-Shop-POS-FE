@@ -87,7 +87,7 @@ export default function OrderDetailPage() {
   }
 
   // --- Compute Totals ---
-  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
   const tax = Math.round(subtotal * 0.08); // 8% VAT
   const total = order.totalAmount;
 
@@ -121,7 +121,7 @@ export default function OrderDetailPage() {
         <div>
           <div className="flex items-center gap-sm mb-xs">
             <h2 className="font-display-lg text-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
-              Đơn hàng {order.code}
+              Đơn hàng {order.orderNumber || order.code}
             </h2>
             <Badge variant={statusBadgeVariant}>
               {statusText}
@@ -173,7 +173,8 @@ export default function OrderDetailPage() {
               </thead>
               <tbody className="divide-y divide-outline/5">
                 {order.items.map((item, index) => {
-                  const details = getVariantDetails(item.productId);
+                  const details = getVariantDetails(item.variantId || (item as any).productId);
+                  const price = item.unitPrice || (item as any).price || 0;
                   return (
                     <tr key={index} className="hover:bg-surface-container-lowest/50 transition-colors">
                       <td className="py-md px-md">
@@ -191,11 +192,11 @@ export default function OrderDetailPage() {
                         </div>
                       </td>
                       <td className="py-md px-md text-on-surface text-right font-medium">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
                       </td>
                       <td className="py-md px-md text-on-surface-variant text-center">{item.quantity}</td>
                       <td className="py-md px-md text-primary text-right font-bold">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price * item.quantity)}
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price * item.quantity)}
                       </td>
                     </tr>
                   );
@@ -300,6 +301,23 @@ export default function OrderDetailPage() {
                 <span>Thuế (VAT 8%)</span>
                 <span className="text-on-surface font-semibold">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}</span>
               </div>
+
+              {/* Vouchers discount display */}
+              {order.discountFromVoucher !== undefined && Number(order.discountFromVoucher) > 0 && (
+                <div className="flex justify-between items-center text-body-sm font-body-sm text-emerald-600">
+                  <span>Voucher giảm giá ({order.voucherCode})</span>
+                  <span className="font-semibold">-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discountFromVoucher)}</span>
+                </div>
+              )}
+
+              {/* Points discount display */}
+              {order.discountFromPoints !== undefined && Number(order.discountFromPoints) > 0 && (
+                <div className="flex justify-between items-center text-body-sm font-body-sm text-emerald-600">
+                  <span>Dùng điểm ({order.pointsUsed || 0} điểm)</span>
+                  <span className="font-semibold font-semibold">-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discountFromPoints)}</span>
+                </div>
+              )}
+
               <div className="h-px bg-outline/10 w-full my-xs"></div>
               <div className="flex justify-between items-end">
                 <span className="font-body-md text-body-md text-on-surface font-bold">Tổng cộng</span>
@@ -315,7 +333,7 @@ export default function OrderDetailPage() {
               <div className="flex justify-between items-center">
                 <span className="text-on-surface-variant">Khách đã trả:</span>
                 <span className="font-bold text-on-surface">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.customerPaid)}
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.paidAmount || (order as any).customerPaid)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -324,6 +342,12 @@ export default function OrderDetailPage() {
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.changeAmount)}
                 </span>
               </div>
+              {order.pointsEarned !== undefined && Number(order.pointsEarned) > 0 && (
+                <div className="flex justify-between items-center text-xs text-[#2ecc71] font-semibold mt-2">
+                  <span>Điểm tích lũy nhận được:</span>
+                  <span>+{order.pointsEarned} điểm</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -2,23 +2,31 @@ export type OrderStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
 
 export interface OrderItem {
   id?: number;
-  productId: number;
+  variantId: number;
   quantity: number;
-  price: number;
+  productName?: string;
+  productSku?: string;
+  unitPrice?: number;
+  subtotal?: number;
 }
 
 export interface Order {
   id: number;
-  code: string;
+  orderNumber: string;
+  code?: string; // Alias for safety
   totalAmount: number;
-  customerPaid: number;
+  paidAmount: number;
   changeAmount: number;
   status: OrderStatus;
   customerId: number;
   customerName?: string;
-  warehouseId: number;
-  warehouseName?: string;
+  pointsUsed?: number;
+  pointsEarned?: number;
+  discountFromPoints?: number;
+  voucherCode?: string;
+  discountFromVoucher?: number;
   createdById: number;
+  createdByUsername?: string;
   note?: string;
   createdAt: string;
   items: OrderItem[];
@@ -26,10 +34,12 @@ export interface Order {
 
 export interface OrderRequest {
   customerId: number;
-  warehouseId: number;
-  totalAmount: number;
-  customerPaid: number;
-  changeAmount: number;
+  paidAmount: number;
   note?: string;
-  items: OrderItem[];
+  pointsToUse?: number;
+  voucherCode?: string;
+  items: {
+    variantId: number;
+    quantity: number;
+  }[];
 }

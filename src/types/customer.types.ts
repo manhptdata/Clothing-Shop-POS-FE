@@ -20,6 +20,18 @@ export interface Customer {
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
   updatedAt: string;
+  rewardPoints?: number;
+  vouchers?: VoucherInfo[];
+}
+
+export interface VoucherInfo {
+  id: number;
+  voucherCode: string;
+  voucherName: string;
+  discountAmount: number;
+  minOrderValue: number;
+  status: 'UNUSED' | 'USED' | 'EXPIRED';
+  expiredAt: string;
 }
 
 export interface CustomerRequest {
@@ -29,5 +41,5 @@ export interface CustomerRequest {
   gender: GenderEnum;
   address?: string;
   note?: string;
-  groupId: number;
+  customerGroupId?: number;
 }
