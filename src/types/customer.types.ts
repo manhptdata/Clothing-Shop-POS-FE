@@ -88,3 +88,14 @@ export interface CustomerCareLog {
   note?: string;
   createdAt: string;
 }
+
+
+
+export interface CustomerGroups extends CustomerGroup {
+  status: 'ACTIVE' | 'INACTIVE';
+  totalCustomers: number;
+  note?: string;
+  minSpending: number;
+  maxSpending: number;
+  createdAt: string;
+}

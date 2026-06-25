@@ -1,238 +1,222 @@
-import { Link } from "react-router-dom";
-
-const tiers = [
-  {
-    name: "Bronze Tier",
-    color: "#CD7F32",
-    threshold: "0",
-    multiplier: "1.0x",
-    discount: "0%",
-  },
-  {
-    name: "Silver Tier",
-    color: "#C0C0C0",
-    threshold: "5,000",
-    multiplier: "1.5x",
-    discount: "5%",
-  },
-  {
-    name: "Gold Tier",
-    color: "#D4AF37",
-    threshold: "15,000",
-    multiplier: "2.0x",
-    discount: "10%",
-    isGold: true,
-  },
-];
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSearchCustomerGroupsQuery } from "@/redux/api/customerApi";
+import type { CustomerGroups } from "@/types/customer.types";
+import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
+import { Button } from "@/components/ui/Button";
+import { Table, Column } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
 
 export default function CustomerGroupListPage() {
-  return (
-    <div className="bg-surface-container-low text-on-surface font-body-md antialiased min-h-screen">
-      {/* SideNavBar */}
-      <aside className="bg-surface-container-low h-full w-64 fixed left-0 top-0 border-r border-outline-variant/15 flex flex-col py-lg px-md h-screen z-40 hidden md:flex">
-        <div className="mb-xl flex flex-col items-start">
-          <div className="flex items-center gap-sm mb-xs">
-            <div className="w-8 h-8 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center">
-              <span
-                className="material-symbols-outlined text-primary text-[16px]"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                storefront
-              </span>
-            </div>
-            <h1 className="font-headline-md text-headline-md text-primary">
-              LuxeCRM
-            </h1>
-          </div>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            Flagship Store
-          </p>
-        </div>
-        <nav className="flex-1 space-y-2">
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-sm px-sm py-3 text-on-surface-variant border-l-4 border-transparent hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              dashboard
-            </span>
-            <span className="font-button text-button">Dashboard</span>
-          </Link>
-          <Link
-            to="/customers"
-            className="flex items-center gap-sm px-sm py-3 text-on-surface-variant border-l-4 border-transparent hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">group</span>
-            <span className="font-button text-button">Clientele</span>
-          </Link>
-          <Link
-            to="/products"
-            className="flex items-center gap-sm px-sm py-3 text-on-surface-variant border-l-4 border-transparent hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              diamond
-            </span>
-            <span className="font-button text-button">Inventory</span>
-          </Link>
-          <Link
-            to="/orders"
-            className="flex items-center gap-sm px-sm py-3 text-on-surface-variant border-l-4 border-transparent hover:text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              receipt_long
-            </span>
-            <span className="font-button text-button">Sales</span>
-          </Link>
-          <Link
-            to="/customers/groups"
-            className="flex items-center gap-sm px-sm py-3 text-primary font-bold border-l-4 border-primary"
-          >
-            <span
-              className="material-symbols-outlined text-[20px]"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              settings
-            </span>
-            <span className="font-button text-button">Settings</span>
-          </Link>
-        </nav>
-        <div className="mt-auto pt-lg">
-          <button className="w-full bg-primary-container text-on-primary font-button text-button py-3 px-4 rounded hover:bg-primary transition-colors flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            New Appointment
-          </button>
-        </div>
-      </aside>
+  const navigate = useNavigate();
 
-      {/* TopAppBar */}
-      <header className="bg-surface fixed top-0 right-0 w-[calc(100%-16rem)] h-20 border-b border-outline-variant/15 flex justify-between items-center px-margin-desktop z-30 hidden md:flex">
-        <div className="flex items-center gap-xl">
-          <h2 className="font-title-sm text-title-sm text-primary tracking-tight">
-            Luxury Client Management
-          </h2>
-          <div className="relative w-64 hidden lg:block">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
-              search
+  // State cho bộ lọc
+  const [keyword, setKeyword] = useState("");
+  const [size, setSize] = useState(10);
+  const [page, setPage] = useState(0);
+
+  // Gọi API
+  const { data: responseData, isLoading, isFetching } = useSearchCustomerGroupsQuery({
+    keyword,
+    page,
+    size,
+  });
+
+  const groups = responseData?.data?.content || [];
+  const totalElements = responseData?.data?.totalElements || 0;
+  const totalPages = responseData?.data?.totalPages || 0;
+
+  // Hàm helper chọn Icon dựa theo mã
+  const getGroupIcon = (code: string) => {
+    switch (code) {
+      case "BRONZE":
+        return <i className="fa-solid fa-award text-[12px] text-orange-700"></i>;
+      case "SILVER":
+        return <i className="fa-solid fa-medal text-[12px] text-slate-700"></i>;
+      case "GOLD":
+        return <i className="fa-solid fa-crown text-[12px] text-amber-700"></i>;
+      default:
+        return <i className="fa-solid fa-users text-[12px] text-blue-600"></i>;
+    }
+  };
+
+  // Cấu hình các cột cho Bảng
+  const columns: Column<CustomerGroups>[] = [
+    {
+      key: "id",
+      header: "ID",
+      className: "text-center w-12",
+      render: (row) => (
+        <span className="text-gray-400 font-mono text-[11px]">#{row.id}</span>
+      ),
+    },
+    {
+      key: "name",
+      header: "Tên nhóm (name)",
+      className: "w-48",
+      render: (row) => (
+        <button 
+          onClick={() => navigate(`/customers/groups/${row.id}`)}
+          className="flex items-center gap-1.5 font-bold text-gray-800 hover:text-blue-600 transition-colors text-left"
+          title="Xem chi tiết nhóm"
+        >
+          {getGroupIcon(row.code)} {row.name}
+        </button>
+      ),
+    },
+    {
+      key: "code",
+      header: "Mã hạng thẻ",
+      className: "w-28",
+      render: (row) => (
+        <span className="font-mono text-[11px] text-gray-500">{row.code}</span>
+      ),
+    },
+    {
+      key: "description",
+      header: "Mô tả đặc điểm",
+      render: (row) => (
+        <div className="text-gray-600 max-w-xs truncate text-[11px]">
+          {row.description}
+          {row.note && (
+            <span className="text-[9px] text-purple-600 block font-bold italic mt-0.5">
+              (Note: {row.note})
             </span>
-            <input
-              className="w-full bg-surface-container-low border border-outline-variant/30 text-body-sm font-body-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-primary-container transition-all"
-              placeholder="Search..."
-              type="text"
-            />
-          </div>
+          )}
         </div>
-        <div className="flex items-center gap-md">
-          <button className="text-on-surface-variant hover:opacity-80">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="text-on-surface-variant hover:opacity-80">
-            <span className="material-symbols-outlined">help_outline</span>
-          </button>
-        </div>
+      ),
+    },
+    {
+      key: "minSpending",
+      header: "Chi tiêu tối thiểu",
+      className: "text-right",
+      render: (row) => (
+        <span className="font-mono text-gray-900">
+          {row.minSpending.toLocaleString("vi-VN")}đ
+        </span>
+      ),
+    },
+    {
+      key: "maxSpending",
+      header: "Chi tiêu tối đa",
+      className: "text-right",
+      render: (row) => {
+        const isInfinite = row.maxSpending >= 999999999;
+        return isInfinite ? (
+          <span className="text-gray-400 font-mono italic text-[11px]">Vô cực</span>
+        ) : (
+          <span className="font-mono text-gray-900">
+            {row.maxSpending.toLocaleString("vi-VN")}đ
+          </span>
+        );
+      },
+    },
+    {
+      key: "totalCustomers",
+      header: "Thành viên",
+      className: "text-center w-32",
+      render: (row) => (
+        <span
+          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${
+            row.totalCustomers > 0
+              ? "text-blue-600 bg-blue-50 font-bold"
+              : "text-gray-500"
+          }`}
+        >
+          {row.totalCustomers} KH
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Trạng thái",
+      className: "text-center w-24",
+      render: (row) => (
+        <Badge variant={row.status === "ACTIVE" ? "success" : "danger"}>
+          {row.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
+      className: "text-center w-24",
+      render: (row) => (
+        <button
+          onClick={() => navigate(`/customers/groups/${row.id}`)}
+          className="p-1.5 bg-gray-50 text-gray-400 hover:text-blue-600 border border-gray-200 hover:border-blue-200 rounded-lg transition active:scale-90 shadow-sm"
+          title="Xem danh sách khách hàng trong nhóm"
+        >
+          <i className="fa-solid fa-eye text-xs"></i>
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
+      {/* HEADER */}
+      <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <i className="fa-solid fa-layer-group text-blue-600"></i> Tra cứu Nhóm khách hàng
+        </h1>
       </header>
 
-      {/* Main Content */}
-      <main className="md:ml-64 pt-20 min-h-screen">
-        <div className="max-w-[1440px] mx-auto px-margin-desktop py-xl">
-          {/* Page Header */}
-          <div className="mb-lg">
-            <h1
-              className="font-display-lg text-display-lg text-primary mb-xs"
-              style={{ fontSize: "32px", lineHeight: "40px" }}
+      {/* FILTER */}
+      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm mb-5 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex-1 w-full max-w-md">
+          <Input
+            placeholder="Nhập tên hoặc mã nhóm khách hàng để lọc nhanh... (keyword)"
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(0);
+            }}
+            leftIcon={<i className="fa-solid fa-magnifying-glass text-gray-400"></i>}
+          />
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 text-xs text-gray-500 font-bold shrink-0">
+            <label htmlFor="filter-size" className="whitespace-nowrap uppercase tracking-wider text-gray-400">
+              Hiển thị:
+            </label>
+            <select
+              id="filter-size"
+              value={size}
+              onChange={(e) => {
+                setSize(Number(e.target.value));
+                setPage(0);
+              }}
+              className="border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-bold text-gray-700 cursor-pointer"
             >
-              Tier Configuration
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
-              Define spending thresholds and reward rates for your loyalty
-              program. Changes applied here will affect all future transactions.
-            </p>
-          </div>
-
-          {/* Tier Table */}
-          <div className="bg-surface border border-outline-variant/15 rounded-lg overflow-hidden">
-            {/* Header */}
-            <div className="grid grid-cols-12 gap-gutter bg-surface-container-low border-b border-outline-variant/15 px-lg py-4">
-              <div className="col-span-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                Rank Name
-              </div>
-              <div className="col-span-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                Spending Threshold (€)
-              </div>
-              <div className="col-span-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                Point Multiplier
-              </div>
-              <div className="col-span-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                Benefits / Discount %
-              </div>
-            </div>
-
-            {tiers.map((tier, i) => (
-              <div
-                key={tier.name}
-                className={`grid grid-cols-12 gap-gutter items-center border-b border-outline-variant/15 px-lg py-6 group hover:bg-surface-bright transition-colors last:border-0 ${tier.isGold ? "bg-secondary-container/5" : ""}`}
-              >
-                <div className="col-span-3 flex items-center gap-sm">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: tier.color }}
-                  ></div>
-                  <span className="font-title-sm text-title-sm text-on-surface flex items-center gap-2">
-                    {tier.name}
-                    {tier.isGold && (
-                      <span
-                        className="material-symbols-outlined text-[16px] text-secondary-container"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        stars
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="col-span-3">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md">
-                      €
-                    </span>
-                    <input
-                      className="w-full bg-transparent border border-outline-variant/50 text-body-md font-body-md rounded pl-8 pr-4 py-2 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
-                      type="text"
-                      defaultValue={tier.threshold}
-                    />
-                  </div>
-                </div>
-                <div className="col-span-3">
-                  <div className="relative w-32">
-                    <input
-                      className="w-full bg-transparent border border-outline-variant/50 text-body-md font-body-md rounded px-4 py-2 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all text-right"
-                      type="text"
-                      defaultValue={tier.multiplier}
-                    />
-                  </div>
-                </div>
-                <div className="col-span-3">
-                  <div className="relative w-32">
-                    <input
-                      className="w-full bg-transparent border border-outline-variant/50 text-body-md font-body-md rounded px-4 py-2 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all text-right"
-                      type="text"
-                      defaultValue={tier.discount}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Action Area */}
-          <div className="mt-xl flex justify-end gap-sm border-t border-outline-variant/15 pt-md">
-            <button className="px-6 py-3 font-button text-button text-primary border border-primary rounded hover:bg-primary/5 transition-colors">
-              Discard Changes
-            </button>
-            <button className="px-6 py-3 font-button text-button text-on-primary bg-primary-container rounded hover:bg-primary transition-colors shadow-sm">
-              Save Configuration
-            </button>
+              <option value="10">10 dòng</option>
+              <option value="20">20 dòng</option>
+              <option value="50">50 dòng</option>
+            </select>
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* TABLE DATA */}
+      <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden relative">
+        <Table
+          columns={columns}
+          data={groups}
+          isLoading={isLoading || isFetching}
+          emptyText="Không tìm thấy nhóm khách hàng nào!"
+        />
+
+        {/* PHÂN TRANG CUSTOM */}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={size}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+      </div>
     </div>
   );
 }

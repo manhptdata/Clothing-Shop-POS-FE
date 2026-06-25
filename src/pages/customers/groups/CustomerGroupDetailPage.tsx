@@ -1,0 +1,217 @@
+import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useGetCustomerGroupByIdQuery } from "@/redux/api/customerApi";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+
+export default function CustomerGroupDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  // Gọi API lấy dữ liệu chi tiết nhóm
+  const { data: responseData, isLoading } = useGetCustomerGroupByIdQuery(id as string, {
+    skip: !id,
+  });
+
+  const group = responseData?.data;
+
+  // Xử lý icon theo mã hạng
+  const getGroupIcon = (code?: string) => {
+    switch (code) {
+      case "BRONZE":
+        return <i className="fa-solid fa-award text-base"></i>;
+      case "SILVER":
+        return <i className="fa-solid fa-medal text-base"></i>;
+      case "GOLD":
+        return <i className="fa-solid fa-crown text-base"></i>;
+      default:
+        return <i className="fa-solid fa-users text-base"></i>;
+    }
+  };
+
+  const getGroupColorClass = (code?: string) => {
+    switch (code) {
+      case "BRONZE":
+        return "bg-orange-100 text-orange-600";
+      case "SILVER":
+        return "bg-slate-100 text-slate-600";
+      case "GOLD":
+        return "bg-amber-100 text-amber-600";
+      default:
+        return "bg-blue-100 text-blue-600";
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-6 flex justify-center min-h-[500px] items-center">
+        <i className="fa-solid fa-spinner fa-spin text-3xl text-blue-600"></i>
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="flex-1 p-6 flex flex-col items-center justify-center text-gray-500 min-h-[500px]">
+        <i className="fa-solid fa-layer-group text-4xl mb-4 text-gray-300"></i>
+        <h2 className="text-xl font-bold">Không tìm thấy nhóm khách hàng!</h2>
+        <Button variant="ghost" onClick={() => navigate("/customers/groups")} className="mt-4">
+          Quay lại danh sách
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
+      {/* HEADER */}
+      <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div>
+          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
+            <button
+              onClick={() => navigate("/customers/groups")}
+              className="hover:text-blue-600 transition"
+            >
+              Nhóm khách hàng
+            </button>
+            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
+            <span className="text-gray-900 font-semibold">Cấu hình chi tiết</span>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+            <span
+              className={`${getGroupColorClass(
+                group.code
+              )} w-9 h-9 rounded-lg flex items-center justify-center shadow-sm`}
+            >
+              {getGroupIcon(group.code)}
+            </span>
+            Nhóm: {group.name}
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            leftIcon={<i className="fa-solid fa-arrow-left"></i>}
+            onClick={() => navigate("/customers/groups")}
+          >
+            Quay lại danh sách
+          </Button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* CỘT TRÁI: THÔNG TIN HỆ THỐNG */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+            <h3 className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-4 flex items-center gap-1.5">
+              <i className="fa-solid fa-server text-gray-300"></i> Thông tin hệ thống (Read-Only)
+            </h3>
+            <div className="space-y-4 text-xs font-semibold">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Mã định danh (code)</span>
+                <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                  {group.code}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
+                <span className="text-gray-500">Trạng thái (status)</span>
+                <Badge variant={group.status === "ACTIVE" ? "success" : "danger"}>
+                  {group.status}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
+                <span className="text-gray-500">Thời gian tạo (createdAt)</span>
+                <span className="text-gray-700 font-mono text-xs">
+                  {new Date(group.createdAt).toLocaleString("vi-VN")}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD TỔNG SỐ KHÁCH HÀNG */}
+          <div
+            onClick={() => navigate(`/customers/groups/${group.id}/members`)}
+            className="group bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl p-5 text-white shadow-md shadow-slate-200/40 cursor-pointer transition-all hover:brightness-105 active:scale-[0.99] relative overflow-hidden"
+            title="Xem danh sách thành viên thuộc nhóm này"
+          >
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors"></div>
+
+            <div className="flex items-center justify-between mb-1 relative z-10">
+              <span className="text-slate-200 text-[10px] font-bold uppercase tracking-wider">
+                Thành viên thuộc hạng (totalCustomers)
+              </span>
+              <i className="fa-solid fa-users text-slate-400/40 text-lg transition-transform group-hover:scale-110"></i>
+            </div>
+            <div className="text-3xl font-black font-mono relative z-10 flex items-baseline justify-between">
+              <span>{group.totalCustomers}</span>
+              <span className="text-xs text-slate-300 font-sans font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                Xem ngay
+                <i className="fa-solid fa-circle-arrow-right text-[10px]"></i>
+              </span>
+            </div>
+            <p className="text-slate-300/60 text-[10px] mt-1.5 italic relative z-10">
+              * Bấm vào để lọc chi tiết danh sách khách hàng thuộc nhóm này
+            </p>
+          </div>
+        </div>
+
+        {/* CỘT PHẢI: QUY TẮC & ĐẶC ĐIỂM */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
+          <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+            <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+              <i className="fa-solid fa-circle-info text-blue-500"></i> Quy tắc thăng hạng & Đặc điểm phân lớp
+            </h3>
+          </div>
+          <div className="p-6 space-y-5 text-xs font-semibold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
+                  Chi tiêu tối thiểu (minSpending)
+                </label>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 font-mono">
+                  {group.minSpending.toLocaleString("vi-VN")}đ
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
+                  Chi tiêu tối đa (maxSpending)
+                </label>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 font-mono">
+                  {group.maxSpending >= 999999999
+                    ? "Vô cực (Null)"
+                    : `${group.maxSpending.toLocaleString("vi-VN")}đ`}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
+                Mô tả nhóm định mục (description)
+              </label>
+              <div className="text-xs text-gray-700 leading-relaxed bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-100 font-medium">
+                {group.description}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
+                Ghi chú hệ thống (note)
+              </label>
+              {group.note ? (
+                <div className="text-xs text-amber-700 bg-amber-50/50 px-4 py-3.5 rounded-xl border border-amber-100 leading-relaxed font-medium flex items-center gap-2">
+                  <i className="fa-solid fa-comment-dots text-amber-400 text-sm shrink-0"></i>
+                  <span>{group.note}</span>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400 italic bg-gray-50/50 px-4 py-3.5 rounded-xl border border-gray-100 border-dashed leading-relaxed font-medium flex items-center gap-2">
+                  <i className="fa-solid fa-comment-slash text-gray-300 text-sm shrink-0"></i>
+                  <span>Không có ghi chú hoặc cấu hình ưu đãi đặc biệt cho nhóm phân hạng này.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

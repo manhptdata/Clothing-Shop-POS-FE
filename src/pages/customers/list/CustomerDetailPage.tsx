@@ -331,9 +331,6 @@ export default function CustomerDetailPage() {
                           <Badge variant={order.status === "COMPLETED" ? "success" : "warning"}>
                             {order.status}
                           </Badge>
-                          <span className="bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded">
-                            <i className="fa-solid fa-print mr-0.5"></i> {order.printed ? "Đã in" : "Chưa in"}
-                          </span>
                         </div>
                       </div>
 
