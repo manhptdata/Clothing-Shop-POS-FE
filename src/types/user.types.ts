@@ -6,7 +6,7 @@ export interface User {
   fullName: string;
   phone?: string;
   role: RoleEnum;
-  isActive: boolean;
+  active: boolean;
   createdAt: string;
 }
 

@@ -4,38 +4,40 @@ import type { RestResponse, PageResponse, PaginationParams } from '@/types/commo
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<RestResponse<PageResponse<User>>, PaginationParams & { role?: string; isActive?: boolean }>({
+    getUsers: builder.query<RestResponse<PageResponse<User>>, PaginationParams & { active?: boolean; search?: string }>({
       query: (params) => ({
-        url: '/users',
+        url: '/admin/employees',
         method: 'GET',
         params,
       }),
-      providesTags: (result) =>
-        result?.data?.content
+      providesTags: (result) => {
+        const content = result?.data?.content;
+        return content && Array.isArray(content)
           ? [
-              ...result.data.content.map(({ id }) => ({ type: 'User' as const, id })),
+              ...content.map(({ id }) => ({ type: 'User' as const, id })),
               { type: 'User', id: 'LIST' },
             ]
-          : [{ type: 'User', id: 'LIST' }],
+          : [{ type: 'User', id: 'LIST' }];
+      }
     }),
     getUserById: builder.query<RestResponse<User>, number>({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/admin/employees/${id}`,
         method: 'GET',
       }),
       providesTags: (_result, _error, id) => [{ type: 'User', id }],
     }),
     createUser: builder.mutation<RestResponse<User>, UserRequest>({
       query: (data) => ({
-        url: '/users',
+        url: '/admin/employees',
         method: 'POST',
         data,
       }),
       invalidatesTags: [{ type: 'User', id: 'LIST' }],
     }),
-    updateUser: builder.mutation<RestResponse<User>, { id: number; data: UserRequest }>({
+    updateUser: builder.mutation<RestResponse<User>, { id: number; data: Partial<UserRequest> }>({
       query: ({ id, data }) => ({
-        url: `/users/${id}`,
+        url: `/admin/employees/${id}`,
         method: 'PUT',
         data,
       }),
@@ -44,18 +46,19 @@ export const userApi = baseApi.injectEndpoints({
         { type: 'User', id: 'LIST' },
       ],
     }),
-    toggleUserActive: builder.mutation<RestResponse<void>, number>({
-      query: (id) => ({
-        url: `/users/${id}/toggle-active`,
+    toggleUserActive: builder.mutation<RestResponse<void>, { id: number; isActive: boolean }>({
+      query: ({ id, isActive }) => ({
+        url: `/admin/employees/${id}/status`,
         method: 'PUT',
+        params: { isActive }
       }),
-      invalidatesTags: (_result, _error, id) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'User', id },
         { type: 'User', id: 'LIST' },
       ],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
