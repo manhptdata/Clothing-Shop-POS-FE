@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 export interface ModalProps {
   isOpen: boolean;
   onClose?: () => void;
-  title?: string;
+  title?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   children?: React.ReactNode;
   footer?: React.ReactNode;

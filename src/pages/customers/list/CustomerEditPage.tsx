@@ -13,7 +13,7 @@ export default function CustomerEditPage() {
 
   // API Hooks
   const { data: customerData, isLoading: isFetching } = useGetCustomerByIdQuery(
-    id as string,
+    Number(id),
     { skip: !id },
   );
   const [updateCustomer, { isLoading: isUpdating }] =
@@ -92,7 +92,7 @@ export default function CustomerEditPage() {
     if (!validateForm()) return;
 
     try {
-      await updateCustomer({ id: id as string, data: formData }).unwrap();
+      await updateCustomer({ id: Number(id), data: formData }).unwrap();
       setShowSuccessToast(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
       // Đợi 1 giây để người dùng thấy thông báo thành công rồi tự động chuyển trang

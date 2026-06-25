@@ -4,6 +4,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useLoginMutation } from '@/redux/api/authApi';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { getDefaultRouteForRole } from '@/router/RoleRoute';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,8 +19,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLocalError(null);
     try {
-      await login({ username: email, password }).unwrap();
-      navigate('/dashboard');
+      const res = await login({ username: email, password }).unwrap();
+      const userRole = res?.data?.user?.role;
+      if (userRole) {
+        navigate(getDefaultRouteForRole(userRole));
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setLocalError(err?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.');
     }

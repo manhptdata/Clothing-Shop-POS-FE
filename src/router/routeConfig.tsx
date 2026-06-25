@@ -48,8 +48,14 @@ export const routes: RouteObject[] = [
       {
         element: <MainLayout />,
         children: [
-          { index: true, element: <DashboardPage /> },
-          { path: 'dashboard', element: <DashboardPage /> },
+          // Dashboard (Admin, Sale)
+          {
+            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE']} />,
+            children: [
+              { index: true, element: <DashboardPage /> },
+              { path: 'dashboard', element: <DashboardPage /> },
+            ]
+          },
 
           // Products (Admin, Kho)
           {
