@@ -34,17 +34,11 @@ export default function CustomerCenterPage() {
                 <i className="fa-solid fa-arrow-right text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-[#0f5a3e]"></i>
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed font-medium">
-                Tra cứu hồ sơ cá nhân, lịch sử đơn hàng, xem chi tiết công nợ và
-                quản lý trạng thái tài khoản khách hàng.
+                Quản lý toàn diện hồ sơ cá nhân, lịch sử giao dịch và tích lũy chi tiêu. Nắm bắt nhanh chóng thông tin điểm thưởng và danh sách voucher của từng khách hàng.
               </p>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-50 flex items-center justify-between text-[11px] font-mono font-semibold text-gray-400">
-            <span>Endpoint: /customers/list</span>
-            <span className="text-[#0f5a3e] bg-emerald-50 px-2 py-0.5 rounded font-sans font-bold">
-              128 khách
-            </span>
-          </div>
+
         </div>
 
         {/* CARD 2: NHÓM KHÁCH HÀNG */}
@@ -62,17 +56,11 @@ export default function CustomerCenterPage() {
                 <i className="fa-solid fa-arrow-right text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-blue-600"></i>
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed font-medium">
-                Cấu hình chỉ tiêu phân lớp phân hạng tự động theo luồng tích lũy
-                chi tiêu: ĐỒNG, BẠC, VÀNG.
+                Thiết lập hệ thống phân hạng thẻ (Đồng, Bạc, Vàng...) hoàn toàn tự động theo mức chi tiêu. Dễ dàng phân nhóm khách hàng mục tiêu để xây dựng các chương trình ưu đãi riêng biệt.
               </p>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-50 flex items-center justify-between text-[11px] font-mono font-semibold text-gray-400">
-            <span>Endpoint: /customers/groups</span>
-            <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-sans font-bold">
-              3 Hạng định sẵn
-            </span>
-          </div>
+
         </div>
 
         {/* CARD 3: CHĂM SÓC KHÁCH HÀNG */}
@@ -90,17 +78,11 @@ export default function CustomerCenterPage() {
                 <i className="fa-solid fa-arrow-right text-xs opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-purple-600"></i>
               </h3>
               <p className="text-xs text-gray-400 leading-relaxed font-medium">
-                Xử lý danh sách gọi điện theo phễu chiến dịch: Chăm sóc sau bán
-                7 ngày, kích hoạt khách ngủ đông quá 30 ngày.
+                Tổ chức và theo dõi các chiến dịch tương tác với khách hàng (gọi điện hỏi thăm, chúc mừng sinh nhật, thông báo ưu đãi...). Lưu trữ chi tiết lịch sử chăm sóc trên từng hồ sơ.
               </p>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-50 flex items-center justify-between text-[11px] font-mono font-semibold text-gray-400">
-            <span>Endpoint: /customers/care</span>
-            <span className="text-purple-600 bg-purple-50 px-2 py-0.5 rounded font-sans font-bold">
-              CRM Active
-            </span>
-          </div>
+
         </div>
       </div>
     </div>

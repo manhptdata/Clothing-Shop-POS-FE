@@ -48,7 +48,7 @@ export default function CustomerListPage() {
   const openVoucherModal = (customer: Customer) => {
     setSelectedVoucherData({
       name: customer.fullName,
-      group: customer.customerGroup?.code || "CƠ BẢN",
+      group: customer.customerGroup?.code || "GỖ MỚI",
       vouchers: customer.vouchers || [],
     });
     setIsModalOpen(true);
@@ -93,12 +93,19 @@ export default function CustomerListPage() {
       key: "id",
       header: "STT",
       className: "text-center w-12",
-      render: (row) => <span className="text-gray-500 font-mono text-[11px] font-semibold">#{row.id}</span>
+      render: (row) => <span className="text-gray-500 font-mono text-[11px] font-semibold">{row.stt}</span>
     },
     {
       key: "fullName",
       header: "Khách hàng",
-      render: (row) => <span className="font-bold text-gray-900">{row.fullName}</span>
+      render: (row) => (
+        <span 
+          className="font-bold text-gray-900 hover:text-gray-700 cursor-pointer transition-colors"
+          onClick={() => navigate(`/customers/${row.id}`)}
+        >
+          {row.fullName}
+        </span>
+      )
     },
     {
       key: "phone",
@@ -123,7 +130,7 @@ export default function CustomerListPage() {
       key: "group",
       header: "Hạng",
       render: (row) => {
-        const code = row.customerGroup?.code || "CƠ BẢN";
+        const code = row.customerGroup?.code || "GỖ MỚI";
         const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
         return (
           <Badge variant={variant as any}>

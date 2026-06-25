@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useGetCustomerByIdQuery } from "@/redux/api/customerApi";
+import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareLogsQuery } from "@/redux/api/customerApi";
+import type { CustomerOrderHistory } from "@/types/customer.types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Table, Column } from "@/components/ui/Table";
@@ -12,20 +13,7 @@ export default function CustomerDetailPage() {
 
   // State quản lý việc chuyển đổi giữa 2 tab (Đơn hàng và Chăm sóc)
   const [activeTab, setActiveTab] = useState<"orders" | "care">("orders");
-
-  // Mock data cho Bảng Đơn Hàng
-  const mockOrders = [
-    { id: "HD-20260620-010", date: "20/06/2026 14:30", total: 450000, status: "COMPLETED", items: "Áo Polo Nam x1, Quần Jean x1" },
-    { id: "HD-20260515-002", date: "15/05/2026 09:15", total: 1200000, status: "COMPLETED", items: "Giày Sneaker x1, Túi xách x1" },
-  ];
-
-  const orderColumns: Column<typeof mockOrders[0]>[] = [
-    { key: "id", header: "Mã Đơn", render: (row) => <span className="font-mono font-bold text-gray-900">{row.id}</span> },
-    { key: "date", header: "Ngày Mua", className: "text-gray-500 text-xs" },
-    { key: "items", header: "Sản Phẩm", render: (row) => <span className="text-gray-700 truncate max-w-[200px] block">{row.items}</span> },
-    { key: "total", header: "Tổng Tiền", render: (row) => <span className="font-semibold text-emerald-600">{row.total.toLocaleString()}đ</span> },
-    { key: "status", header: "Trạng Thái", render: (row) => <Badge variant="success">{row.status}</Badge> }
-  ];
+  const [orderPage, setOrderPage] = useState(0); // State quản lý trang hiện tại
 
   // Gọi API lấy dữ liệu chi tiết
   const { data: responseData, isLoading, error } = useGetCustomerByIdQuery(
@@ -35,9 +23,38 @@ export default function CustomerDetailPage() {
     },
   );
 
-  console.log("ID từ thanh URL là:", id);
-  console.log("Kết quả API trả về:", responseData);
-  console.log("Lỗi API (nếu có):", error);
+  // Lấy danh sách lịch sử đơn hàng
+  const { data: ordersResponse, isLoading: isOrdersLoading, isFetching: isOrdersFetching } = useGetCustomerOrdersQuery(
+    { id: id as string, page: orderPage, size: 5 },
+    { skip: !id }
+  );
+
+  const orderHistory = ordersResponse?.data?.content || [];
+  const orderPageData = ordersResponse?.data;
+
+  // Lấy danh sách lịch sử chăm sóc
+  const [carePage, setCarePage] = useState(0); // State quản lý trang hiện tại cho tab Chăm sóc
+  const { data: careLogsResponse, isLoading: isCareLogsLoading, isFetching: isCareLogsFetching } = useGetCustomerCareLogsQuery(
+    { id: id as string, page: carePage, size: 5 },
+    { skip: !id }
+  );
+
+  const careLogs = careLogsResponse?.data?.content || [];
+  const carePageData = careLogsResponse?.data;
+
+  console.log("=== DEBUG TAB CHĂM SÓC ===");
+  console.log("1. Mở tab chăm sóc?:", activeTab === "care");
+  console.log("2. ID khách hàng đang xem:", id);
+  console.log("3. isCareLogsFetching (Đang gọi API?):", isCareLogsFetching);
+  console.log("4. Dữ liệu trả về (careLogs):", careLogs);
+  console.log("5. Lỗi API (nếu có):", careLogsResponse ? "Thành công" : "Có thể bị lỗi hoặc chưa chạy");
+  console.log("=========================");
+
+  console.log("=== DEBUG PHÂN TRANG ===");
+  console.log("1. orderPage (React State):", orderPage);
+  console.log("2. isOrdersFetching (Đang gọi API?):", isOrdersFetching);
+  console.log("3. API Trả về (orderPageData.number):", orderPageData?.number);
+  console.log("========================");
 
   const customer = responseData?.data;
 
@@ -85,7 +102,7 @@ export default function CustomerDetailPage() {
         <div>
           <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
             <button
-              onClick={() => navigate("/customers")}
+              onClick={() => navigate("/customers/list")}
               className="hover:text-blue-600 transition"
             >
               Quản lý khách hàng
@@ -97,6 +114,27 @@ export default function CustomerDetailPage() {
             <i className="fa-solid fa-user-check text-blue-600"></i> Hồ sơ khách
             hàng: {customer.fullName}
           </h1>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            leftIcon={<i className="fa-solid fa-arrow-left"></i>}
+            onClick={() => {
+              navigate(-1);
+            }}
+          >
+            Quay lại
+          </Button>
+          <Button
+            variant="outline"
+            leftIcon={<i className="fa-solid fa-pen-to-square"></i>}
+            onClick={() => {
+              navigate(`/customers/edit/${id}`);
+            }}
+          >
+            Sửa thông tin
+          </Button>
         </div>
       </header>
 
@@ -111,9 +149,7 @@ export default function CustomerDetailPage() {
             <h2 className="font-bold text-gray-900 text-base">
               {customer.fullName}
             </h2>
-            <span className="text-[10px] text-gray-400 font-mono mt-0.5">
-              Mã KH: #{customer.id}
-            </span>
+
           </div>
 
           <div className="space-y-3.5 text-xs">
@@ -240,81 +276,233 @@ export default function CustomerDetailPage() {
           <div className="border-b border-gray-200 bg-gray-50/60 flex text-sm font-semibold">
             <button
               onClick={() => setActiveTab("orders")}
-              className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === "orders"
+              className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${activeTab === "orders"
                   ? "border-blue-600 text-blue-600 bg-white"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               <i className="fa-solid fa-bag-shopping"></i> Lịch sử đơn hàng
               <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                2
+                {orderPageData?.totalElements || 0}
               </span>
             </button>
             <button
               onClick={() => setActiveTab("care")}
-              className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === "care"
+              className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${activeTab === "care"
                   ? "border-blue-600 text-blue-600 bg-white"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-              }`}
+                }`}
             >
               <i className="fa-solid fa-heart-pulse"></i> Lịch sử chăm sóc
               (Timeline)
               <span className="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                1
+                {carePageData?.totalElements || 0}
               </span>
             </button>
           </div>
 
           <div className="p-6">
-            {/* CONTENT TAB: ĐƠN HÀNG SỬ DỤNG COMPONENT TABLE & PAGINATION */}
+            {/* CONTENT TAB: ĐƠN HÀNG CUSTOM GIAO DIỆN */}
             {activeTab === "orders" && (
-              <div className="space-y-4">
-                <div className="mb-2 flex justify-between items-center">
-                  <h3 className="font-bold text-gray-800">Danh sách đơn hàng đã mua</h3>
-                  <Button variant="outline" size="sm" leftIcon={<i className="fa-solid fa-plus"></i>}>
-                    Tạo đơn mới
-                  </Button>
-                </div>
-                
-                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <Table columns={orderColumns} data={mockOrders} />
-                </div>
-                
-                <div className="flex justify-end pt-2">
-                  <Pagination 
-                    currentPage={0} 
-                    totalPages={1} 
-                    onPageChange={() => {}} 
-                  />
-                </div>
+              <div className="space-y-5 block">
+
+                {(isOrdersLoading || isOrdersFetching) ? (
+                  <div className="p-10 flex justify-center bg-white rounded-xl border border-gray-200">
+                    <i className="fa-solid fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                  </div>
+                ) : orderHistory.length === 0 ? (
+                  <div className="p-10 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
+                    Khách hàng chưa có đơn hàng nào.
+                  </div>
+                ) : (
+                  orderHistory.map((order) => (
+                    <div key={order.id} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                      {/* HEADER ĐƠN HÀNG */}
+                      <div className="bg-slate-50/80 px-4 py-3 border-b border-gray-200 flex flex-wrap justify-between items-center gap-2 text-xs">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-gray-900 text-sm">{order.orderNumber}</span>
+                          <span className="text-gray-400">|</span>
+                          <span className="text-gray-500 font-medium">
+                            <i className="fa-regular fa-clock mr-1"></i>
+                            {new Date(order.createdAt).toLocaleString("vi-VN")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={order.status === "COMPLETED" ? "success" : "warning"}>
+                            {order.status}
+                          </Badge>
+                          <span className="bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded">
+                            <i className="fa-solid fa-print mr-0.5"></i> {order.printed ? "Đã in" : "Chưa in"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* CHI TIẾT SẢN PHẨM */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-gray-50/40 text-gray-400 font-bold border-b border-gray-100 uppercase tracking-wider text-[10px]">
+                              <th className="py-2.5 px-4">Sản phẩm</th>
+                              <th className="py-2.5 px-4">Mã SKU</th>
+                              <th className="py-2.5 px-4 text-center">SL</th>
+                              <th className="py-2.5 px-4 text-right">Đơn giá</th>
+                              <th className="py-2.5 px-4 text-right">Thành tiền</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 text-gray-700 font-medium">
+                            {order.items?.map((item) => (
+                              <tr key={item.id}>
+                                <td className="py-3 px-4 font-bold text-gray-900">{item.productName}</td>
+                                <td className="py-3 px-4 font-mono text-gray-500">{item.productSku}</td>
+                                <td className="py-3 px-4 text-center font-bold text-gray-900">{item.quantity}</td>
+                                <td className="py-3 px-4 text-right">{item.unitPrice.toLocaleString()}đ</td>
+                                <td className="py-3 px-4 text-right font-bold text-gray-900">{item.subtotal.toLocaleString()}đ</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* FOOTER ĐƠN HÀNG */}
+                      <div className="bg-gray-50/30 p-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
+                        <div className="text-gray-500 space-y-1">
+                          <div>
+                            <span className="font-semibold text-gray-700">Tạo bởi:</span> {order.createdByUsername} (ID: {order.createdById})
+                          </div>
+                          {order.note && (
+                            <div className="italic text-amber-700 bg-amber-50/60 border border-amber-100/50 p-2 rounded-lg mt-1">
+                              <span className="font-semibold text-gray-600 not-italic">Ghi chú:</span> {order.note}
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-1.5 text-right max-w-xs ml-auto w-full">
+                          <div className="flex justify-between text-gray-500">
+                            <span>Tổng tiền (totalAmount):</span>
+                            <span className="font-bold text-gray-900">{order.totalAmount.toLocaleString()}đ</span>
+                          </div>
+                          <div className="flex justify-between text-emerald-600 font-semibold">
+                            <span>Khách đã trả (paidAmount):</span>
+                            <span>{order.paidAmount.toLocaleString()}đ</span>
+                          </div>
+                          <div className="flex justify-between text-gray-500 border-t border-gray-200/60 pt-1.5 font-bold">
+                            <span>Tiền thừa (changeAmount):</span>
+                            <span className="text-blue-600">{order.changeAmount.toLocaleString()}đ</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {/* THANH PHÂN TRANG CUSTOM BẰNG COMPONENT CHUNG */}
+                {!isOrdersLoading && orderPageData && orderPageData.totalElements > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
+                    <Pagination
+                      currentPage={orderPageData.number}
+                      totalPages={orderPageData.totalPages}
+                      totalElements={orderPageData.totalElements}
+                      pageSize={orderPageData.size}
+                      onPageChange={(newPage) => {
+                        console.log("User clicked page:", newPage);
+                        setOrderPage(newPage);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
-            {/* CONTENT TAB: CHĂM SÓC (Hardcode HTML của bạn) */}
+            {/* CONTENT TAB: CHĂM SÓC */}
             {activeTab === "care" && (
-              <div>
-                {/* --- GIỮ NGUYÊN KHÚC HTML TIMELINE CHĂM SÓC Ở ĐÂY --- */}
-                <div className="mb-5 text-[11px] text-gray-500 font-mono italic bg-gray-100/80 inline-block px-3 py-1 rounded-md border border-gray-200/60 shadow-sm">
-                  <i className="fa-solid fa-code text-blue-500 mr-1"></i> Data
-                  Binding: Page&lt;CareLogResponse&gt; (totalElements: 1)
-                </div>
-
-                <div className="relative border-l-[3px] border-slate-200 pl-6 ml-3 space-y-6">
-                  <div className="relative group">
-                    <span className="absolute -left-[33px] top-1.5 bg-emerald-500 w-[18px] h-[18px] rounded-full border-[3px] border-white ring-4 ring-emerald-50 transition-all duration-300 group-hover:ring-emerald-100 group-hover:scale-110 z-10"></span>
-                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/70 shadow-sm hover:shadow-md hover:border-gray-300/80 transition-all duration-300">
-                      <p className="font-medium text-gray-800 text-sm">
-                        "Khách hài lòng với sản phẩm"
-                      </p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        Nhân viên: sale01 - Trạng thái: ANSWERED
-                      </p>
-                    </div>
+              <div className="space-y-5 block">
+                {(isCareLogsLoading || isCareLogsFetching) ? (
+                  <div className="p-10 flex justify-center bg-white rounded-xl border border-gray-200">
+                    <i className="fa-solid fa-spinner fa-spin text-blue-600 text-2xl"></i>
                   </div>
-                </div>
-                {/* --- KẾT THÚC KHÚC HTML TIMELINE --- */}
+                ) : careLogs.length === 0 ? (
+                  <div className="p-10 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
+                    Khách hàng chưa có lịch sử chăm sóc nào.
+                  </div>
+                ) : (
+                  <div className="relative border-l-[3px] border-slate-200 pl-6 ml-3 space-y-6">
+                    {careLogs.map((log) => (
+                      <div key={log.id} className="relative group">
+                        <span className="absolute -left-[33px] top-1.5 bg-emerald-500 w-[18px] h-[18px] rounded-full border-[3px] border-white ring-4 ring-emerald-50 transition-all duration-300 group-hover:ring-emerald-100 group-hover:scale-110 z-10"></span>
+                        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/70 shadow-sm hover:shadow-md hover:border-gray-300/80 transition-all duration-300">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-3 gap-2">
+                            <div className="font-semibold text-gray-800 flex items-center gap-2">
+                              <span className="bg-blue-50 text-blue-600 w-7 h-7 rounded-xl flex items-center justify-center text-xs shadow-3xs">
+                                <i className="fa-solid fa-headset"></i>
+                              </span>
+                              <div>
+                                <span className="text-gray-400 font-medium">
+                                  Nhân viên thực hiện:
+                                </span>{" "}
+                                <span className="text-gray-900 font-bold hover:text-blue-600 transition-colors">
+                                  {log.calledBy?.fullName || "Chưa rõ"}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="font-mono text-gray-600 text-[11px] bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200/60 flex items-center gap-1.5 self-start sm:self-auto">
+                              <i className="fa-regular fa-clock text-gray-400 text-xs"></i>
+                              {log.calledAt ? new Date(log.calledAt).toLocaleString("vi-VN") : "Chưa gọi"}
+                            </span>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-1.5 mb-3.5">
+                            {log.campaign && (
+                              <span className="bg-purple-50 text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-purple-100/80 uppercase tracking-wider flex items-center gap-1">
+                                <i className="fa-solid fa-bullhorn text-[9px]"></i>{" "}
+                                {log.campaign.name}
+                              </span>
+                            )}
+                            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-emerald-100 uppercase tracking-wider flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              Trạng thái: {log.result}
+                            </span>
+                            {log.order && (
+                              <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg border border-blue-200/60 font-mono font-medium">
+                                <i className="fa-solid fa-link mr-0.5"></i> Có kèm đơn hàng
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-[13px] text-gray-700 bg-gray-50/60 p-3.5 rounded-xl border border-gray-100 leading-relaxed relative overflow-hidden">
+                            <i className="fa-solid fa-quote-left absolute -top-1 -left-1 text-gray-200/40 text-3xl font-black select-none"></i>
+                            <div className="relative z-10 pl-5">
+                              <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">
+                                Nội dung cuộc gọi (note)
+                              </div>
+                              <p className="font-medium text-gray-800">
+                                "{log.note || "Không có nội dung ghi chú"}"
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400 font-mono uppercase tracking-wider">
+                            <i className="fa-solid fa-server text-[9px]"></i>
+                            <span>
+                              Hệ thống ghi nhận (createdAt): {log.createdAt}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* THANH PHÂN TRANG CHO TAB CHĂM SÓC */}
+                {!isCareLogsLoading && carePageData && carePageData.totalElements > 0 && (
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
+                    <Pagination
+                      currentPage={carePageData.number}
+                      totalPages={carePageData.totalPages}
+                      totalElements={carePageData.totalElements}
+                      pageSize={carePageData.size}
+                      onPageChange={(newPage) => setCarePage(newPage)}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

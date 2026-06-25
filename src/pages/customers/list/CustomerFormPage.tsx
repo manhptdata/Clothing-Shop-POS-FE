@@ -127,9 +127,14 @@ export default function CustomerFormPage() {
             <i className="fa-solid fa-user-plus text-blue-600"></i> Thêm mới khách hàng tại quầy
           </h1>
         </div>
-        <div className="text-[10px] bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-mono text-right leading-normal">
-          <div>DTO: <span className="text-blue-600 font-bold">CustomerCreateRequest</span></div>
-          <div>Endpoint: <span className="text-pink-600 font-bold">POST /customers</span></div>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            leftIcon={<i className="fa-solid fa-arrow-left"></i>}
+            onClick={() => navigate(-1)}
+          >
+            Quay lại
+          </Button>
         </div>
       </header>
 
