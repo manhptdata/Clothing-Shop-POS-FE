@@ -7,19 +7,24 @@ export interface CustomerGroup {
   description: string;
 }
 
-export interface CustomerRequest {
+export interface Customer {
+  id: number;
   fullName: string;
   phone: string;
   dateOfBirth?: string;
   gender: GenderEnum;
   address?: string;
   note?: string;
-  groupId?: number;
+  groupId: number;
+  groupName?: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+  updatedAt: string;
+  rewardPoints?: number;
+  vouchers?: VoucherInfo[];
 }
 
-
-// Định nghĩa một voucher của khách
-export interface CustomerVoucher {
+export interface VoucherInfo {
   id: number;
   voucherCode: string;
   voucherName: string;
@@ -29,56 +34,26 @@ export interface CustomerVoucher {
   expiredAt: string;
 }
 
-// Định nghĩa ông Khách Hàng
-export interface Customer {
-  id: number;
+export interface CustomerRequest {
   fullName: string;
   phone: string;
-  dateOfBirth: string;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
-  address: string;
-  note: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  createdAt: string;
-  rewardPoints: number;
-  customerGroup: {
-    id: number;
-    name: string;
-    code: string;
-  };
-  vouchers: CustomerVoucher[];
-}
-
-// Định nghĩa tham số tìm kiếm gửi lên Backend
-export interface CustomerFilterParams {
-  keyword?: string;
-  page?: number;
-  size?: number;
+  dateOfBirth?: string;
+  gender: GenderEnum;
+  address?: string;
+  note?: string;
+  customerGroupId?: number;
 }
 
 
-// Bộ tham số dùng cho chức năng Lọc/Tìm kiếm
-export interface CustomerFilterParams {
-  keyword?: string;
-  page?: number;
-  size?: number;
-}
+export type CustomerVoucher = VoucherInfo;
 
-// sữa thông tin khách hàng
-export interface CustomerUpdateRequest {
-  fullName: string;
-  phone: string;
-  dateOfBirth?: string | null;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
-  address?: string | null;
-  note?: string | null;
+export interface CustomerUpdateRequest extends CustomerRequest {
   status: 'ACTIVE' | 'INACTIVE';
 }
 
-// Định nghĩa cấu trúc Item trong đơn hàng của khách
-export interface CustomerOrderItem {
+
+export interface OrderItem {
   id: number;
-  variantId: number;
   productName: string;
   productSku: string;
   quantity: number;
@@ -86,46 +61,29 @@ export interface CustomerOrderItem {
   subtotal: number;
 }
 
-// Định nghĩa cấu trúc Đơn hàng trả về trong lịch sử mua hàng
 export interface CustomerOrderHistory {
   id: number;
   orderNumber: string;
-  customerId: number;
-  customerName: string;
-  createdById: number;
+  createdAt: string;
+  status: string;
+  printed: boolean;
+  items: OrderItem[];
   createdByUsername: string;
+  createdById: number;
+  note?: string;
   totalAmount: number;
   paidAmount: number;
   changeAmount: number;
-  status: string;
-  note: string;
-  createdAt: string;
-  updatedAt: string;
-  printed: boolean;
-  items: CustomerOrderItem[];
 }
 
-export interface CareLogResponse {
+
+export interface CustomerCareLog {
   id: number;
+  calledBy?: { fullName: string };
+  calledAt?: string;
+  campaign?: { name: string };
   result: string;
-  note: string;
-  scheduledAt: string | null;
-  calledAt: string | null;
-  nextRetryAt: string | null;
+  order?: any;
+  note?: string;
   createdAt: string;
-  customer: {
-    id: number;
-    fullName: string;
-    phone: string;
-  } | null;
-  campaign: {
-    id: number;
-    name: string;
-  } | null;
-  calledBy: {
-    id: number;
-    username: string;
-    fullName: string;
-  } | null;
-  order: any | null;
 }
