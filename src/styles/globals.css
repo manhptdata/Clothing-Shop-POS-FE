@@ -86,3 +86,42 @@ button { font-family: inherit; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(33, 37, 41, 0.2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(33, 37, 41, 0.3); }
+
+/* ─── Print Styles ──────────────────────────────────────────────────────────
+   Khi user nhấn "In hóa đơn", ẩn toàn bộ chrome của app (sidebar, header,
+   nút bấm, navigation) và chỉ giữ lại phần nội dung hóa đơn.
+─────────────────────────────────────────────────────────────────────────── */
+@media print {
+  /* Ẩn sidebar và header được đánh dấu bằng data attribute */
+  [data-sidebar],
+  [data-header] {
+    display: none !important;
+  }
+
+  /* Ẩn các element được đánh dấu no-print */
+  .no-print,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset margin-left do sidebar chiếm (sidebar width = 256px = ml-64) */
+  .ml-64 {
+    margin-left: 0 !important;
+  }
+
+  /* Đảm bảo nội dung in trắng, không có gradient nền */
+  body, html {
+    background: white !important;
+    background-image: none !important;
+  }
+
+  main {
+    padding: 16px !important;
+  }
+
+  /* Tránh ngắt trang bên trong các block quan trọng */
+  table, tr, .print-block {
+    page-break-inside: avoid;
+  }
+}
+

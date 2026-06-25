@@ -6,9 +6,13 @@ export const customerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCustomers: builder.query<RestResponse<PageResponse<Customer>>, PaginationParams & { search?: string }>({
       query: (params) => ({
-        url: '/customers',
+        url: '/crm/customers/search',
         method: 'GET',
-        params,
+        params: {
+          keyword: params.search || '',
+          page: params.page,
+          size: params.size,
+        },
       }),
       providesTags: (result) =>
         result?.data?.content
@@ -20,14 +24,14 @@ export const customerApi = baseApi.injectEndpoints({
     }),
     getCustomerById: builder.query<RestResponse<Customer>, number>({
       query: (id) => ({
-        url: `/customers/${id}`,
+        url: `/crm/customers/${id}`,
         method: 'GET',
       }),
       providesTags: (_result, _error, id) => [{ type: 'Customer', id }],
     }),
     createCustomer: builder.mutation<RestResponse<Customer>, CustomerRequest>({
       query: (data) => ({
-        url: '/customers',
+        url: '/crm/customers',
         method: 'POST',
         data,
       }),
@@ -35,7 +39,7 @@ export const customerApi = baseApi.injectEndpoints({
     }),
     updateCustomer: builder.mutation<RestResponse<Customer>, { id: number; data: CustomerRequest }>({
       query: ({ id, data }) => ({
-        url: `/customers/${id}`,
+        url: `/crm/customers/${id}`,
         method: 'PUT',
         data,
       }),
@@ -44,10 +48,14 @@ export const customerApi = baseApi.injectEndpoints({
         { type: 'Customer', id: 'LIST' },
       ],
     }),
-    getCustomerGroups: builder.query<RestResponse<CustomerGroup[]>, void>({
+    getCustomerGroups: builder.query<RestResponse<PageResponse<CustomerGroup>>, void>({
       query: () => ({
-        url: '/customer-groups',
+        url: '/crm/customer-groups',
         method: 'GET',
+        params: {
+          page: 0,
+          size: 100,
+        },
       }),
     }),
   }),

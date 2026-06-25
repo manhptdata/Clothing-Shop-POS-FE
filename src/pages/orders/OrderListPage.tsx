@@ -17,14 +17,15 @@ export default function OrderListPage() {
 
   // --- Fetch Orders from RTK Query ---
   const { data: orderResponse, isLoading } = useGetOrdersQuery({
-    page: currentPage,
+    page: currentPage + 1,
     size: pageSize,
     status: activeTab === 'Tất cả' ? undefined : activeTab,
+    sort: 'createdAt,desc',
   });
 
-  const orders = orderResponse?.data?.content || [];
-  const totalPages = orderResponse?.data?.totalPages || 0;
-  const totalElements = orderResponse?.data?.totalElements || 0;
+  const orders = (orderResponse?.data as any)?.result || orderResponse?.data?.content || [];
+  const totalPages = (orderResponse?.data as any)?.meta?.pages || orderResponse?.data?.totalPages || 0;
+  const totalElements = (orderResponse?.data as any)?.meta?.total || orderResponse?.data?.totalElements || 0;
 
   const columns: Column<Order>[] = [
     { 
@@ -32,7 +33,7 @@ export default function OrderListPage() {
       header: 'Mã đơn', 
       render: (row) => (
         <span className="font-semibold text-primary hover:underline cursor-pointer">
-          {row.code}
+          {row.orderNumber || row.code}
         </span>
       ) 
     },
