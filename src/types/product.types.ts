@@ -71,4 +71,5 @@ export interface ProductFilterParams {
   name?: string;
   categoryId?: number;
   isDeleted?: boolean;
+  stockStatus?: string;
 }
