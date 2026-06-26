@@ -9,6 +9,7 @@ interface VariantMatrixProps {
   options: ProductOption[];
   variants: VariantFormData[];
   onChange: (variants: VariantFormData[]) => void;
+  isEditing?: boolean;
 }
 
 /**
@@ -55,7 +56,7 @@ function generateOptionValueCode(val: string): string {
   return noTone.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 }
 
-export function VariantMatrix({ productName, options, variants, onChange }: VariantMatrixProps) {
+export function VariantMatrix({ productName, options, variants, onChange, isEditing }: VariantMatrixProps) {
   // Lọc options hợp lệ (có name + ít nhất 1 value)
   const activeOptions = useMemo(
     () => options.filter(o => o.name.trim() && o.values.length > 0),
@@ -82,7 +83,6 @@ export function VariantMatrix({ productName, options, variants, onChange }: Vari
         option1Value: combo[0] || undefined,
         option2Value: combo[1] || undefined,
         option3Value: combo[2] || undefined,
-        _selected: true,
       };
 
       // Tìm variant đã tồn tại để giữ lại data đã nhập
@@ -100,13 +100,14 @@ export function VariantMatrix({ productName, options, variants, onChange }: Vari
       if (existing) {
         return {
           ...variant,
+          id: existing.id,
           sku: existing.sku || suggestedSku,
           salePrice: existing.salePrice,
           importPrice: existing.importPrice,
           quantity: existing.quantity,
           lowStockThreshold: existing.lowStockThreshold,
           imageUrl: existing.imageUrl,
-          _selected: existing._selected ?? true,
+          _selected: existing._selected !== undefined ? existing._selected : (existing.id !== undefined ? true : false),
         };
       }
 
@@ -118,6 +119,7 @@ export function VariantMatrix({ productName, options, variants, onChange }: Vari
         importPrice: 0,
         quantity: 0,
         lowStockThreshold: 5,
+        _selected: isEditing ? false : true,
       };
     });
 
@@ -262,7 +264,8 @@ export function VariantMatrix({ productName, options, variants, onChange }: Vari
                       value={variant.importPrice || ''}
                       onChange={(e) => updateVariant(index, 'importPrice', e.target.value === '' ? 0 : Number(e.target.value))}
                       placeholder="0"
-                      disabled={!isSelected}
+                      disabled={true}
+                      title="Hãy điều chỉnh giá nhập thông qua phiếu nhập kho."
                       className="py-1 text-xs w-24 text-right"
                     />
                   </td>
@@ -276,6 +279,7 @@ export function VariantMatrix({ productName, options, variants, onChange }: Vari
                       onChange={(e) => updateVariant(index, 'quantity', parseInt(e.target.value) || 0)}
                       placeholder="0"
                       disabled={true}
+                      title="Hãy điều chỉnh tồn kho thông qua phiếu nhập kho."
                       className="py-1 text-xs w-20 text-right"
                     />
                   </td>

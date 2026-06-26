@@ -8,9 +8,10 @@ interface SupplierFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   supplier?: Supplier | null; // Nếu có => Mode Sửa, null => Mode Thêm
+  onSuccess?: (supplier: Supplier) => void;
 }
 
-export default function SupplierFormModal({ isOpen, onClose, supplier }: SupplierFormModalProps) {
+export default function SupplierFormModal({ isOpen, onClose, supplier, onSuccess }: SupplierFormModalProps) {
   const isEditMode = !!supplier;
 
   const {
@@ -56,11 +57,13 @@ export default function SupplierFormModal({ isOpen, onClose, supplier }: Supplie
   const onSubmit = async (data: SupplierRequest) => {
     try {
       if (isEditMode && supplier) {
-        await updateSupplier({ id: supplier.id, data }).unwrap();
+        const res = await updateSupplier({ id: supplier.id, data }).unwrap();
         alert('Cập nhật nhà cung cấp thành công!');
+        onSuccess?.(res);
       } else {
-        await createSupplier(data).unwrap();
+        const res = await createSupplier(data).unwrap();
         alert('Thêm nhà cung cấp thành công!');
+        onSuccess?.(res);
       }
       onClose();
     } catch (err: any) {
