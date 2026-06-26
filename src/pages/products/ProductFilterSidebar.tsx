@@ -75,9 +75,11 @@ export default function ProductFilterSidebar({
                                 className="w-full px-3 py-2 rounded-md bg-white/80 text-black border border-on-primary-container/20 focus:outline-none focus:ring-2 focus:ring-primary/50"
                             >
                                 <option value="" className="text-black">Tất cả danh mục</option>
-                                {categories.map((cat: any) => (
-                                    <option key={cat.id} value={cat.id} className="text-black">{cat.name}</option>
-                                ))}
+                                {categories
+                                    .filter((cat: any) => (!cat.deleted && cat.active) || cat.id === tempCategoryID)
+                                    .map((cat: any) => (
+                                        <option key={cat.id} value={cat.id} className="text-black">{cat.name}</option>
+                                    ))}
                             </select>
                         </div>
 

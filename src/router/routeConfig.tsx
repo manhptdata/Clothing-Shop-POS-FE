@@ -14,6 +14,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const ProductListPage = lazy(() => import('@/pages/products/ProductListPage'));
 const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'));
 const ProductFormPage = lazy(() => import('@/pages/products/ProductFormPage'));
+const CategoryListPage = lazy(() => import('@/pages/categories/CategoryListPage'));
 
 // Customers 
 const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
@@ -66,6 +67,7 @@ export const routes: RouteObject[] = [
               { path: "products/new", element: <ProductFormPage /> },
               { path: "products/:id", element: <ProductDetailPage /> },
               { path: "products/:id/edit", element: <ProductFormPage /> },
+              { path: "products/categories", element: <CategoryListPage /> },
             ],
           },
 

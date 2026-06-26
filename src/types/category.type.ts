@@ -15,7 +15,7 @@ export interface CategoryFormData {
 
 // Request khi tạo/cập nhật category
 export interface CategoryRequest {
-    categoryName: string;
+    name: string;
 }
 
 // Response wrapper từ API

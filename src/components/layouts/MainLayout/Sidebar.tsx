@@ -30,6 +30,12 @@ const menuItems: MenuItem[] = [
     roles: ['ROLE_ADMIN', 'ROLE_WH'],
   },
   {
+    path: '/products/categories',
+    label: 'Danh mục',
+    icon: 'category',
+    roles: ['ROLE_ADMIN', 'ROLE_WH'],
+  },
+  {
     path: '/customers',
     label: 'Khách hàng',
     icon: 'group',
@@ -65,18 +71,19 @@ export default function Sidebar() {
       </div>
       <div className="flex-1 px-4 space-y-1 overflow-y-auto">
         {filteredMenu.map((item) => {
-          const isActive = location.pathname.startsWith(item.path);
+          const isActive = item.path === '/products'
+            ? location.pathname === '/products' || (location.pathname.startsWith('/products/') && !location.pathname.startsWith('/products/categories'))
+            : location.pathname.startsWith(item.path);
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg hover-lift transition-all duration-300 group ${
-                isActive 
-                  ? 'bg-gradient-to-r from-primary to-[#18754a] text-on-primary shadow-md' 
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg hover-lift transition-all duration-300 group ${isActive
+                  ? 'bg-gradient-to-r from-primary to-[#18754a] text-on-primary shadow-md'
                   : 'text-on-surface hover:bg-surface-container-high/50 hover:text-primary'
-              }`}
+                }`}
             >
-              <span 
+              <span
                 className={`material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-on-primary' : 'text-on-surface-variant group-hover:text-primary'}`}
                 style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
               >
@@ -89,8 +96,8 @@ export default function Sidebar() {
       </div>
       <div className="px-4 mt-auto">
         <div className="h-px w-full bg-outline/10 my-4"></div>
-        <button 
-          onClick={() => logout()} 
+        <button
+          onClick={() => logout()}
           className="flex w-full items-center gap-3 px-4 py-3 text-error hover:bg-error-container/20 rounded-lg hover-lift transition-all duration-300 group"
         >
           <span className="material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:scale-110">logout</span>

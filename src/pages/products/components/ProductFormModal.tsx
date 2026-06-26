@@ -225,7 +225,9 @@ export default function ProductFormModal({
     // Category options cho Select
     const categoryOptions = [
         { value: '', label: '— Chọn danh mục —' },
-        ...categories.map(c => ({ value: c.id.toString(), label: c.name })),
+        ...categories
+            .filter(c => (!c.deleted && c.active) || c.id.toString() === formData.categoryId)
+            .map(c => ({ value: c.id.toString(), label: c.name })),
     ];
 
     return (

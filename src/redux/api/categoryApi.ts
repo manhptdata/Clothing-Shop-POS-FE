@@ -28,11 +28,11 @@ export const categoryApi = baseApi.injectEndpoints({
         }),
 
         // CREATE category
-        createCategory: builder.mutation<Category, { categoryName: string }>({
+        createCategory: builder.mutation<Category, { name: string }>({
             query: (categoryData) => ({
                 url: "categories",
                 method: "POST",
-                body: categoryData, // Gửi { categoryName: "..." }
+                data: categoryData, // Gửi { name: "..." }
             }),
             transformResponse: (response: RestResponse<Category>) => response.data,
             invalidatesTags: [{ type: "Category", id: "LIST" }],
@@ -41,12 +41,12 @@ export const categoryApi = baseApi.injectEndpoints({
         // UPDATE category
         updateCategory: builder.mutation<
             Category,
-            { id: number; categoryName: string } // Đổi categoryId thành id
+            { id: number; name: string } // Đổi categoryId thành id
         >({
             query: ({ id, ...categoryData }) => ({
                 url: `categories/${id}`,
                 method: "PUT",
-                body: categoryData,
+                data: categoryData,
             }),
             transformResponse: (response: RestResponse<Category>) => response.data,
             invalidatesTags: (result, error, { id }) => [
@@ -71,6 +71,20 @@ export const categoryApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Category", id: "LIST" }],
         }),
+
+        // TOGGLE active category
+        toggleCategoryActive: builder.mutation<Category, { id: number; active: boolean }>({
+            query: ({ id, active }) => ({
+                url: `categories/${id}/active`,
+                method: "PATCH",
+                params: { active },
+            }),
+            transformResponse: (response: RestResponse<Category>) => response.data,
+            invalidatesTags: (result, error, { id }) => [
+                { type: "Category", id: id },
+                { type: "Category", id: "LIST" },
+            ],
+        }),
     }),
     overrideExisting: false,
 });
@@ -81,4 +95,5 @@ export const {
     useUpdateCategoryMutation,
     useDeleteCategoryMutation,
     useDeleteHardCategoryMutation,
+    useToggleCategoryActiveMutation,
 } = categoryApi;
