@@ -33,6 +33,12 @@ const CustomerEditPage = lazy(() => import('@/pages/customers/list/CustomerEditP
 const CustomerGroupListPage = lazy(() => import("@/pages/customers/groups/CustomerGroupListPage"));
 const CustomerGroupDetailPage = lazy(() => import("@/pages/customers/groups/CustomerGroupDetailPage"));
 const CustomerGroupMembersPage = lazy(() => import("@/pages/customers/groups/CustomerGroupMembersPage"));
+const CampaignListPage = lazy(() => import("@/pages/customers/care/CampaignListPage"));
+const CareHistoryDetailPage = lazy( () => import("@/pages/customers/care/CareHistoryDetailPage"));
+const CareLogListPage = lazy(() => import("@/pages/customers/care/CareLogListPage"));
+const CareLogDetailPage = lazy(() => import("@/pages/customers/care/CareLogDetailPage"));
+const CareLogCreatePage = lazy(() => import("@/pages/customers/care/CareLogCreatePage"));
+const CareLogEditPage = lazy(() => import("@/pages/customers/care/CareLogEditPage"));
 
 
 // Orders
@@ -60,11 +66,11 @@ export const routes: RouteObject[] = [
         children: [
           // Dashboard (Admin, Sale)
           {
-            element: <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SALE']} />,
+            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_SALE"]} />,
             children: [
               { index: true, element: <DashboardPage /> },
-              { path: 'dashboard', element: <DashboardPage /> },
-            ]
+              { path: "dashboard", element: <DashboardPage /> },
+            ],
           },
 
           // Products, Suppliers & Warehouse (Admin, Kho)
@@ -105,7 +111,26 @@ export const routes: RouteObject[] = [
                   { path: "groups", element: <CustomerGroupListPage /> },
                   { path: "groups/:id", element: <CustomerGroupDetailPage /> },
                   {
-                    path: "groups/:id/members", element: <CustomerGroupMembersPage />,
+                    path: "groups/:id/members",
+                    element: <CustomerGroupMembersPage />,
+                  },
+                  { path: "care/campaigns", element: <CampaignListPage /> },
+                  {
+                    path: "care/history/:id",
+                    element: <CareHistoryDetailPage />,
+                  },
+                  { path: "care/history", element: <CareLogListPage /> },
+                  {
+                    path: "care/history/log/:id",
+                    element: <CareLogDetailPage />,
+                  },
+                  {
+                    path: "care/create/:customerId",
+                    element: <CareLogCreatePage />,
+                  },
+                  {
+                    path: "care/history/log/:id/edit",
+                    element: <CareLogEditPage />,
                   },
                 ],
               },

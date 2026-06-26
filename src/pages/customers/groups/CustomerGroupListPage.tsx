@@ -176,27 +176,6 @@ export default function CustomerGroupListPage() {
             leftIcon={<i className="fa-solid fa-magnifying-glass text-gray-400"></i>}
           />
         </div>
-
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-bold shrink-0">
-            <label htmlFor="filter-size" className="whitespace-nowrap uppercase tracking-wider text-gray-400">
-              Hiển thị:
-            </label>
-            <select
-              id="filter-size"
-              value={size}
-              onChange={(e) => {
-                setSize(Number(e.target.value));
-                setPage(0);
-              }}
-              className="border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-bold text-gray-700 cursor-pointer"
-            >
-              <option value="10">10 dòng</option>
-              <option value="20">20 dòng</option>
-              <option value="50">50 dòng</option>
-            </select>
-          </div>
-        </div>
       </div>
 
       {/* TABLE DATA */}
@@ -215,6 +194,10 @@ export default function CustomerGroupListPage() {
           totalElements={totalElements}
           pageSize={size}
           onPageChange={(newPage) => setPage(newPage)}
+          onSizeChange={(newSize) => {
+            setSize(newSize);
+            setPage(0);
+          }}
         />
       </div>
     </div>

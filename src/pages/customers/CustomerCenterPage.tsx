@@ -65,7 +65,7 @@ export default function CustomerCenterPage() {
 
         {/* CARD 3: CHĂM SÓC KHÁCH HÀNG */}
         <div
-          onClick={() => navigate("/customers/care")}
+          onClick={() => navigate("/customers/care/campaigns")}
           className="group bg-white rounded-2xl border border-gray-200/70 p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[220px]"
         >
           <div className="space-y-4">

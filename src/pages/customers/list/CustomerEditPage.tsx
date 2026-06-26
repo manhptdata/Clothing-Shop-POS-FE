@@ -153,6 +153,15 @@ export default function CustomerEditPage() {
             khách hàng: {formData.fullName}
           </h1>
         </div>
+        <div>
+          <Button
+            variant="outline"
+            onClick={() => navigate(-1)}
+            leftIcon={<i className="fa-solid fa-arrow-left"></i>}
+          >
+            Quay lại
+          </Button>
+        </div>
       </header>
 
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
@@ -309,7 +318,7 @@ export default function CustomerEditPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Ghi chú nội bộ
+              Ghi chú
             </label>
             <textarea
               name="note"
@@ -320,15 +329,8 @@ export default function CustomerEditPage() {
             ></textarea>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
-            <span className="text-gray-400 font-medium font-mono hidden sm:inline">
-              Mẹo POS: Ấn phím{" "}
-              <kbd className="bg-gray-100 px-1 py-0.5 rounded border border-gray-200 font-bold">
-                F4
-              </kbd>{" "}
-              để Cập nhật nhanh
-            </span>
-            <div className="flex space-x-3 ml-auto w-full sm:w-auto">
+          <div className="pt-4 border-t border-gray-100 flex justify-end items-center text-xs">
+            <div className="flex space-x-3 w-full sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
@@ -342,7 +344,7 @@ export default function CustomerEditPage() {
                 className="bg-amber-500 hover:bg-amber-600 text-white"
                 leftIcon={<i className="fa-solid fa-floppy-disk"></i>}
               >
-                Cập nhật thông tin (F4)
+                Cập nhật thông tin
               </Button>
             </div>
           </div>

@@ -78,15 +78,34 @@ export interface CustomerOrderHistory {
 }
 
 
+// Sửa ở dòng ~81 trong customer.types.ts
 export interface CustomerCareLog {
   id: number;
-  calledBy?: { fullName: string };
-  calledAt?: string;
-  campaign?: { name: string };
   result: string;
-  order?: any;
-  note?: string;
+  note: string | null;
+  scheduledAt: string | null;
+  calledAt: string | null;
+  nextRetryAt: string | null;
   createdAt: string;
+  customer: {
+    id: number;
+    fullName: string;
+    phone: string;
+  };
+  campaign: {
+    id: number;
+    name: string;
+    type?: string;
+  } | null;
+  calledBy: {
+    id: number;
+    username: string;
+    fullName: string;
+  };
+  order: {
+    id: number;
+    orderNumber: string;
+  } | null;
 }
 
 
@@ -98,4 +117,43 @@ export interface CustomerGroups extends CustomerGroup {
   minSpending: number;
   maxSpending: number;
   createdAt: string;
+}
+
+
+
+// Bổ sung thêm các type cho Campaign
+export type CampaignType = "AFTER_7_DAYS" | "LONG_TIME_NO_BUY" | "RECALL_SCHEDULE" | "HAPPY_BIRTHDAY";
+
+export interface Campaign {
+  id: number;
+  isActive: boolean;
+  createdAt: string;
+  name: string;
+  scriptTemplate: string;
+  type: CampaignType;
+}
+
+// Tham số để gọi API danh sách khách hàng chờ chăm sóc
+export interface PendingCustomerRequest {
+  type: CampaignType;
+  page?: number;
+  size?: number;
+  keyword?: string; // Nếu cần tìm kiếm theo SĐT
+}
+
+
+export interface CreateCareLogRequest {
+  customerId: number;
+  result: string;
+  campaignId?: number;
+  note?: string;
+  nextRetryAt?: string;
+}
+
+export interface UpdateCareLogRequest {
+  customerId: number;
+  result: string;
+  campaignId?: number;
+  note?: string;
+  nextRetryAt?: string | null;
 }

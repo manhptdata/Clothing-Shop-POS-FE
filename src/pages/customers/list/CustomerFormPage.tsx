@@ -216,7 +216,7 @@ export default function CustomerFormPage() {
 
           <div>
             <label className="block font-label-caps text-label-caps text-on-surface mb-1">
-              Ghi chú nội bộ / Phân loại sở thích mua sắm (note)
+              Ghi chú
             </label>
             <textarea
               name="note"
@@ -228,16 +228,13 @@ export default function CustomerFormPage() {
             ></textarea>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-xs">
-            <span className="text-gray-400 font-medium font-mono hidden sm:inline">
-              Mẹo POS: Ấn phím <kbd className="bg-gray-100 px-1 py-0.5 rounded border border-gray-200 font-bold mx-1">F4</kbd> để Lưu nhanh dữ liệu
-            </span>
-            <div className="flex space-x-3 ml-auto w-full sm:w-auto">
+          <div className="pt-4 border-t border-gray-100 flex justify-end items-center text-xs">
+            <div className="flex space-x-3 w-full sm:w-auto">
               <Button type="button" variant="outline" onClick={() => navigate("/customers/list")}>
                 Hủy / Quay lại
               </Button>
               <Button type="submit" variant="primary" isLoading={isLoading} leftIcon={<i className="fa-solid fa-floppy-disk"></i>}>
-                Lưu khách hàng (F4)
+                Lưu khách hàng
               </Button>
             </div>
           </div>

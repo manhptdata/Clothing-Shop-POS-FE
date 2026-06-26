@@ -14,6 +14,7 @@ export default function CustomerDetailPage() {
   // State quản lý việc chuyển đổi giữa 2 tab (Đơn hàng và Chăm sóc)
   const [activeTab, setActiveTab] = useState<"orders" | "care">("orders");
   const [orderPage, setOrderPage] = useState(0); // State quản lý trang hiện tại
+  const [orderSize, setOrderSize] = useState(5); // State quản lý số dòng mỗi trang
 
   // Gọi API lấy dữ liệu chi tiết
   const { data: responseData, isLoading, error } = useGetCustomerByIdQuery(
@@ -25,7 +26,7 @@ export default function CustomerDetailPage() {
 
   // Lấy danh sách lịch sử đơn hàng
   const { data: ordersResponse, isLoading: isOrdersLoading, isFetching: isOrdersFetching } = useGetCustomerOrdersQuery(
-    { id: id as string, page: orderPage, size: 5 },
+    { id: id as string, page: orderPage, size: orderSize },
     { skip: !id }
   );
 
@@ -34,27 +35,14 @@ export default function CustomerDetailPage() {
 
   // Lấy danh sách lịch sử chăm sóc
   const [carePage, setCarePage] = useState(0); // State quản lý trang hiện tại cho tab Chăm sóc
+  const [careSize, setCareSize] = useState(5); // State quản lý số dòng
   const { data: careLogsResponse, isLoading: isCareLogsLoading, isFetching: isCareLogsFetching } = useGetCustomerCareLogsQuery(
-    { id: id as string, page: carePage, size: 5 },
+    { id: id as string, page: carePage, size: careSize },
     { skip: !id }
   );
 
   const careLogs = careLogsResponse?.data?.content || [];
   const carePageData = careLogsResponse?.data;
-
-  console.log("=== DEBUG TAB CHĂM SÓC ===");
-  console.log("1. Mở tab chăm sóc?:", activeTab === "care");
-  console.log("2. ID khách hàng đang xem:", id);
-  console.log("3. isCareLogsFetching (Đang gọi API?):", isCareLogsFetching);
-  console.log("4. Dữ liệu trả về (careLogs):", careLogs);
-  console.log("5. Lỗi API (nếu có):", careLogsResponse ? "Thành công" : "Có thể bị lỗi hoặc chưa chạy");
-  console.log("=========================");
-
-  console.log("=== DEBUG PHÂN TRANG ===");
-  console.log("1. orderPage (React State):", orderPage);
-  console.log("2. isOrdersFetching (Đang gọi API?):", isOrdersFetching);
-  console.log("3. API Trả về (orderPageData.number):", orderPageData?.number);
-  console.log("========================");
 
   const customer = responseData?.data;
 
@@ -277,8 +265,8 @@ export default function CustomerDetailPage() {
             <button
               onClick={() => setActiveTab("orders")}
               className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${activeTab === "orders"
-                  ? "border-blue-600 text-blue-600 bg-white"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                ? "border-blue-600 text-blue-600 bg-white"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
                 }`}
             >
               <i className="fa-solid fa-bag-shopping"></i> Lịch sử đơn hàng
@@ -289,8 +277,8 @@ export default function CustomerDetailPage() {
             <button
               onClick={() => setActiveTab("care")}
               className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${activeTab === "care"
-                  ? "border-blue-600 text-blue-600 bg-white"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                ? "border-blue-600 text-blue-600 bg-white"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
                 }`}
             >
               <i className="fa-solid fa-heart-pulse"></i> Lịch sử chăm sóc
@@ -395,13 +383,16 @@ export default function CustomerDetailPage() {
                 {!isOrdersLoading && orderPageData && orderPageData.totalElements > 0 && (
                   <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
                     <Pagination
-                      currentPage={orderPageData.number}
+                      currentPage={orderPage}
                       totalPages={orderPageData.totalPages}
                       totalElements={orderPageData.totalElements}
-                      pageSize={orderPageData.size}
+                      pageSize={orderPageData.size || orderSize}
                       onPageChange={(newPage) => {
-                        console.log("User clicked page:", newPage);
                         setOrderPage(newPage);
+                      }}
+                      onSizeChange={(newSize) => {
+                        setOrderSize(newSize);
+                        setOrderPage(0);
                       }}
                     />
                   </div>
@@ -445,7 +436,7 @@ export default function CustomerDetailPage() {
                               {log.calledAt ? new Date(log.calledAt).toLocaleString("vi-VN") : "Chưa gọi"}
                             </span>
                           </div>
-                          
+
                           <div className="flex flex-wrap items-center gap-1.5 mb-3.5">
                             {log.campaign && (
                               <span className="bg-purple-50 text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-purple-100/80 uppercase tracking-wider flex items-center gap-1">
@@ -475,7 +466,7 @@ export default function CustomerDetailPage() {
                               </p>
                             </div>
                           </div>
-                          
+
                           <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400 font-mono uppercase tracking-wider">
                             <i className="fa-solid fa-server text-[9px]"></i>
                             <span>
@@ -492,11 +483,15 @@ export default function CustomerDetailPage() {
                 {!isCareLogsLoading && carePageData && carePageData.totalElements > 0 && (
                   <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
                     <Pagination
-                      currentPage={carePageData.number}
+                      currentPage={carePage}
                       totalPages={carePageData.totalPages}
                       totalElements={carePageData.totalElements}
-                      pageSize={carePageData.size}
+                      pageSize={carePageData.size || careSize}
                       onPageChange={(newPage) => setCarePage(newPage)}
+                      onSizeChange={(newSize) => {
+                        setCareSize(newSize);
+                        setCarePage(0);
+                      }}
                     />
                   </div>
                 )}

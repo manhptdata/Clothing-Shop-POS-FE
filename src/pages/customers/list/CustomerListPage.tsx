@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
+import {
   useSearchCustomersQuery,
   useDeactivateCustomerMutation,
-  useActivateCustomerMutation 
+  useActivateCustomerMutation
 } from "@/redux/api/customerApi";
 import type { Customer, CustomerVoucher } from "@/types/customer.types";
 import { Input } from "@/components/ui/Input";
@@ -25,6 +25,15 @@ export default function CustomerListPage() {
     name: string;
     group: string;
     vouchers: CustomerVoucher[];
+  } | null>(null);
+
+  // Thêm state cho Modal xác nhận Xóa/Kích hoạt
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState<{
+    id: number;
+    currentStatus: string;
+    name: string;
+    action: string;
   } | null>(null);
 
   const {
@@ -57,27 +66,30 @@ export default function CustomerListPage() {
   const [deactivateCustomer] = useDeactivateCustomerMutation();
   const [activateCustomer] = useActivateCustomerMutation();
 
-  const handleToggleStatus = async (
+  const handleToggleStatus = (
     id: number,
     currentStatus: string,
     name: string,
   ) => {
     const action = currentStatus === "ACTIVE" ? "Xóa" : "Kích hoạt lại";
-    if (
-      window.confirm(`Hệ thống POS: Xác nhận ${action} khách hàng: ${name}?`)
-    ) {
-      try {
-        if (currentStatus === "ACTIVE") {
-          await deactivateCustomer(id).unwrap();
-        } else {
-          await activateCustomer(id).unwrap();
-        }
-        alert(`${action} thành công!`);
-      } catch (error: any) {
-        console.error(error);
-        const errorMsg = error?.data?.message || error?.error || "Lỗi không xác định";
-        alert(`${action} thất bại! Lỗi Server: ${errorMsg}`);
+    setConfirmData({ id, currentStatus, name, action });
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmAction = async () => {
+    if (!confirmData) return;
+    try {
+      if (confirmData.currentStatus === "ACTIVE") {
+        await deactivateCustomer(confirmData.id).unwrap();
+      } else {
+        await activateCustomer(confirmData.id).unwrap();
       }
+      setIsConfirmModalOpen(false);
+      setConfirmData(null);
+    } catch (error: any) {
+      console.error(error);
+      const errorMsg = error?.data?.message || error?.error || "Lỗi không xác định";
+      alert(`${confirmData.action} thất bại! Lỗi Server: ${errorMsg}`);
     }
   };
 
@@ -99,7 +111,7 @@ export default function CustomerListPage() {
       key: "fullName",
       header: "Khách hàng",
       render: (row) => (
-        <span 
+        <span
           className="font-bold text-gray-900 hover:text-gray-700 cursor-pointer transition-colors"
           onClick={() => navigate(`/customers/${row.id}`)}
         >
@@ -131,7 +143,11 @@ export default function CustomerListPage() {
       header: "Hạng",
       render: (row) => {
         const cus = row;
-        const code = cus.customerGroup?.code || "GỖ MỚI";
+        const code = cus.customerGroup?.code;
+        if (!code) {
+          return <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>;
+        }
+
         const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
         return (
           <Badge variant={variant as any}>
@@ -237,9 +253,9 @@ export default function CustomerListPage() {
 
       {/* BẢNG DỮ LIỆU DÙNG COMPONENT CHUNG */}
       <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden relative">
-        <Table 
-          columns={columns} 
-          data={tableData} 
+        <Table
+          columns={columns}
+          data={tableData}
           isLoading={isLoading || isFetching}
           emptyText="Không tìm thấy khách hàng nào!"
         />
@@ -291,6 +307,40 @@ export default function CustomerListPage() {
           </div>
         </Modal>
       )}
+
+      {/* Modal xác nhận Xóa / Kích hoạt lại */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        title="Xác nhận thao tác"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3 w-full">
+            <Button variant="outline" onClick={() => setIsConfirmModalOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              variant={confirmData?.currentStatus === "ACTIVE" ? "danger" : "primary"}
+              onClick={confirmAction}
+              leftIcon={
+                <i
+                  className={`fa-solid ${
+                    confirmData?.currentStatus === "ACTIVE"
+                      ? "fa-trash"
+                      : "fa-rotate-right"
+                  }`}
+                ></i>
+              }
+            >
+              {confirmData?.action}
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-4 text-gray-700">
+          Bạn có chắc chắn muốn <strong className="text-gray-900">{confirmData?.action?.toLowerCase()}</strong> khách hàng <strong className="text-gray-900">{confirmData?.name}</strong> không?
+        </div>
+      </Modal>
     </div>
   );
 }

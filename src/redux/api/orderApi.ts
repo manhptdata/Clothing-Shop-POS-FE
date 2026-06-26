@@ -14,9 +14,9 @@ export const orderApi = baseApi.injectEndpoints({
         const list = (result?.data as any)?.result || (result?.data as any)?.content;
         return list && Array.isArray(list)
           ? [
-              ...list.map(({ id }) => ({ type: 'Order' as const, id })),
-              { type: 'Order', id: 'LIST' },
-            ]
+            ...list.map(({ id }) => ({ type: 'Order' as const, id })),
+            { type: 'Order', id: 'LIST' },
+          ]
           : [{ type: 'Order', id: 'LIST' }];
       }
     }),

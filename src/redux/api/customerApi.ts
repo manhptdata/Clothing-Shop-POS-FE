@@ -7,7 +7,10 @@ import type {
   CustomerUpdateRequest,
   CustomerOrderHistory,
   CustomerCareLog,
-  CustomerGroups
+  CustomerGroups,
+  PendingCustomerRequest,
+  CreateCareLogRequest,
+  UpdateCareLogRequest
 } from '@/types/customer.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
@@ -115,7 +118,7 @@ export const customerApi = baseApi.injectEndpoints({
       query: ({ id, page = 0, size = 5 }) => ({
         url: `/crm/customers/${id}/orders`,
         method: 'GET',
-        params: { page, size },
+        params: { page: page + 1, size },
       }),
       providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `ORDERS_${id}` }],
     }),
@@ -173,6 +176,108 @@ export const customerApi = baseApi.injectEndpoints({
 
 
 
+getPendingCustomersByCampaign: builder.query<
+  RestResponse<PageResponse<Customer>>,
+  PendingCustomerRequest
+>({
+  query: (params) => ({
+    url: `/crm/campaigns/pending-customers`,
+    params: {
+      type: params.type,
+      page: params.page,
+      size: params.size,
+    },
+  }),
+  providesTags: (result, error, arg) => [{ type: "Customer", id: `PENDING_${arg.type}` }],
+}),
+
+       getAllCareLogs: builder.query<
+      RestResponse<PageResponse<CustomerCareLog>>,
+      { keyword?: string; page?: number; size?: number }
+    >({
+      query: (params) => ({
+        url: `/crm/campaigns/care-logs`,
+        method: 'GET',
+        params: {
+          keyword: params.keyword || '',
+          page: params.page || 0,
+          size: params.size || 10,
+          sort: 'id,desc', // Sắp xếp mặc định mới nhất lên đầu
+        },
+      }),
+      providesTags: ['Customer'],
+    }),
+
+
+        searchCareLogs: builder.query<
+      RestResponse<PageResponse<CustomerCareLog>>,
+      { keyword?: string; result?: string; page?: number; size?: number }
+    >({
+      query: (params) => {
+        // Chỉ gửi params nào có giá trị để tránh backend lỗi
+        const queryParams: any = {
+          page: params.page || 0,
+          size: params.size || 10,
+          sort: 'id,desc',
+        };
+        if (params.keyword) queryParams.keyword = params.keyword;
+        if (params.result) queryParams.result = params.result;
+
+        return {
+          url: `/crm/campaigns/care-logs/search`,
+          method: 'GET',
+          params: queryParams,
+        };
+      },
+      providesTags: ['Customer'],
+    }),
+
+    getCareLogById: builder.query<RestResponse<CustomerCareLog>, string | number>({
+      query: (id) => ({
+        url: `/crm/campaigns/care-logs/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Customer', id: `CARE_LOG_${id}` }],
+    }),
+
+
+    createCareLog: builder.mutation<RestResponse<null>, CreateCareLogRequest>({
+      query: (data) => ({
+        url: `/crm/campaigns/care-logs`,
+        method: 'POST',
+        data,
+      }),
+      // Invalidates để các bảng dữ liệu lịch sử tự động refresh sau khi tạo thành công
+      invalidatesTags: ['Customer'],
+    }),
+
+
+
+        updateCareLog: builder.mutation<RestResponse<null>, { id: string | number; data: UpdateCareLogRequest }>({
+      query: ({ id, data }) => ({
+        url: `/crm/campaigns/care-logs/${id}`,
+        method: 'PUT',
+        data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Customer', id: `CARE_LOG_${id}` }, // Load lại trang chi tiết
+        'Customer'
+      ],
+    }),
+
+
+    deleteCareLog: builder.mutation<RestResponse<null>, string | number>({
+      query: (id) => ({
+        url: `/crm/campaigns/care-logs/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+
+
+
+
 
   }), // <--- Lưu ý: Dấu đóng ngoặc nhọn này phải nằm dưới cùng của khối endpoints
 
@@ -193,4 +298,11 @@ export const {
   useSearchCustomerGroupsQuery,
   useGetCustomerGroupByIdQuery,
   useGetCustomerGroupMembersQuery,
+  useGetPendingCustomersByCampaignQuery,
+  useGetAllCareLogsQuery,
+  useSearchCareLogsQuery,
+  useGetCareLogByIdQuery,
+  useCreateCareLogMutation,
+  useUpdateCareLogMutation,
+  useDeleteCareLogMutation,
 } = customerApi;
