@@ -135,7 +135,7 @@ export default function UserFormPage() {
                 disabled={isEdit}
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="VD: nva@atelier.com"
+                placeholder="VD: nva@sapo.vn"
                 className={`w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded ${isEdit ? 'opacity-50 cursor-not-allowed text-on-surface-variant' : ''}`}
                 type="text"
               />
