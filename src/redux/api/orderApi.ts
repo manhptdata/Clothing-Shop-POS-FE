@@ -46,6 +46,18 @@ export const orderApi = baseApi.injectEndpoints({
         { type: 'Statistic', id: 'LIST' },
       ],
     }),
+    updateOrder: builder.mutation<RestResponse<Order>, { id: number; data: OrderRequest }>({
+      query: ({ id, data }) => ({
+        url: `/orders/${id}`,
+        method: 'PUT',
+        data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Order', id },
+        { type: 'Order', id: 'LIST' },
+        { type: 'Statistic', id: 'LIST' },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -55,4 +67,5 @@ export const {
   useGetOrderByIdQuery,
   useCreateOrderMutation,
   useCancelOrderMutation,
+  useUpdateOrderMutation,
 } = orderApi;

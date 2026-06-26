@@ -253,7 +253,7 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => setPointsToUse(maxPointsAbleToUse)}
-                    className="bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-md border border-primary/20 flex-shrink-0 whitespace-nowrap"
+                    className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/30 hover:!bg-[#2ecc71]/20 text-[10px] font-bold px-2.5 py-1 rounded-md border flex-shrink-0 whitespace-nowrap transition-colors"
                   >
                     Tối đa ({maxPointsAbleToUse})
                   </Button>
