@@ -10,11 +10,12 @@ import RoleRoute from './RoleRoute';
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 
-// Products
+// Products & Suppliers
 const ProductListPage = lazy(() => import('@/pages/products/ProductListPage'));
 const ProductDetailPage = lazy(() => import('@/pages/products/ProductDetailPage'));
 const ProductFormPage = lazy(() => import('@/pages/products/ProductFormPage'));
 const CategoryListPage = lazy(() => import('@/pages/categories/CategoryListPage'));
+const SupplierListPage = lazy(() => import('@/pages/suppliers/SupplierListPage'));
 
 // Customers 
 const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
@@ -59,7 +60,7 @@ export const routes: RouteObject[] = [
             ]
           },
 
-          // Products (Admin, Kho)
+          // Products & Suppliers (Admin, Kho)
           {
             element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_WH"]} />,
             children: [
@@ -68,6 +69,7 @@ export const routes: RouteObject[] = [
               { path: "products/:id", element: <ProductDetailPage /> },
               { path: "products/:id/edit", element: <ProductFormPage /> },
               { path: "products/categories", element: <CategoryListPage /> },
+              { path: "suppliers", element: <SupplierListPage /> },
             ],
           },
 

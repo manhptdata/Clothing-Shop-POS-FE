@@ -36,6 +36,12 @@ const menuItems: MenuItem[] = [
     roles: ['ROLE_ADMIN', 'ROLE_WH'],
   },
   {
+    path: '/suppliers',
+    label: 'Nhà cung cấp',
+    icon: 'local_shipping',
+    roles: ['ROLE_ADMIN', 'ROLE_WH'],
+  },
+  {
     path: '/customers',
     label: 'Khách hàng',
     icon: 'group',
