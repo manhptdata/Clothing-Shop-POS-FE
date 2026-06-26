@@ -26,6 +26,9 @@ interface CheckoutPanelProps {
   isCreatingOrder: boolean;
   paymentMethod: 'CASH' | 'QR_PAYOS';
   setPaymentMethod: (method: 'CASH' | 'QR_PAYOS') => void;
+  handleSaveTemporary: () => void;
+  isSavingTemporary: boolean;
+  pendingOrderId: number | null;
 }
 
 export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
@@ -51,6 +54,9 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   isCreatingOrder,
   paymentMethod,
   setPaymentMethod,
+  handleSaveTemporary,
+  isSavingTemporary,
+  pendingOrderId,
 }) => {
   return (
     <section className="w-full lg:w-[35%] bg-[#1a1d21] border-l border-outline/10 flex flex-col rounded-xl overflow-hidden h-full">
@@ -246,20 +252,34 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
           </div>
         </div>
 
-        {/* Pay Button */}
-        <Button
-          onClick={handleCheckout}
-          disabled={isCreatingOrder || cart.length === 0}
-          className="w-full py-4 bg-[#2ecc71] hover:bg-[#2ecc71]/90 text-white rounded-xl font-bold transition-all border-none"
-          size="lg"
-          leftIcon={isCreatingOrder ? (
-            <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-          ) : (
-            <span className="material-symbols-outlined text-[20px]">credit_card</span>
-          )}
-        >
-          {isCreatingOrder ? 'Đang xử lý thanh toán...' : 'Thanh toán & Xuất hóa đơn'}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-sm mt-3">
+          <Button
+            onClick={handleSaveTemporary}
+            disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
+            className="flex-1 py-3.5 bg-[#e67e22] hover:bg-[#d35400] text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1"
+            leftIcon={isSavingTemporary ? (
+              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+            ) : (
+              <span className="material-symbols-outlined text-[16px]">pause_presentation</span>
+            )}
+          >
+            {isSavingTemporary ? 'Đang lưu...' : (pendingOrderId ? 'Cập nhật' : 'Lưu tạm')}
+          </Button>
+
+          <Button
+            onClick={handleCheckout}
+            disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
+            className="flex-[1.5] py-3.5 bg-[#2ecc71] hover:bg-[#2ecc71]/90 text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1"
+            leftIcon={isCreatingOrder ? (
+              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
+            ) : (
+              <span className="material-symbols-outlined text-[16px]">credit_card</span>
+            )}
+          >
+            {isCreatingOrder ? 'Đang xử lý...' : 'Thanh toán'}
+          </Button>
+        </div>
       </div>
     </section>
   );

@@ -35,11 +35,12 @@ export interface Order {
 
 export interface OrderRequest {
   customerId: number;
-  paidAmount: number;
+  paidAmount?: number;
   paymentMethod?: 'CASH' | 'QR_PAYOS';
   note?: string;
   pointsToUse?: number;
   voucherCode?: string;
+  status?: OrderStatus;
   items: {
     variantId: number;
     quantity: number;

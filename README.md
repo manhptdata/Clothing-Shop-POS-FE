@@ -1,155 +1,76 @@
-# Clothing Shop POS — Hệ Thống Quản Lý Cửa Hàng Thời Trang (Frontend)
+# Sapo POS - Hệ Thống Quản Lý Cửa Hàng Thời Trang
 
-Dự án Frontend cho hệ thống POS cửa hàng thời trang. Dự án được xây dựng dựa trên kiến trúc **Feature-Modules Pattern**, đạt tiêu chuẩn Enterprise, tối ưu cho việc làm việc nhóm, dễ dàng mở rộng, bảo trì và chia nhỏ các chức năng thành các khối độc lập.
+Dự án phần mềm quản lý bán hàng (POS) Sapo, thiết kế chuyên biệt cho cửa hàng thời trang và bán lẻ. Hệ thống áp dụng kiến trúc module hóa nhằm đảm bảo khả năng mở rộng, dễ dàng bảo trì và đáp ứng hiệu năng cao.
 
----
+## 1. Nền Tảng Công Nghệ (Tech Stack)
 
-## Tech Stack
+### Frontend
+- Core: React 19, TypeScript
+- Build Tool: Vite
+- Quản lý trạng thái (State Management): Redux Toolkit, RTK Query
+- Thiết kế giao diện (Styling): Tailwind CSS
+- Điều hướng (Routing): React Router DOM v6
+- Xử lý Biểu mẫu (Forms): React Hook Form
+- Biểu đồ (Charts): Recharts
+- HTTP Client: Axios
 
-- **Core:** React 19, TypeScript
-- **Build Tool:** Vite
-- **State Management:** Redux Toolkit (`@reduxjs/toolkit`), React Redux
-- **Routing:** React Router DOM v6
-- **Network / API:** Axios
-- **Styling:** CSS Modules / Vanilla CSS (với CSS Variables)
+### Backend
+- Core: Spring Boot 3.3.6, Java 17
+- Cơ sở dữ liệu: MySQL
+- ORM: Spring Data JPA
+- Xác thực & Phân quyền: Spring Security, OAuth2 Resource Server (JWT)
+- Tài liệu API: SpringDoc OpenAPI (Swagger UI)
+- Lọc dữ liệu động: Spring Filter (Turkraft)
+- Tiện ích: Lombok
 
----
+## 2. Kiến Trúc Dự Án (Frontend)
 
-## Kiến Trúc Dự Án (Feature-Modules Pattern)
+Cấu trúc mã nguồn tuân thủ nghiêm ngặt nguyên tắc Separation of Concerns và mô hình Domain-driven design.
 
-Kiến trúc chia hệ thống thành các **Domain / Feature** riêng biệt. Thay vì chia theo tầng công nghệ (ví dụ: gộp chung tất cả API vào 1 thư mục, tất cả Components vào 1 thư mục), dự án nhóm code theo **tính năng nghiệp vụ**.
+- src/pages/: Chứa các component gắn với định tuyến, được chia theo từng module nghiệp vụ. Với các trang có trạng thái phức tạp (như POS Checkout), dự án áp dụng mẫu thiết kế Orchestrator Pattern, tách rời giao diện (UI components) khỏi logic nghiệp vụ thông qua các custom hooks chuyên biệt.
+- src/components/: Chứa các component giao diện dùng chung toàn hệ thống (Buttons, Modals, Inputs, Tables) được xây dựng bằng Tailwind CSS.
+- src/redux/: Cấu hình Redux store gốc và các API slices của RTK Query. Toàn bộ dữ liệu gọi từ máy chủ (Server state) được quản lý độc quyền qua RTK Query.
+- src/types/: Chứa các interface TypeScript phản chiếu chính xác cấu trúc DTO từ backend.
+- src/hooks/: Các hooks tiện ích dùng chung toàn cục (ví dụ: useDebounce).
 
-### Ưu điểm:
-- Dễ dàng quản lý khi dự án phình to (Scale-ability).
-- Developer làm việc trên tính năng nào chỉ cần tập trung vào thư mục của tính năng đó.
-- Dễ dàng gỡ bỏ hoặc refactor một tính năng mà không ảnh hưởng tới toàn bộ hệ thống.
+## 3. Hướng Dẫn Cài Đặt
 
-### Sơ đồ Cấu Trúc:
-
-```text
-src/
-├── app/                            # Tầng Bootstrapping của ứng dụng
-│   ├── providers/                  # Context/Providers (Redux, Theme, Modal...)
-│   ├── router/                     # Định nghĩa routes, Guard (Private/Admin Route)
-│   └── App.tsx                     # Root Component
-│
-├── features/                       # CÁC MODULE NGHIỆP VỤ CHÍNH
-│   ├── auth/                       # Module Đăng nhập & Xác thực
-│   ├── dashboard/                  # Module Thống kê
-│   ├── products/                   # Module Quản lý Sản phẩm
-│   ├── customers/                  # Module Quản lý Khách hàng
-│   ├── invoices/                   # Module Bán hàng (POS) & Hóa đơn
-│   ├── warehouse/                  # Module Quản lý Kho, NCC, Nhập/Trả hàng
-│   └── users/                      # Module Quản lý Nhân sự (Admin)
-│
-├── shared/                         # Tài nguyên DÙNG CHUNG toàn hệ thống
-│   ├── api/                        # Cấu hình Axios, Interceptors
-│   ├── components/ui/              # Atomic UI Components (Button, Modal, Input...)
-│   ├── hooks/                      # Custom hooks chung (useDebounce, usePagination)
-│   ├── types/                      # Common TypeScript interfaces
-│   └── utils/                      # Constants, Formatters, Validators
-│
-├── layouts/                        # Tầng Layout tổng thể
-│   ├── MainLayout/                 # Layout chính sau đăng nhập (Sidebar, Header)
-│   └── AuthLayout/                 # Layout trang đăng nhập
-│
-├── store/                          # Cấu hình Redux Store gốc
-│   ├── index.ts                    # Root Reducer
-│   └── hooks.ts                    # Typed Hooks cho Redux
-│
-├── config/                         # Cấu hình Môi trường
-│   └── env.ts                      # Đọc biến môi trường (Type-safe)
-│
-└── styles/                         # CSS Toàn cục (Reset, Variables)
-```
-
----
-
-## Cấu Trúc Của Một Feature Chuẩn
-
-Khi tạo một tính năng mới (Ví dụ: `products`), bắt buộc tuân theo cấu trúc sau trong thư mục `src/features/[feature-name]`:
-
-```text
-products/
-├── api/                  # Các hàm gọi API (VD: productApi.ts)
-├── components/           # Components UI đặc thù của tính năng này (VD: ProductTable.tsx)
-├── hooks/                # Hooks riêng cho nghiệp vụ này (VD: useProductList.ts)
-├── pages/                # Các trang chính gắn vào Router (VD: ProductListPage.tsx)
-├── store/                # Redux Slices (VD: productSlice.ts)
-├── types/                # Types/Interfaces từ Backend (VD: product.types.ts)
-└── index.ts              # Public API của feature (Barrel Export)
-```
-
-> **Nguyên tắc ngầm định:** Các feature KHÔNG ĐƯỢC import trực tiếp logic nội bộ của nhau. Nếu cần dùng chung, hãy export nó qua file `index.ts` của feature đó, hoặc chuyển phần logic đó xuống `src/shared/`.
-
----
-
-## Hướng Dẫn Cài Đặt & Chạy Dự Án
-
-### 1. Yêu cầu hệ thống
+### Yêu cầu hệ thống
 - Node.js >= 18.x
 - npm >= 9.x
+- Java 17 (Dành cho Backend)
+- MySQL 8.x
 
-### 2. Cài đặt dependencies
-```bash
+### Thiết lập Frontend
+1. Cài đặt các gói phụ thuộc:
 npm install
-```
 
-### 3. Cấu hình biến môi trường
-Tạo file `.env` ở thư mục gốc (root) dựa trên `.env.example`:
-```bash
-cp .env.example .env
-```
-Nội dung file `.env` (Mặc định trỏ về backend local):
-```env
+2. Cấu hình biến môi trường:
+Tạo file .env tại thư mục gốc và khai báo địa chỉ Backend API:
 VITE_API_BASE_URL=http://localhost:8080
-```
 
-### 4. Khởi chạy môi trường Phát triển (Development)
-```bash
+3. Khởi chạy máy chủ phát triển:
 npm run dev
-```
-- App chạy tại: `http://localhost:5173`
-- Mọi request gọi bằng Axios đến `/api/*` sẽ được Vite tự động Proxy sang `VITE_API_BASE_URL` để tránh lỗi CORS.
 
-### 5. Build cho Môi trường Production
-```bash
+Ứng dụng sẽ chạy tại http://localhost:5173. 
+Lưu ý: Mọi request API gọi tới đường dẫn /api đều tự động được proxy sang VITE_API_BASE_URL để tránh lỗi CORS khi code ở local.
+
+4. Triển khai bản Production:
 npm run build
-```
-Thư mục sau khi build sẽ nằm ở `dist/`.
+Mã nguồn đã tối ưu sẽ được xuất ra thư mục dist/.
 
----
+## 4. Tính Năng Cốt Lõi
 
-## Quy Ước Lập Trình (Coding Conventions)
+- Bán hàng tại quầy (POS): Quản lý giỏ hàng, lưu trạng thái hóa đơn tạm (Pending orders) và điều phối logic trạng thái phức tạp.
+- Quản lý Khách hàng (CRM): Quản lý hạng thành viên, tính toán điểm tích lũy và điều kiện áp dụng Voucher giảm giá.
+- Thanh toán & Chốt đơn: Xử lý quy trình thanh toán tiền mặt (tự tính tiền thừa) và hỗ trợ giao diện thanh toán qua mã QR chuyển khoản.
+- Quản lý Hàng hóa: Truy vết biến thể sản phẩm theo phân loại (màu sắc, kích thước) và đồng bộ tồn kho.
+- Quản lý Đơn hàng: Truy xuất lịch sử giao dịch, cập nhật trạng thái đơn.
+- Thống kê & Báo cáo: Cung cấp số liệu tổng quan trực quan thông qua biểu đồ Recharts.
+- Xác thực & Phân quyền: Đăng nhập qua JWT tích hợp cơ chế phân quyền đường dẫn (Private/Admin Routes).
 
-### 1. Path Aliases
-Luôn sử dụng `@/` để trỏ về thư mục `src/`. Tránh tuyệt đối Relative imports lồng nhau sâu.
-- Sai: `import Button from '../../../../shared/components/ui/Button'`
-- Đúng: `import Button from '@/shared/components/ui/Button'`
+## 5. Quy Ước Lập Trình (Coding Conventions)
 
-### 2. Gọi API & Xử lý Token
-- **Tự động hóa JWT**: `axiosInstance` (tại `src/shared/api/axiosInstance.ts`) đã được cấu hình tự động lấy Token từ `localStorage` để gắn vào Header.
-- **Auto-Refresh Token**: Khi backend trả về lỗi `401 Unauthorized`, `axiosInstance` sẽ tự động gọi API `/auth/refresh` (sử dụng Refresh Token Cookie) để lấy Access Token mới và thực hiện lại Request cũ. Developer không cần phải xử lý tay lỗi 401 ở mỗi hàm.
-
-### 3. Xử lý State với Redux
-- Redux chỉ nên dùng cho các Global State (User Login, Giỏ hàng POS, ...).
-- Đối với Form Data cục bộ, vui lòng dùng `useState` hoặc các thư viện như `react-hook-form`.
-
-### 4. Định tuyến (Routing) & Lazy Load
-- Tất cả Page Components đều được nạp thông qua `React.lazy` tại `src/app/router/routeConfig.tsx`.
-- Khi tạo Page mới, hãy khai báo vào `routeConfig.tsx`.
-- Sử dụng `<PrivateRoute />` cho các route yêu cầu đăng nhập, và `<AdminRoute />` cho các route chỉ dành cho Quản trị viên.
-
----
-
-## Danh Sách Chức Năng Hiện Tại (Skeleton)
-
-- [x] **Auth:** Đăng nhập, Đăng xuất, Tự động refresh token.
-- [x] **Dashboard:** Báo cáo tổng quan.
-- [x] **POS / Invoices:** Giao diện bán hàng (Tạo hóa đơn), Lịch sử hóa đơn.
-- [x] **Products:** Quản lý hàng hóa, thuộc tính (Màu, Size), Giá bán.
-- [x] **Customers:** Khách hàng, Nhóm khách hàng.
-- [x] **Warehouse:** Kho bãi, Nhà cung cấp, Phiếu nhập kho, Phiếu trả hàng.
-- [x] **Users:** Quản trị viên quản lý nhân sự.
-
-*Lưu ý: Tất cả các Pages và UI Components hiện đang ở trạng thái Skeleton (Chứa khung và comment TODO) để các Developer tiếp nhận và tiến hành triển khai Logic, UI chi tiết.*
+- Path Aliases: Bắt buộc sử dụng tiền tố @/ cho tất cả các import trỏ về thư mục src/. Đường dẫn tương đối (relative paths) chỉ được phép dùng cho các file nằm cùng cấp trong một thư mục nghiệp vụ.
+- Quy tắc Quản lý State: Dùng RTK Query cho toàn bộ dữ liệu gọi từ API (Server state). Trạng thái giao diện cục bộ và biểu mẫu phải dùng React primitives (useState, useReducer) hoặc các custom hooks chuyên biệt.
+- Quản lý Độ Phức Tạp: Các màn hình chức năng lớn bắt buộc phải được tái cấu trúc theo Orchestrator Pattern, trích xuất toàn bộ quy tắc nghiệp vụ sang thư mục hooks/ nội bộ của tính năng đó.
