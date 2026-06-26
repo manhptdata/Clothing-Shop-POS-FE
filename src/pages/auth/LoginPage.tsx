@@ -42,7 +42,7 @@ export default function LoginPage() {
                 diamond
               </span>
             </div>
-            <h1 className="font-display-lg text-display-lg text-primary tracking-tighter mb-xs text-center">Atelier</h1>
+            <h1 className="font-display-lg text-display-lg text-primary tracking-tighter mb-xs text-center">Sapo</h1>
             <p className="font-body-sm text-body-sm text-on-surface-variant text-center uppercase tracking-widest">
               Quản lý cửa hàng cao cấp
             </p>
@@ -62,7 +62,7 @@ export default function LoginPage() {
               id="email"
               label="Tài khoản / Email"
               type="text"
-              placeholder="associate@atelier.com"
+              placeholder="associate@sapo.vn"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
