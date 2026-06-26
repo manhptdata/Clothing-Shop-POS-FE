@@ -21,6 +21,7 @@ interface ProductFormModalProps {
     onClose: () => void;
     product?: Product | null;
     categories: Category[];
+    onSuccess?: (product: Product) => void;
 }
 
 interface FormData {
@@ -48,6 +49,7 @@ export default function ProductFormModal({
     onClose,
     product,
     categories,
+    onSuccess,
 }: ProductFormModalProps) {
     const [formData, setFormData] = useState<FormData>(() => {
         if (product) {
@@ -210,9 +212,11 @@ export default function ProductFormModal({
 
         try {
             if (isEditing && product) {
-                await updateProduct({ id: product.id, data: requestData }).unwrap();
+                const res = await updateProduct({ id: product.id, data: requestData }).unwrap();
+                if (res.data) onSuccess?.(res.data);
             } else {
-                await createProduct(requestData).unwrap();
+                const res = await createProduct(requestData).unwrap();
+                if (res.data) onSuccess?.(res.data);
             }
             onClose();
         } catch (err: any) {
@@ -378,6 +382,7 @@ export default function ProductFormModal({
                         options={formData.options}
                         variants={formData.variants}
                         onChange={handleVariantsChange}
+                        isEditing={isEditing}
                     />
                     {errors.variants && (
                         <p className="text-error text-xs mt-1">{errors.variants}</p>

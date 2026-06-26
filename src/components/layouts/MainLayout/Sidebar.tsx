@@ -42,6 +42,18 @@ const menuItems: MenuItem[] = [
     roles: ['ROLE_ADMIN', 'ROLE_WH'],
   },
   {
+    path: '/warehouse/receipts',
+    label: 'Nhập kho',
+    icon: 'input',
+    roles: ['ROLE_ADMIN', 'ROLE_WH'],
+  },
+  {
+    path: '/warehouse/stock-history',
+    label: 'Lịch sử kho',
+    icon: 'history',
+    roles: ['ROLE_ADMIN', 'ROLE_WH'],
+  },
+  {
     path: '/customers',
     label: 'Khách hàng',
     icon: 'group',

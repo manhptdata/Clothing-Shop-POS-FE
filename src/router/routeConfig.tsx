@@ -17,6 +17,13 @@ const ProductFormPage = lazy(() => import('@/pages/products/ProductFormPage'));
 const CategoryListPage = lazy(() => import('@/pages/categories/CategoryListPage'));
 const SupplierListPage = lazy(() => import('@/pages/suppliers/SupplierListPage'));
 
+// Warehouse
+const ReceiptListPage = lazy(() => import('@/pages/warehouse/ReceiptListPage'));
+const ReceiptCreatePage = lazy(() => import('@/pages/warehouse/ReceiptCreatePage'));
+const ReceiptUpdatePage = lazy(() => import('@/pages/warehouse/ReceiptUpdatePage'));
+const ReceiptDetailPage = lazy(() => import('@/pages/warehouse/ReceiptDetailPage'));
+const StockHistoryPage = lazy(() => import('@/pages/warehouse/StockHistoryPage'));
+
 // Customers 
 const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
 const CustomerListPage = lazy(() => import('@/pages/customers/list/CustomerListPage'));
@@ -60,7 +67,7 @@ export const routes: RouteObject[] = [
             ]
           },
 
-          // Products & Suppliers (Admin, Kho)
+          // Products, Suppliers & Warehouse (Admin, Kho)
           {
             element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_WH"]} />,
             children: [
@@ -70,6 +77,12 @@ export const routes: RouteObject[] = [
               { path: "products/:id/edit", element: <ProductFormPage /> },
               { path: "products/categories", element: <CategoryListPage /> },
               { path: "suppliers", element: <SupplierListPage /> },
+              // Warehouse / Nhập kho
+              { path: "warehouse/receipts", element: <ReceiptListPage /> },
+              { path: "warehouse/receipts/new", element: <ReceiptCreatePage /> },
+              { path: "warehouse/receipts/:id", element: <ReceiptDetailPage /> },
+              { path: "warehouse/receipts/:id/edit", element: <ReceiptUpdatePage /> },
+              { path: "warehouse/stock-history", element: <StockHistoryPage /> },
             ],
           },
 
