@@ -31,7 +31,11 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    // Tránh vòng lặp vô tận: không tự động refresh token nếu request bị lỗi chính là login hoặc refresh
+    const isAuthRequest = originalRequest?.url?.includes('/auth/login') || originalRequest?.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       originalRequest._retry = true;
       try {
         const res = await axios.get(`${ENV.API_BASE_URL}/api/auth/refresh`, {
@@ -43,11 +47,15 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         }
-      } catch {
+      } catch (refreshError) {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
-        window.location.href = '/login';
+        // Tránh reload lại trang khi người dùng đang ở sẵn trang login
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
+
     return Promise.reject(error);
   },
 );
