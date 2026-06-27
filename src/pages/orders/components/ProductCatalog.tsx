@@ -22,7 +22,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   handleProductClick,
 }) => {
   return (
-    <section className="w-full lg:w-[65%] flex flex-col h-full overflow-hidden">
+    <section className="w-full lg:flex-1 flex flex-col h-full overflow-hidden">
       {/* Filters */}
       <div className="flex gap-sm overflow-x-auto pb-2 mb-md scrollbar-none flex-shrink-0">
         {categories.map((cat) => (

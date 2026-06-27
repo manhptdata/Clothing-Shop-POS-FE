@@ -59,14 +59,14 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   pendingOrderId,
 }) => {
   return (
-    <section className="w-full lg:w-[35%] bg-[#1a1d21] border-l border-outline/10 flex flex-col rounded-xl overflow-hidden h-full">
+    <section className="w-full lg:w-[380px] xl:w-[400px] flex-shrink-0 bg-[#1a1d21] border-l border-outline/10 flex flex-col rounded-xl overflow-hidden h-full">
       {/* Header */}
-      <div className="px-md py-md border-b border-[#2d3238] bg-[#1a1d21] sticky top-0 z-10 flex-shrink-0">
-        <h2 className="font-headline-md text-headline-md text-white font-bold">Đơn hàng hiện tại</h2>
+      <div className="px-sm py-3 border-b border-[#2d3238] bg-[#1a1d21] sticky top-0 z-10 flex-shrink-0">
+        <h2 className="text-base text-white font-bold">Đơn hàng hiện tại</h2>
       </div>
 
       {/* Body Content */}
-      <div className="flex-1 overflow-y-auto p-md flex flex-col gap-md">
+      <div className="flex-1 overflow-y-auto p-sm flex flex-col gap-sm">
         {/* Customer CRM section injected here */}
         {customerSelectionNode}
 
@@ -82,7 +82,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
               <p className="text-xs font-semibold">Giỏ hàng đang trống</p>
             </div>
           ) : (
-            <div className="space-y-sm max-h-[300px] overflow-y-auto pr-1">
+            <div className="space-y-sm pr-1">
               {cart.map((item) => (
                 <div key={item.variant.id} className="flex gap-sm bg-inverse-surface border border-outline/10 rounded-lg p-sm relative group/item">
                   <div className="w-12 h-16 rounded bg-surface-container-low flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -140,45 +140,45 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
             </div>
           )}
         </div>
-      </div>
 
-      {/* Checkout Footer Section */}
-      <div className="p-md border-t border-outline/20 bg-[#15181c] flex-shrink-0">
-        {/* Payment Methods */}
-        <div className="mb-4">
-          <label className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Phương thức thanh toán</label>
-          <div className="flex bg-[#16191c] rounded-lg p-1 border border-[#2d3238]">
-            <button
-              onClick={() => setPaymentMethod('CASH')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
-                paymentMethod === 'CASH' 
-                  ? 'bg-[#2ecc71] text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">payments</span>
-              Tiền mặt
-            </button>
-            <button
-              onClick={() => {
-                setPaymentMethod('QR_PAYOS');
-                setCustomerPaid('');
-                setIsPaidModified(false);
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
-                paymentMethod === 'QR_PAYOS' 
-                  ? 'bg-[#1a73e8] text-white shadow-sm' 
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-              Chuyển khoản QR
-            </button>
+        {/* Payment & Order notes (moved from footer to body to optimize height) */}
+        <div className="mt-sm pt-sm border-t border-[#2d3238] space-y-sm">
+          {/* Payment Methods */}
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Phương thức thanh toán</label>
+            <div className="flex bg-[#16191c] rounded-lg p-1 border border-[#2d3238]">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CASH')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
+                  paymentMethod === 'CASH' 
+                    ? 'bg-[#2ecc71] text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">payments</span>
+                Tiền mặt
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentMethod('QR_PAYOS');
+                  setCustomerPaid('');
+                  setIsPaidModified(false);
+                }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
+                  paymentMethod === 'QR_PAYOS' 
+                    ? 'bg-[#1a73e8] text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                Chuyển khoản QR
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Payment Fields */}
-        <div className="space-y-sm mb-4">
+          {/* Payment Fields */}
           {paymentMethod === 'CASH' ? (
             <div className="grid grid-cols-2 gap-sm">
               <Input
@@ -215,9 +215,13 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
             className="bg-[#16191c] border-[#2d3238] text-white placeholder:text-slate-500"
           />
         </div>
+      </div>
+
+      {/* Checkout Footer Section */}
+      <div className="p-sm border-t border-outline/20 bg-[#15181c] flex-shrink-0">
 
         {/* Financial Details */}
-        <div className="flex flex-col gap-2 mb-4">
+        <div className="flex flex-col gap-2 mb-3">
           <div className="flex justify-between items-center text-slate-400 text-xs font-medium">
             <span>Tạm tính</span>
             <span className="text-white">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</span>

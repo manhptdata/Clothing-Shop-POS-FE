@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -57,8 +57,16 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
   setPointsToUse,
   maxPointsAbleToUse,
 }) => {
+  const [isPromotionOpen, setIsPromotionOpen] = useState(!!voucherCode || pointsToUse > 0);
+
+  useEffect(() => {
+    if (voucherCode || pointsToUse > 0) {
+      setIsPromotionOpen(true);
+    }
+  }, [voucherCode, pointsToUse]);
+
   return (
-    <div className="bg-[#1e2227] border border-[#2d3238] rounded-xl p-md flex flex-col gap-sm">
+    <div className="bg-[#1e2227] border border-[#2d3238] rounded-xl p-sm flex flex-col gap-sm">
       <div className="flex items-center justify-between">
         <span className="font-label-caps text-label-caps text-slate-400 font-bold uppercase tracking-wider text-[10px]">Khách hàng</span>
 
@@ -174,91 +182,112 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
 
           {/* Loyalty Points & Vouchers Integration */}
           {selectedCustomer && selectedCustomer.fullName !== 'Khách lẻ' && (
-            <div className="mt-sm pt-sm border-t border-[#2d3238] space-y-sm">
-              {/* Voucher Select */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Voucher áp dụng</span>
-                  {vouchersList.length > 0 && (
-                    <span className="text-[10px] text-[#2ecc71] font-semibold">{vouchersList.filter(v => v.status === 'UNUSED').length} khả dụng</span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Select
-                    value={voucherCode}
-                    onChange={(val) => setVoucherCode(val as string)}
-                    className="bg-[#16191c] border-[#2d3238] text-slate-200"
-                    options={[
-                      { label: '-- Chọn voucher từ ví khách --', value: '' },
-                      ...vouchersList
-                        .filter(v => v.status === 'UNUSED')
-                        .map(v => ({
-                          label: `${v.voucherCode} (Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.discountAmount)})`,
-                          value: v.voucherCode,
-                        }))
-                    ]}
-                  />
+            <div className="mt-sm pt-sm border-t border-[#2d3238]">
+              <button
+                type="button"
+                onClick={() => setIsPromotionOpen(!isPromotionOpen)}
+                className="w-full flex items-center justify-between text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider py-1.5"
+              >
+                <span className="flex items-center gap-1.5 text-slate-200 hover:text-white transition-colors">
+                  <span className="material-symbols-outlined text-[16px]">redeem</span>
+                  Voucher & Điểm tích lũy
+                </span>
+                <span 
+                  className="material-symbols-outlined text-[16px] text-slate-400 transition-transform duration-200" 
+                  style={{ transform: isPromotionOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                >
+                  keyboard_arrow_down
+                </span>
+              </button>
 
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Hoặc nhập mã voucher khác..."
-                      value={voucherCode}
-                      onChange={(e) => setVoucherCode(e.target.value)}
-                      leftIcon={<span className="material-symbols-outlined text-sm">local_activity</span>}
-                      className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
-                    />
-                    {voucherCode && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setVoucherCode('')}
-                        className="px-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex-shrink-0"
-                      >
-                        Xóa
-                      </Button>
+              {isPromotionOpen && (
+                <div className="mt-sm space-y-sm animate-in fade-in duration-200">
+                  {/* Voucher Select */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Voucher áp dụng</span>
+                      {vouchersList.length > 0 && (
+                        <span className="text-[10px] text-[#2ecc71] font-semibold">{vouchersList.filter(v => v.status === 'UNUSED').length} khả dụng</span>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Select
+                        value={voucherCode}
+                        onChange={(val) => setVoucherCode(val as string)}
+                        className="bg-[#16191c] border-[#2d3238] text-slate-200"
+                        options={[
+                          { label: '-- Chọn voucher từ ví khách --', value: '' },
+                          ...vouchersList
+                            .filter(v => v.status === 'UNUSED')
+                            .map(v => ({
+                              label: `${v.voucherCode} (Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.discountAmount)})`,
+                              value: v.voucherCode,
+                            }))
+                        ]}
+                      />
+
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Hoặc nhập mã voucher khác..."
+                          value={voucherCode}
+                          onChange={(e) => setVoucherCode(e.target.value)}
+                          leftIcon={<span className="material-symbols-outlined text-sm">local_activity</span>}
+                          className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
+                        />
+                        {voucherCode && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setVoucherCode('')}
+                            className="px-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex-shrink-0"
+                          >
+                            Xóa
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {voucherError && (
+                      <p className="text-[10px] text-error mt-1 font-medium">{voucherError}</p>
+                    )}
+                    {isVoucherValid && activeVoucher && (
+                      <p className="text-[10px] text-[#2ecc71] mt-1 font-medium">Áp dụng thành công: Giảm -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherDiscount)}</p>
                     )}
                   </div>
-                </div>
-                {voucherError && (
-                  <p className="text-[10px] text-error mt-1 font-medium">{voucherError}</p>
-                )}
-                {isVoucherValid && activeVoucher && (
-                  <p className="text-[10px] text-[#2ecc71] mt-1 font-medium">Áp dụng thành công: Giảm -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherDiscount)}</p>
-                )}
-              </div>
 
-              {/* Loyalty Points Use */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dùng điểm tích lũy</span>
-                  <span className="text-[10px] text-slate-400">Có: <strong className="text-white font-bold">{availablePoints}</strong> điểm</span>
+                  {/* Loyalty Points Use */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dùng điểm tích lũy</span>
+                      <span className="text-[10px] text-slate-400">Có: <strong className="text-white font-bold">{availablePoints}</strong> điểm</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={maxPointsAbleToUse}
+                        value={pointsToUse || ''}
+                        onChange={(e) => {
+                          const val = e.target.value === '' ? 0 : Number(e.target.value);
+                          setPointsToUse(Math.min(val, maxPointsAbleToUse));
+                        }}
+                        placeholder="Nhập số điểm..."
+                        leftIcon={<span className="material-symbols-outlined text-[16px]">monetization_on</span>}
+                        className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPointsToUse(maxPointsAbleToUse)}
+                        className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/30 hover:!bg-[#2ecc71]/20 text-[10px] font-bold px-2.5 py-1 rounded-md border flex-shrink-0 whitespace-nowrap transition-colors"
+                      >
+                        Tối đa ({maxPointsAbleToUse})
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={maxPointsAbleToUse}
-                    value={pointsToUse || ''}
-                    onChange={(e) => {
-                      const val = e.target.value === '' ? 0 : Number(e.target.value);
-                      setPointsToUse(Math.min(val, maxPointsAbleToUse));
-                    }}
-                    placeholder="Nhập số điểm..."
-                    leftIcon={<span className="material-symbols-outlined text-[16px]">monetization_on</span>}
-                    className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPointsToUse(maxPointsAbleToUse)}
-                    className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/30 hover:!bg-[#2ecc71]/20 text-[10px] font-bold px-2.5 py-1 rounded-md border flex-shrink-0 whitespace-nowrap transition-colors"
-                  >
-                    Tối đa ({maxPointsAbleToUse})
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>

@@ -55,9 +55,9 @@ export default function OrderCreatePage() {
       </div>
 
       {/* POS Split Layout */}
-      <div className="flex flex-col lg:flex-row gap-gutter h-[calc(100vh-12rem)]">
+      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-10.5rem)]">
         
-        {/* Left: Catalog (65%) */}
+        {/* Left: Catalog */}
         <ProductCatalog
           isProductsLoading={state.isProductsLoading}
           categories={state.categories}
