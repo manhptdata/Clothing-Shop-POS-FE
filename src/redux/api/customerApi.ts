@@ -138,7 +138,7 @@ export const customerApi = baseApi.injectEndpoints({
       { keyword?: string; page?: number; size?: number }
     >({
       query: (params) => ({
-        url: '/crm/customer-groups/search', // <-- ĐÃ SỬA: Thêm /search vào đuôi
+        url: '/crm/customer-groups', // Sửa lại URL chuẩn (xóa /search)
         method: 'GET',
         params: {
           keyword: params.keyword || '',

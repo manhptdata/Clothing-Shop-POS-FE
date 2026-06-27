@@ -100,8 +100,12 @@ export default function CampaignListPage() {
     {
       key: "fullName",
       header: "Khách hàng",
-      className: "font-bold text-gray-900",
-      render: (cust) => cust.fullName,
+      className: "font-bold text-gray-900 cursor-pointer",
+      render: (cust) => (
+        <span onClick={() => navigate(`/customers/${cust.id}`)}>
+          {cust.fullName}
+        </span>
+      ),
     },
     {
       key: "phone",
