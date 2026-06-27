@@ -138,7 +138,7 @@ export const customerApi = baseApi.injectEndpoints({
       { keyword?: string; page?: number; size?: number }
     >({
       query: (params) => ({
-        url: '/crm/customer-groups', // Sửa lại URL chuẩn (xóa /search)
+        url: '/crm/customer-groups/search',
         method: 'GET',
         params: {
           keyword: params.keyword || '',
@@ -176,22 +176,22 @@ export const customerApi = baseApi.injectEndpoints({
 
 
 
-getPendingCustomersByCampaign: builder.query<
-  RestResponse<PageResponse<Customer>>,
-  PendingCustomerRequest
->({
-  query: (params) => ({
-    url: `/crm/campaigns/pending-customers`,
-    params: {
-      type: params.type,
-      page: params.page,
-      size: params.size,
-    },
-  }),
-  providesTags: (result, error, arg) => [{ type: "Customer", id: `PENDING_${arg.type}` }],
-}),
+    getPendingCustomersByCampaign: builder.query<
+      RestResponse<PageResponse<Customer>>,
+      PendingCustomerRequest
+    >({
+      query: (params) => ({
+        url: `/crm/campaigns/pending-customers`,
+        params: {
+          type: params.type,
+          page: params.page,
+          size: params.size,
+        },
+      }),
+      providesTags: (result, error, arg) => [{ type: "Customer", id: `PENDING_${arg.type}` }],
+    }),
 
-       getAllCareLogs: builder.query<
+    getAllCareLogs: builder.query<
       RestResponse<PageResponse<CustomerCareLog>>,
       { keyword?: string; page?: number; size?: number }
     >({
@@ -209,7 +209,7 @@ getPendingCustomersByCampaign: builder.query<
     }),
 
 
-        searchCareLogs: builder.query<
+    searchCareLogs: builder.query<
       RestResponse<PageResponse<CustomerCareLog>>,
       { keyword?: string; result?: string; page?: number; size?: number }
     >({
@@ -253,7 +253,7 @@ getPendingCustomersByCampaign: builder.query<
 
 
 
-        updateCareLog: builder.mutation<RestResponse<null>, { id: string | number; data: UpdateCareLogRequest }>({
+    updateCareLog: builder.mutation<RestResponse<null>, { id: string | number; data: UpdateCareLogRequest }>({
       query: ({ id, data }) => ({
         url: `/crm/campaigns/care-logs/${id}`,
         method: 'PUT',
