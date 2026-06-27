@@ -53,7 +53,7 @@ export default function CareLogListPage() {
       className: "text-center",
       render: (log) => {
         let label = log.result;
-        let variant: "success" | "warning" | "danger" | "neutral" | "info" = "neutral";
+        let variant: "success" | "warning" | "danger" | "info" | "default" = "default";
 
         switch (log.result) {
           case "NGHE_MAY":
@@ -70,7 +70,7 @@ export default function CareLogListPage() {
             break;
           case "TU_CHOI":
             label = "Từ chối";
-            variant = "neutral";
+            variant = "default";
             break;
         }
 
@@ -227,7 +227,7 @@ export default function CareLogListPage() {
           columns={columns}
           data={tableData}
           isLoading={isLoading}
-          emptyMessage="Không tìm thấy nhật ký chăm sóc nào."
+          emptyText="Không tìm thấy nhật ký chăm sóc nào."
         />
 
         {/* Pagination */}
