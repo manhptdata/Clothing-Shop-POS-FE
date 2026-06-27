@@ -56,7 +56,7 @@ export default function CustomerGroupListPage() {
       header: "Tên nhóm (name)",
       className: "w-48",
       render: (row) => (
-        <button 
+        <button
           onClick={() => navigate(`/customers/groups/${row.id}`)}
           className="flex items-center gap-1.5 font-bold text-gray-800 hover:text-blue-600 transition-colors text-left"
           title="Xem chi tiết nhóm"
@@ -93,7 +93,7 @@ export default function CustomerGroupListPage() {
       className: "text-right",
       render: (row) => (
         <span className="font-mono text-gray-900">
-          {row.minSpending.toLocaleString("vi-VN")}đ
+          {(row.minSpending || 0).toLocaleString("vi-VN")}đ
         </span>
       ),
     },
@@ -102,12 +102,12 @@ export default function CustomerGroupListPage() {
       header: "Chi tiêu tối đa",
       className: "text-right",
       render: (row) => {
-        const isInfinite = row.maxSpending >= 999999999;
+        const isInfinite = !row.maxSpending || row.maxSpending >= 999999999;
         return isInfinite ? (
           <span className="text-gray-400 font-mono italic text-[11px]">Vô cực</span>
         ) : (
           <span className="font-mono text-gray-900">
-            {row.maxSpending.toLocaleString("vi-VN")}đ
+            {(row.maxSpending || 0).toLocaleString("vi-VN")}đ
           </span>
         );
       },
@@ -118,11 +118,10 @@ export default function CustomerGroupListPage() {
       className: "text-center w-32",
       render: (row) => (
         <span
-          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${
-            row.totalCustomers > 0
+          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${row.totalCustomers > 0
               ? "text-blue-600 bg-blue-50 font-bold"
               : "text-gray-500"
-          }`}
+            }`}
         >
           {row.totalCustomers} KH
         </span>

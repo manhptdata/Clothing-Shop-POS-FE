@@ -169,17 +169,17 @@ export default function CustomerGroupDetailPage() {
                   Chi tiêu tối thiểu (minSpending)
                 </label>
                 <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 font-mono">
-                  {group.minSpending.toLocaleString("vi-VN")}đ
+                  {(group.minSpending || 0).toLocaleString("vi-VN")}đ
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                  Chi tiêu tối đa (maxSpending)
-                </label>
-                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 font-mono">
-                  {group.maxSpending >= 999999999
-                    ? "Vô cực (Null)"
-                    : `${group.maxSpending.toLocaleString("vi-VN")}đ`}
+              <div className="bg-orange-50/50 p-3 rounded-lg border border-orange-100/50">
+                <div className="text-sm text-gray-500 mb-1">
+                  Chi tiêu tối đa
+                </div>
+                <div className="font-mono font-medium text-gray-900">
+                  {!group.maxSpending || group.maxSpending >= 999999999
+                    ? "Không giới hạn (Vô cực)"
+                    : `${(group.maxSpending || 0).toLocaleString("vi-VN")}đ`}
                 </div>
               </div>
             </div>
