@@ -56,7 +56,7 @@ export default function CustomerGroupListPage() {
       header: "Tên nhóm (name)",
       className: "w-48",
       render: (row) => (
-        <button 
+        <button
           onClick={() => navigate(`/customers/groups/${row.id}`)}
           className="flex items-center gap-1.5 font-bold text-gray-800 hover:text-blue-600 transition-colors text-left"
           title="Xem chi tiết nhóm"
@@ -118,11 +118,10 @@ export default function CustomerGroupListPage() {
       className: "text-center w-32",
       render: (row) => (
         <span
-          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${
-            row.totalCustomers > 0
+          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${row.totalCustomers > 0
               ? "text-blue-600 bg-blue-50 font-bold"
               : "text-gray-500"
-          }`}
+            }`}
         >
           {row.totalCustomers} KH
         </span>
