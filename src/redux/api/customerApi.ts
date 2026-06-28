@@ -211,17 +211,17 @@ export const customerApi = baseApi.injectEndpoints({
 
     searchCareLogs: builder.query<
       RestResponse<PageResponse<CustomerCareLog>>,
-      { keyword?: string; result?: string; page?: number; size?: number }
+      { keyword?: string; result?: string; potentialStatus?: string; page?: number; size?: number }
     >({
       query: (params) => {
         // Chỉ gửi params nào có giá trị để tránh backend lỗi
         const queryParams: any = {
           page: params.page || 0,
           size: params.size || 10,
-          sort: 'id,desc',
         };
         if (params.keyword) queryParams.keyword = params.keyword;
         if (params.result) queryParams.result = params.result;
+        if (params.potentialStatus) queryParams.potentialStatus = params.potentialStatus;
 
         return {
           url: `/crm/campaigns/care-logs/search`,

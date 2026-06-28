@@ -75,7 +75,7 @@ export default function CustomerDetailPage() {
   }
 
   // Xử lý logic màu sắc Hạng thẻ
-  const rankCode = customer.customerGroup?.code || "BRONZE";
+  const rankCode = customer.customerGroup?.code;
   const rankVariant =
     rankCode === "GOLD"
       ? "warning"
@@ -181,10 +181,18 @@ export default function CustomerDetailPage() {
                 Hạng thẻ
               </label>
               <div className="mt-1 flex items-center gap-2">
-                <Badge variant={rankVariant as any}>{rankCode}</Badge>
-                <span className="text-[11px] text-slate-600 font-bold tracking-wide">
-                  · {customer.customerGroup?.name || "Khách thường"}
-                </span>
+                {!rankCode ? (
+                  <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">
+                    Chưa xếp hạng
+                  </span>
+                ) : (
+                  <>
+                    <Badge variant={rankVariant as any}>{rankCode}</Badge>
+                    <span className="text-[11px] text-slate-600 font-bold tracking-wide">
+                      · {customer.customerGroup?.name}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div>
@@ -456,6 +464,27 @@ export default function CustomerDetailPage() {
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                               Trạng thái: {log.result}
                             </span>
+                            
+                            {log.potentialStatus === "TIEM_NANG" && (
+                              <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-green-200 uppercase tracking-wider flex items-center gap-1">
+                                <i className="fa-solid fa-star text-[9px]"></i> Tiềm năng
+                              </span>
+                            )}
+                            {log.potentialStatus === "KHONG_TIEM_NANG" && (
+                              <span className="bg-red-50 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-red-200 uppercase tracking-wider flex items-center gap-1">
+                                <i className="fa-solid fa-thumbs-down text-[9px]"></i> Không tiềm năng
+                              </span>
+                            )}
+                            {log.potentialStatus === "MONG_LUNG" && (
+                              <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-amber-200 uppercase tracking-wider flex items-center gap-1">
+                                <i className="fa-solid fa-face-thinking text-[9px]"></i> Mông lung
+                              </span>
+                            )}
+                            {log.potentialStatus === "KHONG_XAC_DINH" && (
+                              <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-gray-200 uppercase tracking-wider flex items-center gap-1">
+                                <i className="fa-solid fa-question text-[9px]"></i> Không xác định
+                              </span>
+                            )}
                             {log.order && (
                               <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg border border-blue-200/60 font-mono font-medium">
                                 <i className="fa-solid fa-link mr-0.5"></i> Có kèm đơn hàng

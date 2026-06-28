@@ -24,6 +24,7 @@ export default function CareLogEditPage() {
   const [note, setNote] = useState("");
   const [nextRetryAt, setNextRetryAt] = useState("");
   const [errorResult, setErrorResult] = useState("");
+  const [useAi, setUseAi] = useState(false);
 
   // 3. FILL DỮ LIỆU CŨ VÀO STATE KHI API TRẢ VỀ THÀNH CÔNG
   useEffect(() => {
@@ -45,14 +46,15 @@ export default function CareLogEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!result) {
+    const payloadResult = useAi ? "BO_TRONG" : result;
+    if (!useAi && !result) {
       setErrorResult("Kết quả cuộc gọi không được để trống");
       return;
     }
     setErrorResult("");
 
     let nextRetryAtISO = null;
-    if (result === "HEN_GOI_LAI" && nextRetryAt) {
+    if (!useAi && result === "HEN_GOI_LAI" && nextRetryAt) {
       nextRetryAtISO = new Date(nextRetryAt).toISOString();
     }
 
@@ -62,7 +64,7 @@ export default function CareLogEditPage() {
           id: Number(id),
           data: {
             customerId: log.customer.id,
-            result,
+            result: payloadResult,
             note: note || undefined,
             nextRetryAt: nextRetryAtISO,
             campaignId: log.campaign?.id,
@@ -151,6 +153,32 @@ export default function CareLogEditPage() {
             </div>
           </div>
 
+          {/* CÔNG TẮC PHÂN LOẠI AI */}
+          <div className="flex items-center justify-between bg-purple-50 p-4 rounded-xl border border-purple-100 mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-purple-900 flex items-center gap-1.5">
+                <i className="fa-solid fa-wand-magic-sparkles"></i> Phân loại tự động bằng AI
+              </h3>
+              <p className="text-[11px] text-purple-700/80 font-medium mt-0.5">
+                AI sẽ tự động phân tích "Ghi chú" của bạn để đánh giá thái độ khách hàng và kết quả cuộc gọi.
+              </p>
+            </div>
+
+            {/* Nút Toggle Switch */}
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={useAi}
+                onChange={(e) => {
+                  setUseAi(e.target.checked);
+                  if (e.target.checked) setResult(""); // Xoá lựa chọn kết quả khi bật AI
+                }}
+              />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
               Kết quả cuộc gọi (result) <span className="text-rose-500">*</span>
@@ -180,22 +208,24 @@ export default function CareLogEditPage() {
               ].map((opt) => (
                 <label
                   key={opt.value}
-                  className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${
-                    result === opt.value
-                      ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
-                      : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
-                  }`}
+                  className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${useAi
+                      ? "border-gray-100 bg-gray-50/50 cursor-not-allowed"
+                      : result === opt.value
+                        ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
+                        : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
+                    }`}
                 >
                   <input
                     type="radio"
                     name="result"
                     value={opt.value}
                     className="sr-only"
-                    checked={result === opt.value}
+                    checked={!useAi && result === opt.value}
                     onChange={(e) => setResult(e.target.value)}
+                    disabled={useAi}
                   />
-                  <i className={`fa-solid ${opt.icon} text-sm mb-1.5`}></i>
-                  <span className="text-gray-900 font-bold">{opt.label}</span>
+                  <i className={`fa-solid ${opt.icon} text-sm mb-1.5 ${useAi ? "opacity-50 grayscale" : ""}`}></i>
+                  <span className={`font-bold ${useAi ? "text-gray-400" : "text-gray-900"}`}>{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -206,8 +236,18 @@ export default function CareLogEditPage() {
             )}
           </div>
 
+          {useAi && (
+            <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-xl transition-all flex items-start gap-2.5">
+              <i className="fa-solid fa-robot text-blue-500 mt-0.5"></i>
+              <div className="text-blue-800 text-[11px] font-medium leading-relaxed">
+                <strong className="block mb-0.5">AI đang theo dõi thời gian!</strong>
+                Hãy ghi chú thời gian hẹn lại vào ô bên dưới (VD: <i>"chiều mai 5h gọi lại", "hẹn sang tuần"</i>). AI sẽ tự đọc hiểu và dời lịch hệ thống thay bạn.
+              </div>
+            </div>
+          )}
+
           <div
-            className={`bg-amber-50/40 border border-amber-100 p-4 rounded-xl transition-all ${result === "HEN_GOI_LAI" ? "block" : "hidden"}`}
+            className={`bg-amber-50/40 border border-amber-100 p-4 rounded-xl transition-all ${!useAi && result === "HEN_GOI_LAI" ? "block" : "hidden"}`}
           >
             <Input
               type="datetime-local"

@@ -16,6 +16,7 @@ export default function CareLogListPage() {
   const [size, setSize] = useState(10);
   const [keyword, setKeyword] = useState("");
   const [resultFilter, setResultFilter] = useState("ALL");
+  const [potentialStatusFilter, setPotentialStatusFilter] = useState("ALL");
   const [deleteConfirmLogId, setDeleteConfirmLogId] = useState<number | string | null>(null);
 
   const [deleteCareLog] = useDeleteCareLogMutation();
@@ -25,6 +26,7 @@ export default function CareLogListPage() {
     size,
     keyword,
     result: resultFilter === "ALL" ? undefined : resultFilter,
+    potentialStatus: potentialStatusFilter === "ALL" ? undefined : potentialStatusFilter,
   });
 
   const logs = responseData?.data?.content || [];
@@ -75,9 +77,31 @@ export default function CareLogListPage() {
         }
 
         return (
-          <Badge variant={variant}>
-            {label}
-          </Badge>
+          <div className="flex flex-col items-center gap-1.5 mt-1">
+            <Badge variant={variant}>
+              {label}
+            </Badge>
+            {log.potentialStatus === "TIEM_NANG" && (
+              <span className="bg-green-50 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-green-200 uppercase flex items-center gap-1">
+                <i className="fa-solid fa-star text-[8px]"></i> Tiềm năng
+              </span>
+            )}
+            {log.potentialStatus === "KHONG_TIEM_NANG" && (
+              <span className="bg-red-50 text-red-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-red-200 uppercase flex items-center gap-1">
+                <i className="fa-solid fa-thumbs-down text-[8px]"></i> Không TN
+              </span>
+            )}
+            {log.potentialStatus === "MONG_LUNG" && (
+              <span className="bg-amber-50 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase flex items-center gap-1">
+                <i className="fa-solid fa-face-thinking text-[8px]"></i> Mông lung
+              </span>
+            )}
+            {log.potentialStatus === "KHONG_XAC_DINH" && (
+              <span className="bg-gray-100 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-gray-200 uppercase flex items-center gap-1">
+                <i className="fa-solid fa-question text-[8px]"></i> K.X.Định
+              </span>
+            )}
+          </div>
         );
       },
     },
@@ -220,6 +244,22 @@ export default function CareLogListPage() {
                 { label: "Hẹn gọi lại", value: "HEN_GOI_LAI" },
                 { label: "Cuộc gọi nhỡ", value: "GOI_NHO" },
                 { label: "Từ chối", value: "TU_CHOI" },
+              ]}
+            />
+          </div>
+          <div className="w-full sm:max-w-xs">
+            <Select
+              value={potentialStatusFilter}
+              onChange={(val) => {
+                setPotentialStatusFilter(val);
+                setPage(0);
+              }}
+              options={[
+                { label: "Tất cả thái độ", value: "ALL" },
+                { label: "🌟 Tiềm năng", value: "TIEM_NANG" },
+                { label: "👎 Không tiềm năng", value: "KHONG_TIEM_NANG" },
+                { label: "🤔 Mông lung", value: "MONG_LUNG" },
+                { label: "❓ Không xác định", value: "KHONG_XAC_DINH" },
               ]}
             />
           </div>

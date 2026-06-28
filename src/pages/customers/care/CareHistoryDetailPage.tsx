@@ -84,9 +84,31 @@ export default function CareHistoryDetailPage() {
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
                     <i className="fa-solid fa-comment-text text-blue-500"></i> Nội dung ghi nhận cuộc gọi
                   </h3>
-                  <Badge variant="warning">
-                    {log.result || "CHƯA RÕ"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="warning">
+                      {log.result || "CHƯA RÕ"}
+                    </Badge>
+                    {log.potentialStatus === "TIEM_NANG" && (
+                      <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-200 uppercase flex items-center gap-1">
+                        <i className="fa-solid fa-star text-[9px]"></i> Tiềm năng
+                      </span>
+                    )}
+                    {log.potentialStatus === "KHONG_TIEM_NANG" && (
+                      <span className="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200 uppercase flex items-center gap-1">
+                        <i className="fa-solid fa-thumbs-down text-[9px]"></i> Không tiềm năng
+                      </span>
+                    )}
+                    {log.potentialStatus === "MONG_LUNG" && (
+                      <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200 uppercase flex items-center gap-1">
+                        <i className="fa-solid fa-face-thinking text-[9px]"></i> Mông lung
+                      </span>
+                    )}
+                    {log.potentialStatus === "KHONG_XAC_DINH" && (
+                      <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200 uppercase flex items-center gap-1">
+                        <i className="fa-solid fa-question text-[9px]"></i> Không xác định
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div>
