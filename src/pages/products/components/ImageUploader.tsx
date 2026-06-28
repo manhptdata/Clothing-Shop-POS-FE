@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import { uploadMultipleImagesToCloudinary, deleteImageFromCloudinary } from '@/utils/cloudinary';
 
 interface ImageUploaderProps {
     images: string[];
@@ -8,18 +9,39 @@ interface ImageUploaderProps {
 export function ImageUploader({ images, onChange }: ImageUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        if (!files) return;
+        if (!files || files.length === 0) return;
 
-        // Giả lập upload ảnh (thực tế gọi API upload)
-        const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-        onChange([...images, ...newImages]);
+        try {
+            setIsUploading(true);
+            const uploadedUrls = await uploadMultipleImagesToCloudinary(files);
+            onChange([...images, ...uploadedUrls]);
+        } catch (error) {
+            console.error('Lỗi khi tải ảnh lên:', error);
+            alert('Có lỗi xảy ra khi tải ảnh lên. Vui lòng kiểm tra lại cấu hình.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = ''; // Reset input
+            }
+        }
     };
 
-    const removeImage = (index: number) => {
+    const removeImage = async (index: number) => {
+        const urlToRemove = images[index];
+        // Xoá trên giao diện trước
         onChange(images.filter((_, i) => i !== index));
+        
+        // Gọi API xoá ngầm (không block UI)
+        if (urlToRemove.includes('res.cloudinary.com')) {
+            const success = await deleteImageFromCloudinary(urlToRemove);
+            if (!success) {
+                console.warn('Lỗi khi xoá ảnh trên server, nhưng đã xoá khỏi UI');
+            }
+        }
     };
 
     // Drag and Drop handlers
@@ -53,8 +75,9 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
             </h3>
 
             <div
-                className="border-2 border-dashed border-outline-variant/50 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface-container-low/50 transition-colors min-h-[120px]"
-                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed border-outline-variant/50 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-colors min-h-[120px] ${isUploading ? 'opacity-50 cursor-not-allowed bg-surface-container-high' : 'cursor-pointer hover:bg-surface-container-low/50'
+                    }`}
+                onClick={() => !isUploading && fileInputRef.current?.click()}
             >
                 <input
                     ref={fileInputRef}
@@ -63,12 +86,22 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
                     multiple
                     className="hidden"
                     onChange={handleFileUpload}
+                    disabled={isUploading}
                 />
-                <span className="material-symbols-outlined text-outline-variant text-3xl">cloud_upload</span>
-                <p className="font-button text-button text-primary mt-1">Nhấn để tải lên</p>
-                <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                    hoặc kéo thả ảnh vào đây
-                </p>
+                {isUploading ? (
+                    <>
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <p className="font-button text-button text-primary">Đang tải lên...</p>
+                    </>
+                ) : (
+                    <>
+                        <span className="material-symbols-outlined text-outline-variant text-3xl">cloud_upload</span>
+                        <p className="font-button text-button text-primary mt-1">Nhấn để tải lên</p>
+                        <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
+                            hoặc kéo thả ảnh vào đây
+                        </p>
+                    </>
+                )}
             </div>
 
             {/* Grid ảnh */}
