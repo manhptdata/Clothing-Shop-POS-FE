@@ -119,8 +119,8 @@ export default function CustomerGroupListPage() {
       render: (row) => (
         <span
           className={`font-semibold px-2 py-1 rounded-md text-[11px] ${row.totalCustomers > 0
-            ? "text-blue-600 bg-blue-50 font-bold"
-            : "text-gray-500"
+              ? "text-blue-600 bg-blue-50 font-bold"
+              : "text-gray-500"
             }`}
         >
           {row.totalCustomers} KH
