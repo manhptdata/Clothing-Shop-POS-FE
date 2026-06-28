@@ -93,7 +93,7 @@ export default function CustomerGroupListPage() {
       className: "text-right",
       render: (row) => (
         <span className="font-mono text-gray-900">
-          {row.minSpending.toLocaleString("vi-VN")}đ
+          {(row.minSpending || 0).toLocaleString("vi-VN")}đ
         </span>
       ),
     },
@@ -102,12 +102,12 @@ export default function CustomerGroupListPage() {
       header: "Chi tiêu tối đa",
       className: "text-right",
       render: (row) => {
-        const isInfinite = row.maxSpending >= 999999999;
+        const isInfinite = !row.maxSpending || row.maxSpending >= 999999999;
         return isInfinite ? (
           <span className="text-gray-400 font-mono italic text-[11px]">Vô cực</span>
         ) : (
           <span className="font-mono text-gray-900">
-            {row.maxSpending.toLocaleString("vi-VN")}đ
+            {(row.maxSpending || 0).toLocaleString("vi-VN")}đ
           </span>
         );
       },

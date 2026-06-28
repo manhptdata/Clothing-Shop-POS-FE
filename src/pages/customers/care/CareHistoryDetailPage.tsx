@@ -241,11 +241,11 @@ export default function CareHistoryDetailPage() {
               Quay lại
             </Button>
             <Link to={`/customers/care/history/log/${latestLog.id}/edit`} className="flex-1 block">
-              <Button 
+              <Button
                 type="button"
                 size="sm"
-                variant="primary" 
-                className="w-full whitespace-nowrap !bg-amber-500 hover:!bg-amber-600 !border-amber-500" 
+                variant="primary"
+                className="w-full whitespace-nowrap !bg-amber-500 hover:!bg-amber-600 !border-amber-500"
                 leftIcon={<i className="fa-solid fa-pen-to-square"></i>}
               >
                 Sửa nhật ký

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   useSearchCustomersQuery,
   useDeactivateCustomerMutation,
-  useActivateCustomerMutation
+  useActivateCustomerMutation,
+  useImportCustomersMutation
 } from "@/redux/api/customerApi";
-import type { Customer, CustomerVoucher } from "@/types/customer.types";
+import type { Customer, CustomerVoucher, CustomerWithEmail } from "@/types/customer.types";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +20,9 @@ export default function CustomerListPage() {
   const [keyword, setKeyword] = useState("");
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(0);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importCustomers, { isLoading: isImporting }] = useImportCustomersMutation();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVoucherData, setSelectedVoucherData] = useState<{
@@ -61,6 +65,30 @@ export default function CustomerListPage() {
       vouchers: customer.vouchers || [],
     });
     setIsModalOpen(true);
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await importCustomers(formData).unwrap();
+      const successMsg = res?.data?.message || res?.message || "Import thành công!";
+      alert(successMsg);
+    } catch (error: any) {
+      const errorMsg = 
+        error?.data?.data?.message || 
+        error?.data?.message || 
+        "Lỗi hệ thống: Import thất bại!";
+        
+      alert(errorMsg);
+      console.error("Chi tiết lỗi:", error);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const [deactivateCustomer] = useDeactivateCustomerMutation();
@@ -123,6 +151,25 @@ export default function CustomerListPage() {
       key: "phone",
       header: "Số điện thoại",
       render: (row) => <span className="font-mono text-gray-900 font-semibold">{row.phone}</span>
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (row) => {
+        const customer = row as CustomerWithEmail;
+        return (
+          <span className="text-gray-600 text-[13px] font-medium">
+            {customer.email ? (
+              <div className="flex items-center gap-1.5">
+                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
+                {customer.email}
+              </div>
+            ) : (
+              <span className="text-gray-400 italic font-normal">---</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       key: "info",
@@ -242,6 +289,21 @@ export default function CustomerListPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <input 
+            type="file" 
+            accept=".xlsx, .xls" 
+            ref={fileInputRef} 
+            className="hidden" 
+            onChange={handleFileChange} 
+          />
+          <Button 
+            variant="outline" 
+            onClick={() => fileInputRef.current?.click()}
+            isLoading={isImporting}
+            leftIcon={<i className="fa-solid fa-file-import"></i>}
+          >
+            Nhập Excel
+          </Button>
           <Button variant="outline" onClick={handleSearch}>
             Tìm kiếm
           </Button>
@@ -324,11 +386,10 @@ export default function CustomerListPage() {
               onClick={confirmAction}
               leftIcon={
                 <i
-                  className={`fa-solid ${
-                    confirmData?.currentStatus === "ACTIVE"
-                      ? "fa-trash"
-                      : "fa-rotate-right"
-                  }`}
+                  className={`fa-solid ${confirmData?.currentStatus === "ACTIVE"
+                    ? "fa-trash"
+                    : "fa-rotate-right"
+                    }`}
                 ></i>
               }
             >

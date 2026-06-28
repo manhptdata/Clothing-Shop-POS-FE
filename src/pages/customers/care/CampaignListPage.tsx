@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetPendingCustomersByCampaignQuery } from "@/redux/api/customerApi";
-import type { CampaignType, Customer } from "@/types/customer.types";
+import type { CampaignType, Customer, CustomerWithEmail } from "@/types/customer.types";
 import { Pagination } from "@/components/ui/Pagination";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
@@ -112,6 +112,25 @@ export default function CampaignListPage() {
       header: "SĐT",
       className: "font-mono text-gray-900 font-semibold text-blue-600",
       render: (cust) => cust.phone,
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (cust) => {
+        const customer = cust as CustomerWithEmail;
+        return (
+          <span className="text-gray-600 text-[13px] font-medium">
+            {customer.email ? (
+              <div className="flex items-center gap-1.5">
+                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
+                {customer.email}
+              </div>
+            ) : (
+              <span className="text-gray-400 italic font-normal">---</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       key: "dobGender",

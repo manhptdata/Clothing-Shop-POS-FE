@@ -4,7 +4,7 @@ import {
   useGetCustomerByIdQuery,
   useUpdateCustomerMutation,
 } from "@/redux/api/customerApi";
-import type { CustomerUpdateRequest } from "@/types/customer.types";
+import type { CustomerUpdateRequest, CustomerWithEmail } from "@/types/customer.types";
 import { Button } from "@/components/ui/Button";
 
 export default function CustomerEditPage() {
@@ -20,9 +20,10 @@ export default function CustomerEditPage() {
     useUpdateCustomerMutation();
 
   // Form State
-  const [formData, setFormData] = useState<CustomerUpdateRequest>({
+  const [formData, setFormData] = useState<CustomerUpdateRequest & { email?: string }>({
     fullName: "",
     phone: "",
+    email: "",
     dateOfBirth: "",
     gender: "MALE",
     address: "",
@@ -35,10 +36,11 @@ export default function CustomerEditPage() {
   // Fill data when fetched
   useEffect(() => {
     if (customerData?.data) {
-      const customer = customerData.data;
+      const customer = customerData.data as CustomerWithEmail;
       setFormData({
         fullName: customer.fullName || "",
         phone: customer.phone || "",
+        email: customer.email || "",
         dateOfBirth: customer.dateOfBirth || "",
         gender: customer.gender || "MALE",
         address: customer.address || "",
@@ -228,6 +230,40 @@ export default function CustomerEditPage() {
                   {errors.phone}
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                Địa chỉ (Address)
+              </label>
+              <div className="relative">
+                <i className="fa-solid fa-location-dot absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address || ""}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold text-gray-900 transition shadow-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                Email
+              </label>
+              <div className="relative">
+                <i className="fa-regular fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold font-mono text-gray-900 transition shadow-sm"
+                />
+              </div>
             </div>
           </div>
 
