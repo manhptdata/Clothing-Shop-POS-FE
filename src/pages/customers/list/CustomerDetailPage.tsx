@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareLogsQuery } from "@/redux/api/customerApi";
-import type { CustomerOrderHistory } from "@/types/customer.types";
+import type { CustomerOrderHistory, CustomerWithEmail } from "@/types/customer.types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Table, Column } from "@/components/ui/Table";
@@ -44,7 +44,7 @@ export default function CustomerDetailPage() {
   const careLogs = careLogsResponse?.data?.content || [];
   const carePageData = careLogsResponse?.data;
 
-  const customer = responseData?.data;
+  const customer = responseData?.data as CustomerWithEmail;
 
   // Hiệu ứng tải dữ liệu
   if (isLoading) {
@@ -147,6 +147,14 @@ export default function CustomerDetailPage() {
               </label>
               <div className="font-mono text-sm font-bold text-gray-900">
                 {customer.phone}
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">
+                Email
+              </label>
+              <div className="font-mono text-gray-800 font-semibold text-[15px] mt-1 tracking-tight flex items-center gap-2">
+                {customer.email || "Chưa cập nhật"}
               </div>
             </div>
             <div>

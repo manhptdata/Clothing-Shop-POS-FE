@@ -274,10 +274,17 @@ export const customerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Customer'],
     }),
 
-
-
-
-
+    importCustomers: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: '/crm/customers/import',
+        method: 'POST',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }),
+      invalidatesTags: ['Customer'],
+    }),
 
   }), // <--- Lưu ý: Dấu đóng ngoặc nhọn này phải nằm dưới cùng của khối endpoints
 
@@ -305,4 +312,5 @@ export const {
   useCreateCareLogMutation,
   useUpdateCareLogMutation,
   useDeleteCareLogMutation,
+  useImportCustomersMutation,
 } = customerApi;

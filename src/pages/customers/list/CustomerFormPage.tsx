@@ -3,16 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useCreateCustomerMutation } from "@/redux/api/customerApi";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { CustomerRequest } from "@/types/customer.types";
+import type { CustomerRequest, CustomerRequestWithEmail } from "@/types/customer.types";
 
 export default function CustomerFormPage() {
   const navigate = useNavigate();
   const [createCustomer, { isLoading }] = useCreateCustomerMutation();
   const formRef = useRef<HTMLFormElement>(null);
 
-  const [formData, setFormData] = useState<CustomerRequest>({
+  const [formData, setFormData] = useState<CustomerRequestWithEmail>({
     fullName: "",
     phone: "",
+    email: "",
     dateOfBirth: "",
     gender: "MALE",
     address: "",
@@ -101,7 +102,7 @@ export default function CustomerFormPage() {
       };
 
       const res = await createCustomer(payload).unwrap();
-      
+
       alert("Tạo mới tài khoản khách hàng thành công!");
       navigate("/customers/list");
 
@@ -139,7 +140,7 @@ export default function CustomerFormPage() {
       </header>
 
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-        
+
         {/* FORM */}
         <form ref={formRef} onSubmit={handleSubmit} className="p-6 space-y-5 text-sm" noValidate>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,15 +204,28 @@ export default function CustomerFormPage() {
             </div>
           </div>
 
-          <div>
-            <Input
-              label="Địa chỉ cư trú (address)"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Số nhà, tên đường, quận/huyện, tỉnh/thành phố..."
-              leftIcon={<i className="fa-solid fa-location-dot"></i>}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Input
+                label="Địa chỉ cư trú (address)"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Số nhà, tên đường, quận/huyện, tỉnh/thành phố..."
+                leftIcon={<i className="fa-solid fa-location-dot"></i>}
+              />
+            </div>
+            <div>
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email || ""}
+                onChange={handleChange}
+                placeholder="Ví dụ: abc@gmail.com..."
+                leftIcon={<i className="fa-regular fa-envelope"></i>}
+              />
+            </div>
           </div>
 
           <div>

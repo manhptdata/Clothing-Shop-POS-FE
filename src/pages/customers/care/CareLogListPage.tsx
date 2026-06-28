@@ -93,7 +93,7 @@ export default function CareLogListPage() {
       header: "Khách hàng nhận",
       render: (log) => (
         <div>
-          <div 
+          <div
             className="font-bold text-gray-900 cursor-pointer"
             onClick={() => navigate(`/customers/${log.customer.id}`)}
           >

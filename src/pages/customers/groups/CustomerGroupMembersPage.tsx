@@ -4,7 +4,7 @@ import {
   useGetCustomerGroupMembersQuery,
   useGetCustomerGroupByIdQuery,
 } from "@/redux/api/customerApi";
-import type { Customer } from "@/types/customer.types";
+import type { Customer, CustomerWithEmail } from "@/types/customer.types";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
@@ -63,7 +63,7 @@ export default function CustomerGroupMembersPage() {
       key: "fullName",
       header: "Tên khách hàng",
       render: (row) => (
-        <button 
+        <button
           onClick={() => navigate(`/customers/${row.id}`)}
           className="font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
           title="Xem chi tiết khách hàng"
@@ -80,6 +80,25 @@ export default function CustomerGroupMembersPage() {
           {row.phone}
         </span>
       ),
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (row) => {
+        const customer = row as CustomerWithEmail;
+        return (
+          <span className="text-gray-600 text-[13px] font-medium">
+            {customer.email ? (
+              <div className="flex items-center gap-1.5">
+                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
+                {customer.email}
+              </div>
+            ) : (
+              <span className="text-gray-400 italic font-normal">---</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       key: "dob_gender",
