@@ -25,6 +25,10 @@ export interface Customer {
   customerGroup?: CustomerGroup;
 }
 
+export interface CustomerWithEmail extends Customer {
+  email?: string;
+}
+
 export interface VoucherInfo {
   id: number;
   voucherCode: string;
@@ -45,6 +49,9 @@ export interface CustomerRequest {
   customerGroupId?: number;
 }
 
+export interface CustomerRequestWithEmail extends CustomerRequest {
+  email?: string;
+}
 
 export type CustomerVoucher = VoucherInfo;
 
@@ -78,10 +85,10 @@ export interface CustomerOrderHistory {
 }
 
 
-// Sửa ở dòng ~81 trong customer.types.ts
 export interface CustomerCareLog {
   id: number;
   result: string;
+  potentialStatus?: string;
   note: string | null;
   scheduledAt: string | null;
   calledAt: string | null;
