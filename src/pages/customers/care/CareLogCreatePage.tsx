@@ -172,10 +172,10 @@ export default function CareLogCreatePage() {
                 <label
                   key={opt.value}
                   className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${useAi
-                      ? "border-gray-100 bg-gray-50/50 cursor-not-allowed"
-                      : result === opt.value
-                        ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
-                        : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
+                    ? "border-gray-100 bg-gray-50/50 cursor-not-allowed"
+                    : result === opt.value
+                      ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
+                      : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
                     }`}
                 >
                   <input
