@@ -10,6 +10,9 @@ interface ProductCatalogProps {
   filteredProducts: Product[];
   cart: CartItem[];
   handleProductClick: (product: Product) => void;
+  searchProductQuery: string;
+  setSearchProductQuery: (q: string) => void;
+  handleBarcodeScan: (barcode: string) => boolean;
 }
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({
@@ -20,20 +23,118 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   filteredProducts,
   cart,
   handleProductClick,
+  searchProductQuery,
+  setSearchProductQuery,
+  handleBarcodeScan,
 }) => {
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [isInputFocused, setIsInputFocused] = React.useState(false);
+
+  // Focus on mount
+  React.useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
+
+  // F2 keyboard shortcut
+  React.useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const query = searchProductQuery.trim();
+      if (!query) return;
+
+      const scanned = handleBarcodeScan(query);
+      if (scanned) {
+        setSearchProductQuery('');
+      } else {
+        // If not a direct barcode SKU match, check if filtered list has exactly 1 item
+        if (filteredProducts.length === 1) {
+          const singleProduct = filteredProducts[0];
+          if (singleProduct.variants?.length === 1) {
+            const variant = singleProduct.variants[0];
+            if (variant.quantity > 0) {
+              handleBarcodeScan(variant.sku);
+            }
+          } else {
+            handleProductClick(singleProduct);
+            setSearchProductQuery('');
+          }
+        }
+      }
+    }
+  };
+
   return (
     <section className="w-full lg:flex-1 flex flex-col h-full overflow-hidden">
-      {/* Filters */}
-      <div className="flex gap-sm overflow-x-auto pb-2 mb-md scrollbar-none flex-shrink-0">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-2 rounded-lg font-button text-button whitespace-nowrap transition-all duration-300 ${activeCategory === cat ? 'bg-primary text-on-primary shadow-sm scale-102' : 'border border-outline/10 text-on-surface-variant hover:border-primary/50 hover:text-primary bg-surface/50'}`}
+      {/* Search & Category Filter Panel (Light Theme matching user screenshot) */}
+      <div className="bg-white border border-outline/10 p-3 rounded-xl flex flex-col sm:flex-row items-center gap-3 shadow-sm mb-4 flex-shrink-0">
+        {/* Search Input */}
+        <div className="relative flex-1 w-full">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 text-[20px] select-none">
+            search
+          </span>
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Tìm theo tên sản phẩm hoặc mã SKU... [F2]"
+            value={searchProductQuery}
+            onChange={(e) => setSearchProductQuery(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
+            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-outline/20 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 rounded-lg font-body-sm text-body-sm transition-all text-on-surface placeholder:text-on-surface-variant/40"
+          />
+          {searchProductQuery ? (
+            <button
+              onClick={() => {
+                setSearchProductQuery('');
+                searchInputRef.current?.focus();
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-on-surface-variant/60 hover:text-on-surface hover:bg-slate-200/50 transition-all animate-fade-in"
+            >
+              <span className="material-symbols-outlined text-[15px]">close</span>
+            </button>
+          ) : (
+            <kbd className="hidden sm:inline-flex absolute right-3 top-1/2 -translate-y-1/2 items-center justify-center h-5 px-1.5 font-semibold text-[9px] text-on-surface-variant/50 bg-[#e2e8f0] border border-outline/10 rounded select-none shadow-sm">
+              F2
+            </kbd>
+          )}
+        </div>
+
+        {/* Category Select Dropdown */}
+        <div className="relative w-full sm:w-56">
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="w-full pl-3 pr-10 py-2.5 bg-white border border-outline/20 rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer hover:border-outline/40 transition-colors"
           >
-            {cat}
-          </button>
-        ))}
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat === 'Tất cả' ? 'Lọc theo danh mục' : cat}
+              </option>
+            ))}
+          </select>
+          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[18px] pointer-events-none">
+            filter_list
+          </span>
+        </div>
       </div>
 
       {/* Product Grid */}

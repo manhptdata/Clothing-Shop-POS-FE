@@ -20,6 +20,7 @@ export function useOrderCreate() {
   const [updateOrder, { isLoading: isUpdatingOrder }] = useUpdateOrderMutation();
 
   const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const [searchProductQuery, setSearchProductQuery] = useState('');
 
   // --- Initialize Hooks ---
   const cart = useCart();
@@ -37,9 +38,41 @@ export function useOrderCreate() {
   // --- Computed Products ---
   const products = productData?.data?.content || [];
   const categories = ['Tất cả', ...new Set(products.map(p => p.category?.name).filter(Boolean) as string[])];
-  const filteredProducts = activeCategory === 'Tất cả'
-    ? products
-    : products.filter(p => p.category?.name === activeCategory);
+  
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = activeCategory === 'Tất cả' || p.category?.name === activeCategory;
+    
+    if (!searchProductQuery.trim()) {
+      return matchesCategory;
+    }
+    
+    const query = searchProductQuery.toLowerCase().trim();
+    const matchesName = p.name.toLowerCase().includes(query);
+    const matchesSku = p.variants?.some(v => v.sku?.toLowerCase().includes(query));
+    
+    return matchesName || matchesSku;
+  });
+
+  const handleBarcodeScan = (barcode: string): boolean => {
+    const query = barcode.trim().toLowerCase();
+    if (!query) return false;
+
+    // Search in the ENTIRE product list (not just filtered category)
+    for (const p of products) {
+      const matchingVariant = p.variants?.find(v => v.sku?.toLowerCase() === query);
+      if (matchingVariant) {
+        if (matchingVariant.quantity > 0) {
+          cart.handleAddToCart(p, matchingVariant);
+          setSearchProductQuery('');
+          return true;
+        } else {
+          alert(`Sản phẩm ${p.name} - SKU: ${matchingVariant.sku} đã hết hàng!`);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
 
   // --- Cross-Cutting Orchestration Actions ---
   const clearPOSState = () => {
@@ -48,6 +81,7 @@ export function useOrderCreate() {
     discounts.clearDiscountsState();
     checkout.clearCheckoutState();
     pendingOrders.clearPendingState();
+    setSearchProductQuery('');
   };
 
   const handleSaveTemporary = async () => {
@@ -197,6 +231,7 @@ export function useOrderCreate() {
       categories,
       activeCategory,
       filteredProducts,
+      searchProductQuery,
       cart: cart.cart,
       variantSelectorProduct: cart.variantSelectorProduct,
       isCustomerModalOpen: customer.isCustomerModalOpen,
@@ -239,6 +274,8 @@ export function useOrderCreate() {
     },
     actions: {
       setActiveCategory,
+      setSearchProductQuery,
+      handleBarcodeScan,
       handleProductClick: cart.handleProductClick,
       handleAddToCart: cart.handleAddToCart,
       setVariantSelectorProduct: cart.setVariantSelectorProduct,

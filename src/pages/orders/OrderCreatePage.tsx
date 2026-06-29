@@ -66,6 +66,9 @@ export default function OrderCreatePage() {
           filteredProducts={state.filteredProducts}
           cart={state.cart}
           handleProductClick={actions.handleProductClick}
+          searchProductQuery={state.searchProductQuery}
+          setSearchProductQuery={actions.setSearchProductQuery}
+          handleBarcodeScan={actions.handleBarcodeScan}
         />
 
         {/* Right: Cart & Checkout (35%) */}
