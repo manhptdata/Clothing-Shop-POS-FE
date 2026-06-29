@@ -49,7 +49,7 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-surface-container rounded-lg flex items-center justify-center text-on-surface-variant flex-shrink-0 overflow-hidden border border-outline/10">
                                                 {product.imageUrls && product.imageUrls.length > 0 ? (
-                                                    <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover" />
+                                                    <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-contain p-0.5" />
                                                 ) : (
                                                     <span className="material-symbols-outlined text-2xl">checkroom</span>
                                                 )}

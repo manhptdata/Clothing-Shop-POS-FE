@@ -84,7 +84,7 @@ export default function ProductDetailPage() {
         <div className="md:col-span-8 flex flex-col gap-gutter">
           <div className="relative w-full aspect-[4/3] bg-surface-container-low border border-on-surface/10 rounded-lg overflow-hidden group flex items-center justify-center">
             {mainImage ? (
-              <img src={mainImage} alt={product.name} className="w-full h-full object-cover" />
+              <img src={mainImage} alt={product.name} className="w-full h-full object-contain p-2" />
             ) : (
               <span className="material-symbols-outlined text-on-surface-variant/20" style={{ fontSize: '120px' }}>image</span>
             )}
@@ -107,7 +107,7 @@ export default function ProductDetailPage() {
                     : 'border-on-surface/10 hover:border-primary/50'
                     }`}
                 >
-                  <img src={img} alt={`Detail ${i}`} className="w-full h-full object-cover select-none" />
+                  <img src={img} alt={`Detail ${i}`} className="w-full h-full object-contain select-none p-1" />
                 </button>
               ))}
             </div>

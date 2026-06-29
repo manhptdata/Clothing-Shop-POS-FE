@@ -120,7 +120,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
                                 : 'border-transparent hover:border-outline-variant'
                                 }`}
                         >
-                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover select-none pointer-events-none" />
+                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-contain select-none pointer-events-none p-1" />
                             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between p-1.5 items-start">
                                 <span className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded font-mono select-none">
                                     #{index + 1}
