@@ -85,6 +85,18 @@ export const supplierApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Supplier", id: "LIST" }],
         }),
+        // REACTIVATE supplier
+        reactivateSupplier: builder.mutation<Supplier, number>({
+            query: (id) => ({
+                url: `suppliers/${id}/reactivate`,
+                method: "PUT",
+            }),
+            transformResponse: (response: RestResponse<Supplier>) => response.data,
+            invalidatesTags: (result, error, id) => [
+                { type: "Supplier", id },
+                { type: "Supplier", id: "LIST" },
+            ],
+        }),
     }),
     overrideExisting: false,
 });
@@ -95,5 +107,6 @@ export const {
     useCreateSupplierMutation,
     useUpdateSupplierMutation,
     useSoftDeleteSupplierMutation,
+    useReactivateSupplierMutation,
     useHardDeleteSupplierMutation,
 } = supplierApi;
