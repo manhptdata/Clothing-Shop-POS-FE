@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useGetProductsQuery } from '@/redux/api/productApi';
+import { useGetRecommendationsQuery } from '@/redux/api/recommendationApi';
 import { useCreateOrderMutation, useUpdateOrderMutation } from '@/redux/api/orderApi';
 import type { CartItem } from './hooks/useCart';
 
@@ -29,6 +30,14 @@ export function useOrderCreate() {
   const discounts = useDiscounts(customer.selectedCustomer, customer.customerType, cart.rawTotal);
   const checkout = useCheckout(discounts.total);
   const pendingOrders = usePendingOrders();
+
+  // --- Fetch Recommendations ---
+  const cartProductIds = cart.cart.map(item => item.product.id).filter(id => id > 0);
+  const { data: recommendationsData, isLoading: isRecommendationsLoading } = useGetRecommendationsQuery(
+    { productIds: cartProductIds, limit: 5 },
+    { skip: cartProductIds.length === 0 }
+  );
+  const recommendations = cartProductIds.length > 0 ? (recommendationsData?.data || []) : [];
 
   // --- Reset discounts and checkout when customer changes ---
   useEffect(() => {
@@ -72,6 +81,15 @@ export function useOrderCreate() {
       }
     }
     return false;
+  };
+
+  const handleAddRecommendedToCart = (productId: number) => {
+    const fullProduct = products.find(p => p.id === productId);
+    if (fullProduct) {
+      cart.handleProductClick(fullProduct);
+    } else {
+      toast.error('Không tìm thấy thông tin sản phẩm.');
+    }
   };
 
   // --- Cross-Cutting Orchestration Actions ---
@@ -276,7 +294,9 @@ export function useOrderCreate() {
       isSavingTemporary: isCreatingOrder || isUpdatingOrder,
       isCancellingOrder: pendingOrders.isCancellingOrder,
       orderIdToCancel: pendingOrders.orderIdToCancel,
-      autoPrint: checkout.autoPrint
+      autoPrint: checkout.autoPrint,
+      recommendations,
+      isRecommendationsLoading
     },
     actions: {
       setActiveCategory,
@@ -310,7 +330,8 @@ export function useOrderCreate() {
       handleResumePendingOrder,
       handleCancelPendingOrder: pendingOrders.handleCancelPendingOrder,
       setOrderIdToCancel: pendingOrders.setOrderIdToCancel,
-      clearPOSState
+      clearPOSState,
+      handleAddRecommendedToCart
     }
   };
 }
