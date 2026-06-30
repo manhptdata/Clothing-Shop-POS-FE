@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
   useGetUserByIdQuery, 
@@ -65,12 +66,12 @@ export default function UserFormPage() {
         if (employee && employee.active !== active) {
           await toggleActive({ id: userId, isActive: active }).unwrap();
         }
-        alert('Cập nhật thông tin nhân viên thành công!');
+        toast.success('Cập nhật thông tin nhân viên thành công!');
         navigate('/users');
       } else {
         // Create
         if (!formData.password) {
-          alert('Vui lòng nhập mật khẩu tạm cho nhân viên mới');
+          toast.error('Vui lòng nhập mật khẩu tạm cho nhân viên mới');
           return;
         }
         const payload = {
@@ -81,11 +82,11 @@ export default function UserFormPage() {
           role: formData.role,
         };
         await createUser(payload).unwrap();
-        alert('Tạo nhân viên mới thành công!');
+        toast.success('Tạo nhân viên mới thành công!');
         navigate('/users');
       }
     } catch (err: any) {
-      alert(err?.data?.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu.');
+      toast.error(err?.data?.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu.');
     }
   };
 

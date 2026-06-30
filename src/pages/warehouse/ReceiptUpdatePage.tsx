@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useGetSuppliersQuery } from '@/redux/api/supplierApi';
@@ -72,7 +73,7 @@ export default function ReceiptUpdatePage() {
     useEffect(() => {
         if (receipt) {
             if (receipt.status !== 'DRAFT') {
-                alert('Chỉ có thể sửa phiếu đang ở trạng thái Nháp!');
+                toast.error('Chỉ có thể sửa phiếu đang ở trạng thái Nháp!');
                 navigate(`/warehouse/receipts/${receipt.id}`);
                 return;
             }
@@ -161,7 +162,7 @@ export default function ReceiptUpdatePage() {
             }).unwrap();
             navigate(`/warehouse/receipts/${id}`);
         } catch (err: any) {
-            alert(err?.data?.message || err?.message || 'Lỗi khi sửa phiếu nhập');
+            toast.error(err?.data?.message || err?.message || 'Lỗi khi sửa phiếu nhập');
         }
     };
 

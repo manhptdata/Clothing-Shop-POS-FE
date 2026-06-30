@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import {
   useSearchCustomersQuery,
@@ -77,14 +78,14 @@ export default function CustomerListPage() {
     try {
       const res = await importCustomers(formData).unwrap();
       const successMsg = res?.data?.message || res?.message || "Import thành công!";
-      alert(successMsg);
+      toast.success(successMsg);
     } catch (error: any) {
       const errorMsg = 
         error?.data?.data?.message || 
         error?.data?.message || 
         "Lỗi hệ thống: Import thất bại!";
         
-      alert(errorMsg);
+      toast.error(errorMsg);
       console.error("Chi tiết lỗi:", error);
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -117,7 +118,7 @@ export default function CustomerListPage() {
     } catch (error: any) {
       console.error(error);
       const errorMsg = error?.data?.message || error?.error || "Lỗi không xác định";
-      alert(`${confirmData.action} thất bại! Lỗi Server: ${errorMsg}`);
+      toast.error(`${confirmData.action} thất bại! Lỗi Server: ${errorMsg}`);
     }
   };
 

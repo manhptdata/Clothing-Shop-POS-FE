@@ -13,9 +13,9 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   {
     path: '/dashboard',
-    label: 'Bảng điều khiển',
+    label: 'Tổng quan',
     icon: 'dashboard',
-    roles: ['ROLE_ADMIN', 'ROLE_SALE'],
+    roles: ['ROLE_ADMIN'],
   },
   {
     path: '/orders',
@@ -79,7 +79,7 @@ export default function Sidebar() {
   return (
     <nav className="fixed left-0 top-0 h-full flex flex-col py-8 w-64 border-r border-outline/5 glass-panel z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       <div className="px-6 mb-12 flex flex-col items-start">
-        <h1 className="font-serif text-[42px] font-bold text-primary tracking-tight leading-none mb-1">Sapo</h1>
+        <h1 className="font-sans text-[42px] font-bold text-primary tracking-tight leading-none mb-1">Sapo</h1>
         <p className="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest opacity-80">
           {user.role === 'ROLE_ADMIN' && 'Quản trị viên'}
           {user.role === 'ROLE_SALE' && 'Bán hàng'}

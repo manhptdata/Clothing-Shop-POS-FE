@@ -6,6 +6,7 @@ export function useCheckout(total: number) {
   const [isPaidModified, setIsPaidModified] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QR_PAYOS'>('CASH');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [autoPrint, setAutoPrint] = useState(true);
 
   useEffect(() => {
     if (!isPaidModified) {
@@ -33,6 +34,8 @@ export function useCheckout(total: number) {
     isQRModalOpen,
     setIsQRModalOpen,
     changeAmount,
-    clearCheckoutState
+    clearCheckoutState,
+    autoPrint,
+    setAutoPrint
   };
 }

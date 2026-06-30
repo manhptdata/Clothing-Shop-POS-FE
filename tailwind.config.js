@@ -75,14 +75,14 @@ module.exports = {
       },
       fontFamily: {
         "sans": ["Inter", "sans-serif"],
-        "serif": ["Playfair Display", "serif"],
+        "serif": ["Inter", "sans-serif"],
         "button": ["Inter", "sans-serif"],
-        "headline-md": ["Playfair Display", "serif"],
+        "headline-md": ["Inter", "sans-serif"],
         "label-caps": ["Inter", "sans-serif"],
         "body-sm": ["Inter", "sans-serif"],
         "body-md": ["Inter", "sans-serif"],
-        "display-lg-mobile": ["Playfair Display", "serif"],
-        "display-lg": ["Playfair Display", "serif"],
+        "display-lg-mobile": ["Inter", "sans-serif"],
+        "display-lg": ["Inter", "sans-serif"],
         "title-sm": ["Inter", "sans-serif"],
       },
       fontSize: {

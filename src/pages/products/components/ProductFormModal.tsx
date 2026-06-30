@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -222,7 +223,7 @@ export default function ProductFormModal({
         } catch (err: any) {
             console.error('Lỗi lưu sản phẩm:', err);
             const errorMsg = err?.data?.message || err?.message || 'Đã xảy ra lỗi không xác định';
-            alert(`Lỗi lưu sản phẩm: ${errorMsg}`);
+            toast.error(`Lỗi lưu sản phẩm: ${errorMsg}`);
         }
     };
 

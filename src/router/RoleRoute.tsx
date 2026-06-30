@@ -7,8 +7,9 @@ import { useLazyGetAccountQuery } from '@/redux/api/authApi';
 export const getDefaultRouteForRole = (role: RoleEnum): string => {
   switch (role) {
     case 'ROLE_ADMIN':
-    case 'ROLE_SALE':
       return '/dashboard';
+    case 'ROLE_SALE':
+      return '/orders/new';
     case 'ROLE_CS':
       return '/customers';
     case 'ROLE_WH':

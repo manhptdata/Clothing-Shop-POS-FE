@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { useCreateSupplierMutation, useUpdateSupplierMutation } from '@/redux/api/supplierApi';
@@ -58,17 +59,17 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, onSuccess
     try {
       if (isEditMode && supplier) {
         const res = await updateSupplier({ id: supplier.id, data }).unwrap();
-        alert('Cập nhật nhà cung cấp thành công!');
+        toast.success('Cập nhật nhà cung cấp thành công!');
         onSuccess?.(res);
       } else {
         const res = await createSupplier(data).unwrap();
-        alert('Thêm nhà cung cấp thành công!');
+        toast.success('Thêm nhà cung cấp thành công!');
         onSuccess?.(res);
       }
       onClose();
     } catch (err: any) {
       console.error('Failed to save supplier:', err);
-      alert(err?.data?.message || err?.message || 'Có lỗi xảy ra khi lưu nhà cung cấp');
+      toast.error(err?.data?.message || err?.message || 'Có lỗi xảy ra khi lưu nhà cung cấp');
     }
   };
 

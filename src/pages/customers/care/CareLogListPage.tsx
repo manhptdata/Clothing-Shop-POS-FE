@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from 'react-hot-toast';
 import { useNavigate, Link } from "react-router-dom";
 import { useSearchCareLogsQuery, useDeleteCareLogMutation } from "@/redux/api/customerApi";
 import { Table, Column } from "@/components/ui/Table";
@@ -312,7 +313,7 @@ export default function CareLogListPage() {
                     setDeleteConfirmLogId(null);
                   } catch (error) {
                     console.error("Lỗi khi xóa nhật ký:", error);
-                    alert("Đã xảy ra lỗi khi xóa nhật ký!");
+                    toast.error("Đã xảy ra lỗi khi xóa nhật ký!");
                   }
                 }
               }}

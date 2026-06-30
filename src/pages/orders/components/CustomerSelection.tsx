@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -58,6 +58,36 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
   maxPointsAbleToUse,
 }) => {
   const [isPromotionOpen, setIsPromotionOpen] = useState(!!voucherCode || pointsToUse > 0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [setIsSearchFocused]);
+
+  // F4 global hotkey for customer search focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F4') {
+        e.preventDefault();
+        setCustomerType('MEMBER');
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setCustomerType]);
 
   useEffect(() => {
     if (voucherCode || pointsToUse > 0) {
@@ -66,18 +96,22 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
   }, [voucherCode, pointsToUse]);
 
   return (
-    <div className="bg-[#1e2227] border border-[#2d3238] rounded-xl p-sm flex flex-col gap-sm">
+    <div className="bg-white border-b border-gray-100 pb-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="font-label-caps text-label-caps text-slate-400 font-bold uppercase tracking-wider text-[10px]">Khách hàng</span>
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Khách hàng</span>
 
         {/* Segmented pill control */}
-        <div className="bg-[#16191c] p-0.5 rounded-lg border border-[#2d3238] flex gap-0.5">
+        <div className="bg-gray-100 p-0.5 rounded-lg border border-gray-200 flex gap-0.5">
           <button
             onClick={() => {
               setCustomerType('GUEST');
               setSelectedCustomer(defaultCustomer);
             }}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-300 ${customerType === 'GUEST' ? 'bg-primary text-on-primary shadow-sm' : 'bg-transparent text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
+              customerType === 'GUEST'
+                ? 'bg-white text-gray-800 shadow-sm'
+                : 'bg-transparent text-gray-500 hover:text-gray-700'
+            }`}
           >
             Khách lẻ
           </button>
@@ -88,7 +122,11 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                 setSelectedCustomer(null);
               }
             }}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-300 ${customerType === 'MEMBER' ? 'bg-primary text-on-primary shadow-sm' : 'bg-transparent text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
+              customerType === 'MEMBER'
+                ? 'bg-white text-gray-800 shadow-sm'
+                : 'bg-transparent text-gray-500 hover:text-gray-700'
+            }`}
           >
             Thành viên
           </button>
@@ -96,80 +134,86 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
       </div>
 
       {customerType === 'MEMBER' ? (
-        <div className="space-y-sm">
+        <div className="space-y-3">
           {selectedCustomer && selectedCustomer.fullName !== 'Khách lẻ' ? (
             // Customer Profile Card
-            <div className="flex items-center justify-between bg-primary/5 p-3 rounded-xl border border-primary/25 w-full transition-all hover:bg-primary/10">
+            <div className="flex items-center justify-between bg-blue-50/50 p-3 rounded-xl border border-blue-100 w-full transition-all hover:bg-blue-50">
               <div className="flex gap-3 items-center">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600 font-bold text-xs">
                   {selectedCustomer.fullName.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-100">{selectedCustomer.fullName}</h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5 font-medium flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">phone</span>
+                  <h3 className="text-xs font-bold text-gray-800">{selectedCustomer.fullName}</h3>
+                  <p className="text-[10px] text-gray-500 mt-0.5 font-medium flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[12px]">phone</span>
                     {selectedCustomer.phone}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedCustomer(null)}
-                className="text-slate-400 hover:text-error hover:bg-error/15 p-1 rounded-full transition-all"
+                className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-all"
               >
-                <span className="material-symbols-outlined text-[16px]">close</span>
+                <span className="material-symbols-outlined text-[14px]">close</span>
               </button>
             </div>
           ) : (
             // Search & Suggestion box
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Tìm kiếm bằng tên hoặc SĐT..."
-                  value={searchCustomerQuery}
-                  onChange={(e) => setSearchCustomerQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  leftIcon={<span className="material-symbols-outlined text-[18px]">search</span>}
-                  className="bg-[#16191c] border-[#2d3238] text-white placeholder:text-slate-500"
-                />
+                <div className="relative flex-1">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-gray-400 select-none">search</span>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Tìm kiếm bằng tên hoặc SĐT... [F4]"
+                    value={searchCustomerQuery}
+                    onChange={(e) => setSearchCustomerQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    className="w-full h-[36px] pl-9 pr-3 bg-white border border-gray-300 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all shadow-sm"
+                  />
+                </div>
                 <Button
                   onClick={() => setIsCustomerModalOpen(true)}
                   variant="outline"
-                  className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/50 hover:!bg-[#2ecc71] hover:!text-white hover:!border-[#2ecc71] active:scale-95 transition-all text-xs px-3.5 font-semibold rounded-lg flex-shrink-0 h-[36px] flex items-center justify-center gap-1"
-                  leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+                  className="bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:text-gray-900 active:scale-95 transition-all text-xs px-3 font-semibold rounded-lg flex-shrink-0 h-[36px] flex items-center justify-center gap-1 shadow-sm"
                 >
+                  <span className="material-symbols-outlined text-[16px]">add</span>
                   Tạo khách
                 </Button>
               </div>
 
               {/* Search Dropdown list */}
               {isSearchFocused && debouncedSearch && (
-                <div className="absolute left-0 right-0 mt-1 bg-[#1a1d21] border border-[#2d3238] rounded-lg shadow-xl z-20 max-h-[220px] overflow-y-auto divide-y divide-[#2d3238]">
+                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-[220px] overflow-y-auto divide-y divide-gray-100">
                   {customerSearchData?.data?.content && customerSearchData.data.content.length > 0 ? (
                     customerSearchData.data.content
                       .filter((c: any) => c.fullName !== 'Khách lẻ')
                       .map((c: any) => (
                         <div
                           key={c.id}
-                          onClick={() => handleSelectCustomer(c)}
-                          className="p-sm hover:bg-[#23272d] cursor-pointer flex justify-between items-center transition-colors"
+                          onClick={() => {
+                            handleSelectCustomer(c);
+                            setIsSearchFocused(false);
+                          }}
+                          className="p-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors"
                         >
                           <div>
-                            <h4 className="text-sm font-semibold text-white">{c.fullName}</h4>
-                            <p className="text-xs text-slate-400 mt-0.5">{c.phone}</p>
+                            <h4 className="text-xs font-semibold text-gray-900">{c.fullName}</h4>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{c.phone}</p>
                           </div>
-                          <span className="material-symbols-outlined text-xs text-primary">chevron_right</span>
+                          <span className="material-symbols-outlined text-xs text-blue-600">chevron_right</span>
                         </div>
                       ))
                   ) : (
-                    <div className="p-md text-center text-xs text-slate-400">
+                    <div className="p-4 text-center text-xs text-gray-500">
                       Không tìm thấy khách hàng. <br />
                       <button
                         onClick={() => {
                           setIsCustomerModalOpen(true);
                           setIsSearchFocused(false);
                         }}
-                        className="text-primary font-semibold hover:underline mt-1 inline-block"
+                        className="text-blue-600 font-semibold hover:underline mt-1 inline-block"
                       >
                         + Thêm khách hàng mới
                       </button>
@@ -182,18 +226,18 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
 
           {/* Loyalty Points & Vouchers Integration */}
           {selectedCustomer && selectedCustomer.fullName !== 'Khách lẻ' && (
-            <div className="mt-sm pt-sm border-t border-[#2d3238]">
+            <div className="mt-2 pt-2 border-t border-gray-100">
               <button
                 type="button"
                 onClick={() => setIsPromotionOpen(!isPromotionOpen)}
-                className="w-full flex items-center justify-between text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider py-1.5"
+                className="w-full flex items-center justify-between text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-wider py-1"
               >
-                <span className="flex items-center gap-1.5 text-slate-200 hover:text-white transition-colors">
+                <span className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors">
                   <span className="material-symbols-outlined text-[16px]">redeem</span>
                   Voucher & Điểm tích lũy
                 </span>
-                <span 
-                  className="material-symbols-outlined text-[16px] text-slate-400 transition-transform duration-200" 
+                <span
+                  className="material-symbols-outlined text-[16px] text-gray-400 transition-transform duration-200"
                   style={{ transform: isPromotionOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
                 >
                   keyboard_arrow_down
@@ -201,28 +245,33 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
               </button>
 
               {isPromotionOpen && (
-                <div className="mt-sm space-y-sm animate-in fade-in duration-200">
+                <div className="mt-2 space-y-3 animate-in fade-in duration-200">
                   {/* Voucher Select */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Voucher áp dụng</span>
+                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Voucher áp dụng</span>
                       {vouchersList.length > 0 && (
-                        <span className="text-[10px] text-[#2ecc71] font-semibold">{vouchersList.filter(v => v.status === 'UNUSED').length} khả dụng</span>
+                        <span className="text-[9px] text-green-600 font-semibold">
+                          {vouchersList.filter((v) => v.status === 'UNUSED').length} khả dụng
+                        </span>
                       )}
                     </div>
                     <div className="space-y-2">
                       <Select
                         value={voucherCode}
                         onChange={(val) => setVoucherCode(val as string)}
-                        className="bg-[#16191c] border-[#2d3238] text-slate-200"
+                        className="bg-white border-gray-300 text-gray-700 text-xs"
                         options={[
                           { label: '-- Chọn voucher từ ví khách --', value: '' },
                           ...vouchersList
-                            .filter(v => v.status === 'UNUSED')
-                            .map(v => ({
-                              label: `${v.voucherCode} (Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.discountAmount)})`,
+                            .filter((v) => v.status === 'UNUSED')
+                            .map((v) => ({
+                              label: `${v.voucherCode} (Giảm ${new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND',
+                              }).format(v.discountAmount)})`,
                               value: v.voucherCode,
-                            }))
+                            })),
                         ]}
                       />
 
@@ -232,15 +281,15 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                           placeholder="Hoặc nhập mã voucher khác..."
                           value={voucherCode}
                           onChange={(e) => setVoucherCode(e.target.value)}
-                          leftIcon={<span className="material-symbols-outlined text-sm">local_activity</span>}
-                          className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
+                          leftIcon={<span className="material-symbols-outlined text-sm text-gray-400">local_activity</span>}
+                          className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 text-xs"
                         />
                         {voucherCode && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setVoucherCode('')}
-                            className="px-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex-shrink-0"
+                            className="px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs flex-shrink-0"
                           >
                             Xóa
                           </Button>
@@ -248,18 +297,26 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                       </div>
                     </div>
                     {voucherError && (
-                      <p className="text-[10px] text-error mt-1 font-medium">{voucherError}</p>
+                      <p className="text-[9px] text-red-500 mt-1 font-medium">{voucherError}</p>
                     )}
                     {isVoucherValid && activeVoucher && (
-                      <p className="text-[10px] text-[#2ecc71] mt-1 font-medium">Áp dụng thành công: Giảm -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherDiscount)}</p>
+                      <p className="text-[9px] text-green-600 mt-1 font-medium">
+                        Áp dụng thành công: Giảm -
+                        {new Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(voucherDiscount)}
+                      </p>
                     )}
                   </div>
 
                   {/* Loyalty Points Use */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dùng điểm tích lũy</span>
-                      <span className="text-[10px] text-slate-400">Có: <strong className="text-white font-bold">{availablePoints}</strong> điểm</span>
+                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Dùng điểm tích lũy</span>
+                      <span className="text-[9px] text-gray-500">
+                        Có: <strong className="text-gray-800 font-bold">{availablePoints}</strong> điểm
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Input
@@ -272,15 +329,15 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                           setPointsToUse(Math.min(val, maxPointsAbleToUse));
                         }}
                         placeholder="Nhập số điểm..."
-                        leftIcon={<span className="material-symbols-outlined text-[16px]">monetization_on</span>}
-                        className="bg-[#16191c] border-[#2d3238] text-slate-200 placeholder:text-slate-500"
+                        leftIcon={<span className="material-symbols-outlined text-[16px] text-gray-400">monetization_on</span>}
+                        className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 text-xs"
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => setPointsToUse(maxPointsAbleToUse)}
-                        className="!bg-[#2ecc71]/10 !text-[#2ecc71] !border-[#2ecc71]/30 hover:!bg-[#2ecc71]/20 text-[10px] font-bold px-2.5 py-1 rounded-md border flex-shrink-0 whitespace-nowrap transition-colors"
+                        className="!bg-green-50 !text-green-600 !border-green-100 hover:!bg-green-100 text-[10px] font-bold px-2.5 py-1 rounded-md border flex-shrink-0 whitespace-nowrap transition-colors"
                       >
                         Tối đa ({maxPointsAbleToUse})
                       </Button>
@@ -293,13 +350,13 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
         </div>
       ) : (
         // Guest Profile
-        <div className="bg-[#1a1d21]/30 p-sm rounded-lg border border-outline/10 flex items-center gap-sm">
-          <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold">
+        <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">
             KL
           </div>
           <div>
-            <h3 className="font-title-sm text-title-sm text-white font-bold">Khách lẻ vãng lai</h3>
-            <p className="font-body-sm text-body-sm text-slate-400 mt-0.5">Không tích lũy điểm thưởng</p>
+            <h3 className="text-xs font-bold text-gray-800">Khách lẻ vãng lai</h3>
+            <p className="text-[10px] text-gray-500 mt-0.5">Không tích lũy điểm thưởng</p>
           </div>
         </div>
       )}

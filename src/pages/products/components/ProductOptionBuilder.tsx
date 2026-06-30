@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { ProductOption, ProductOptionValue } from '@/types/product.types';
@@ -21,7 +22,7 @@ export function ProductOptionBuilder({ options, onChange }: ProductOptionBuilder
 
     // Kiểm tra trùng tên
     if (options.some(o => o.name.toLowerCase() === trimmedName.toLowerCase())) {
-      alert(`Option "${trimmedName}" đã tồn tại`);
+      toast.error(`Option "${trimmedName}" đã tồn tại`);
       return;
     }
 

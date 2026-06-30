@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import {
   useGetCustomersQuery,
@@ -76,7 +77,7 @@ export function useCustomerSelection() {
         });
       }
     } catch (err) {
-      alert('Không thể tạo khách hàng. Vui lòng kiểm tra lại số điện thoại hoặc định dạng dữ liệu.');
+      toast.error('Không thể tạo khách hàng. Vui lòng kiểm tra lại số điện thoại hoặc định dạng dữ liệu.');
       throw err;
     }
   };

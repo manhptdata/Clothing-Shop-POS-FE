@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useGetOrdersQuery, useCancelOrderMutation } from '@/redux/api/orderApi';
 
 export function usePendingOrders() {
@@ -22,7 +23,7 @@ export function usePendingOrders() {
     try {
       await cancelOrder(id).unwrap();
     } catch (error: any) {
-      alert(error?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
+      toast.error(error?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
     }
   };
 

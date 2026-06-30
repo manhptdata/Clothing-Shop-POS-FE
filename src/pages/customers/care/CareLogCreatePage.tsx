@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from 'react-hot-toast';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useCreateCareLogMutation } from "@/redux/api/customerApi";
 import { Button } from "@/components/ui/Button";
@@ -55,7 +56,7 @@ export default function CareLogCreatePage() {
       handleGoBack();
     } catch (error: any) {
       console.error("Lỗi khi tạo lịch sử:", error);
-      alert(`Đã xảy ra lỗi khi tạo lịch sử chăm sóc!\nChi tiết: ${JSON.stringify(error.data || error.message || error)}`);
+      toast.error(`Đã xảy ra lỗi khi tạo lịch sử chăm sóc!\nChi tiết: ${JSON.stringify(error.data || error.message || error)}`);
     }
   };
 

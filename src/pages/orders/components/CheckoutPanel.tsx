@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { CartItem } from '../useOrderCreate';
@@ -29,13 +29,13 @@ interface CheckoutPanelProps {
   handleSaveTemporary: () => void;
   isSavingTemporary: boolean;
   pendingOrderId: number | null;
+  autoPrint: boolean;
+  setAutoPrint: (val: boolean | ((prev: boolean) => boolean)) => void;
 }
 
 export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   customerSelectionNode,
   cart,
-  handleUpdateQuantity,
-  handleRemoveFromCart,
   customerPaid,
   setIsPaidModified,
   setCustomerPaid,
@@ -57,132 +57,125 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   handleSaveTemporary,
   isSavingTemporary,
   pendingOrderId,
+  autoPrint,
+  setAutoPrint,
 }) => {
-  return (
-    <section className="w-full lg:w-[380px] xl:w-[400px] flex-shrink-0 bg-[#1a1d21] border-l border-outline/10 flex flex-col rounded-xl overflow-hidden h-full">
-      {/* Header */}
-      <div className="px-sm py-3 border-b border-[#2d3238] bg-[#1a1d21] sticky top-0 z-10 flex-shrink-0">
-        <h2 className="text-base text-white font-bold">Đơn hàng hiện tại</h2>
-      </div>
 
+  // Global hotkeys for checkout action: F9 (Payment/Checkout), F8 (Save Temporary)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F9') {
+        e.preventDefault();
+        handleCheckout();
+      } else if (e.key === 'F8') {
+        e.preventDefault();
+        handleSaveTemporary();
+      } else if (e.key === 'F10') {
+        e.preventDefault();
+        setAutoPrint(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleCheckout, handleSaveTemporary]);
+
+  const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <section className="w-full lg:w-[350px] xl:w-[380px] flex-shrink-0 bg-white border-l border-gray-200 flex flex-col h-full shadow-sm">
       {/* Body Content */}
-      <div className="flex-1 overflow-y-auto p-sm flex flex-col gap-sm">
-        {/* Customer CRM section injected here */}
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        {/* Customer CRM section */}
         {customerSelectionNode}
 
-        {/* Line Items List */}
-        <div className="flex-1 flex flex-col gap-sm">
-          <h4 className="font-label-caps text-label-caps text-outline uppercase mb-1">
-            Sản phẩm đã chọn ({cart.reduce((sum, item) => sum + item.quantity, 0)})
-          </h4>
-
-          {cart.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-12 text-outline/50 border-2 border-dashed border-outline/10 rounded-xl">
-              <span className="material-symbols-outlined text-3xl mb-1">shopping_cart</span>
-              <p className="text-xs font-semibold">Giỏ hàng đang trống</p>
-            </div>
-          ) : (
-            <div className="space-y-sm pr-1">
-              {cart.map((item) => (
-                <div key={item.variant.id} className="flex gap-sm bg-inverse-surface border border-outline/10 rounded-lg p-sm relative group/item">
-                  <div className="w-12 h-16 rounded bg-surface-container-low flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {item.product.imageUrls && item.product.imageUrls.length > 0 ? (
-                      <img src={item.product.imageUrls[0]} alt={item.product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="material-symbols-outlined text-on-surface-variant/30 text-xl">checkroom</span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div className="flex justify-between items-start gap-sm">
-                      <div>
-                        <h5 className="font-body-sm text-body-sm text-on-tertiary font-bold line-clamp-1">{item.product.name}</h5>
-                        <p className="text-[10px] text-outline mt-0.5 uppercase tracking-wide">
-                          SKU: {item.variant.sku}
-                          {item.variant.option1Value ? ` | ${item.variant.option1Value.value}` : ''}
-                          {item.variant.option2Value ? ` - ${item.variant.option2Value.value}` : ''}
-                        </p>
-                      </div>
-                      <span className="font-title-sm text-title-sm text-on-tertiary font-bold whitespace-nowrap">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.salePrice * item.quantity)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center mt-2">
-                      {/* Quantity control */}
-                      <div className="flex items-center gap-3 bg-[#3d4247] rounded-lg px-2.5 py-0.5">
-                        <button
-                          onClick={() => handleUpdateQuantity(item.variant.id as number, -1)}
-                          className="text-outline hover:text-on-tertiary flex items-center"
-                        >
-                          <span className="material-symbols-outlined text-[14px] font-bold">remove</span>
-                        </button>
-                        <span className="font-body-sm text-on-tertiary w-4 text-center text-xs font-semibold">{item.quantity}</span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item.variant.id as number, 1)}
-                          className="text-outline hover:text-on-tertiary flex items-center"
-                        >
-                          <span className="material-symbols-outlined text-[14px] font-bold">add</span>
-                        </button>
-                      </div>
-
-                      {/* Delete item */}
-                      <button
-                        onClick={() => handleRemoveFromCart(item.variant.id as number)}
-                        className="text-outline hover:text-error transition-colors p-1"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Payment & Order notes (moved from footer to body to optimize height) */}
-        <div className="mt-sm pt-sm border-t border-[#2d3238] space-y-sm">
-          {/* Payment Methods */}
-          <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-2">Phương thức thanh toán</label>
-            <div className="flex bg-[#16191c] rounded-lg p-1 border border-[#2d3238]">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('CASH')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
-                  paymentMethod === 'CASH' 
-                    ? 'bg-[#2ecc71] text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">payments</span>
-                Tiền mặt
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod('QR_PAYOS');
-                  setCustomerPaid('');
-                  setIsPaidModified(false);
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-md transition-all ${
-                  paymentMethod === 'QR_PAYOS' 
-                    ? 'bg-[#1a73e8] text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                Chuyển khoản QR
-              </button>
-            </div>
+        {/* Financial Details */}
+        <div className="flex flex-col gap-3 py-2">
+          <div className="flex justify-between items-center text-gray-500 text-xs font-semibold">
+            <span>Tổng tiền hàng ({totalItemsCount} sản phẩm)</span>
+            <span className="text-gray-900 font-bold">
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
+            </span>
           </div>
 
-          {/* Payment Fields */}
-          {paymentMethod === 'CASH' ? (
-            <div className="grid grid-cols-2 gap-sm">
-              <Input
-                label="Khách trả tiền"
+          <div className="flex justify-between items-center text-gray-500 text-xs font-semibold">
+            <span>Thuế (VAT 8%)</span>
+            <span className="text-gray-900 font-bold">
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}
+            </span>
+          </div>
+
+          {/* Point discount rendering */}
+          {customerType === 'MEMBER' && pointsDiscount > 0 && (
+            <div className="flex justify-between items-center text-green-600 text-xs font-bold">
+              <span>Điểm tích lũy (-{pointsToUse} điểm)</span>
+              <span>
+                -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsDiscount)}
+              </span>
+            </div>
+          )}
+
+          {/* Voucher discount rendering */}
+          {customerType === 'MEMBER' && voucherDiscount > 0 && (
+            <div className="flex justify-between items-center text-green-600 text-xs font-bold">
+              <span>Voucher giảm giá ({voucherCode})</span>
+              <span>
+                -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherDiscount)}
+              </span>
+            </div>
+          )}
+
+          <div className="h-px bg-gray-100 w-full my-1"></div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-700 font-bold">Khách phải trả</span>
+            <span className="text-lg font-extrabold text-blue-600 tracking-tight">
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total)}
+            </span>
+          </div>
+        </div>
+
+        {/* Payment Methods */}
+        <div className="pt-2 border-t border-gray-100">
+          <label className="text-[10px] font-bold text-gray-400 uppercase block mb-2">Phương thức thanh toán</label>
+          <div className="flex bg-gray-50 rounded-lg p-0.5 border border-gray-200">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('CASH')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${
+                paymentMethod === 'CASH'
+                  ? 'bg-green-500 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">payments</span>
+              Tiền mặt
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPaymentMethod('QR_PAYOS');
+                setCustomerPaid('');
+                setIsPaidModified(false);
+              }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${
+                paymentMethod === 'QR_PAYOS'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+              Chuyển khoản QR
+            </button>
+          </div>
+        </div>
+
+        {/* Payment Fields */}
+        {paymentMethod === 'CASH' ? (
+          <div className="grid grid-cols-2 gap-3">
+            {/* Khách trả tiền */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">Khách trả tiền</label>
+              <input
                 type="number"
                 placeholder="0"
                 value={customerPaid}
@@ -190,99 +183,86 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
                   setIsPaidModified(true);
                   setCustomerPaid(e.target.value === '' ? '' : Number(e.target.value));
                 }}
-                error={customerPaid !== '' && customerPaid < total ? 'Khách trả chưa đủ tiền' : undefined}
-                className="bg-[#16191c] border-[#2d3238] text-white"
+                className="w-full h-9 bg-white border border-gray-300 rounded-lg px-3 text-xs text-gray-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all"
               />
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Tiền trả lại</label>
-                <div className="w-full bg-[#16191c]/50 border border-[#2d3238] rounded-lg px-3 py-2 text-xs text-[#2ecc71] font-bold h-[34px] flex items-center">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(changeAmount)}
-                </div>
+              {customerPaid !== '' && customerPaid < total && (
+                <p className="text-[10px] text-red-500 font-medium">Khách trả chưa đủ tiền</p>
+              )}
+            </div>
+
+            {/* Tiền trả lại */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">Tiền trả lại</label>
+              <div className="w-full h-9 bg-gray-50 border border-gray-300 rounded-lg px-3 text-xs text-green-600 font-bold flex items-center">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(changeAmount)}
               </div>
             </div>
-          ) : (
-            <div className="bg-[#1a73e8]/10 border border-[#1a73e8]/30 rounded-lg p-3 text-center">
-              <p className="text-sm text-[#1a73e8] font-medium">Khách hàng sẽ quét mã QR thanh toán sau khi bạn chốt đơn.</p>
-            </div>
-          )}
-          
+          </div>
+        ) : (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+            <p className="text-xs text-blue-700 font-medium">
+              Khách hàng quét mã QR thanh toán sau khi bạn xác nhận chốt đơn.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-3">
+          {/* Order Note */}
           <Input
             type="text"
             placeholder="Ghi chú đơn hàng..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            leftIcon={<span className="material-symbols-outlined text-[16px]">edit_note</span>}
-            className="bg-[#16191c] border-[#2d3238] text-white placeholder:text-slate-500"
+            leftIcon={<span className="material-symbols-outlined text-[16px] text-gray-400">edit_note</span>}
+            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 text-xs"
           />
-        </div>
-      </div>
 
-      {/* Checkout Footer Section */}
-      <div className="p-sm border-t border-outline/20 bg-[#15181c] flex-shrink-0">
-
-        {/* Financial Details */}
-        <div className="flex flex-col gap-2 mb-3">
-          <div className="flex justify-between items-center text-slate-400 text-xs font-medium">
-            <span>Tạm tính</span>
-            <span className="text-white">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</span>
-          </div>
-          <div className="flex justify-between items-center text-slate-400 text-xs font-medium">
-            <span>Thuế (VAT 8%)</span>
-            <span className="text-white">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}</span>
+          {/* Automate print invoice checkbox */}
+          <div className="flex items-center gap-2">
+            <input
+              id="print-auto"
+              type="checkbox"
+              checked={autoPrint}
+              onChange={(e) => setAutoPrint(e.target.checked)}
+              className="w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <label htmlFor="print-auto" className="text-xs text-gray-600 font-medium select-none cursor-pointer">
+              In hóa đơn tự động [F10]
+            </label>
           </div>
 
-          {/* Point discount rendering */}
-          {customerType === 'MEMBER' && pointsDiscount > 0 && (
-            <div className="flex justify-between items-center text-[#2ecc71] text-xs font-semibold">
-              <span>Dùng điểm tích lũy ({pointsToUse} điểm)</span>
-              <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsDiscount)}</span>
-            </div>
-          )}
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSaveTemporary}
+              disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
+              className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1 shadow-sm"
+            >
+              {isSavingTemporary ? (
+                'Đang lưu...'
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[16px]">pause_presentation</span>
+                  {pendingOrderId ? 'Cập nhật' : 'Lưu tạm [F8]'}
+                </>
+              )}
+            </Button>
 
-          {/* Voucher discount rendering */}
-          {customerType === 'MEMBER' && voucherDiscount > 0 && (
-            <div className="flex justify-between items-center text-[#2ecc71] text-xs font-semibold">
-              <span>Voucher giảm giá ({voucherCode})</span>
-              <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherDiscount)}</span>
-            </div>
-          )}
-
-          <div className="h-px bg-outline/20 w-full my-0.5"></div>
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-white font-bold">Tổng cộng</span>
-            <span className="text-xl font-extrabold text-[#f1c40f] tracking-tight">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total)}
-            </span>
+            <Button
+              onClick={handleCheckout}
+              disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
+              className="flex-[1.5] py-3 bg-[#0088FF] hover:bg-[#0077EE] text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1 shadow-sm"
+            >
+              {isCreatingOrder ? (
+                'Đang xử lý...'
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[16px]">credit_card</span>
+                  Thanh toán [F9]
+                </>
+              )}
+            </Button>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-sm mt-3">
-          <Button
-            onClick={handleSaveTemporary}
-            disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
-            className="flex-1 py-3.5 bg-[#e67e22] hover:bg-[#d35400] text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1"
-            leftIcon={isSavingTemporary ? (
-              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-            ) : (
-              <span className="material-symbols-outlined text-[16px]">pause_presentation</span>
-            )}
-          >
-            {isSavingTemporary ? 'Đang lưu...' : (pendingOrderId ? 'Cập nhật' : 'Lưu tạm')}
-          </Button>
-
-          <Button
-            onClick={handleCheckout}
-            disabled={isCreatingOrder || isSavingTemporary || cart.length === 0}
-            className="flex-[1.5] py-3.5 bg-[#2ecc71] hover:bg-[#2ecc71]/90 text-white rounded-xl font-bold transition-all border-none text-xs flex items-center justify-center gap-1"
-            leftIcon={isCreatingOrder ? (
-              <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-            ) : (
-              <span className="material-symbols-outlined text-[16px]">credit_card</span>
-            )}
-          >
-            {isCreatingOrder ? 'Đang xử lý...' : 'Thanh toán'}
-          </Button>
         </div>
       </div>
     </section>

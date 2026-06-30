@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { useGetCategoriesQuery, useDeleteCategoryMutation, useDeleteHardCategoryMutation, useToggleCategoryActiveMutation } from '@/redux/api/categoryApi';
 import CategoryFormModal from './components/CategoryFormModal';
@@ -30,29 +31,29 @@ export default function CategoryListPage() {
     if (window.confirm(confirmMessage)) {
       try {
         await deleteCategory(category.id).unwrap();
-        alert('Xóa danh mục thành công');
+        toast.success('Xóa danh mục thành công');
       } catch (err: any) {
-        alert(err?.data?.message || err?.message || 'Lỗi khi xóa danh mục');
+        toast.error(err?.data?.message || err?.message || 'Lỗi khi xóa danh mục');
       }
     }
   };
 
   const handleHardDelete = async (category: Category) => {
     if (category.active) {
-      alert('Danh mục vẫn đang hoạt động, không thể xóa cứng. Hãy ngừng hoạt động danh mục trước!');
+      toast.error('Danh mục vẫn đang hoạt động, không thể xóa cứng. Hãy ngừng hoạt động danh mục trước!');
       return;
     }
     if (!category.deleted) {
-      alert('Danh mục vẫn chưa được xóa mềm, không thể xóa cứng. Hãy xóa mềm trước!');
+      toast.error('Danh mục vẫn chưa được xóa mềm, không thể xóa cứng. Hãy xóa mềm trước!');
       return;
     }
 
     if (window.confirm(`CẢNH BÁO: Xóa cứng danh mục "${category.name}" không thể hoàn tác. Bạn có chắc chắn không?`)) {
       try {
         await deleteHardCategory(category.id).unwrap();
-        alert('Xóa cứng thành công');
+        toast.success('Xóa cứng thành công');
       } catch (err: any) {
-        alert(err?.data?.message || err?.message || 'Lỗi khi xóa cứng danh mục');
+        toast.error(err?.data?.message || err?.message || 'Lỗi khi xóa cứng danh mục');
       }
     }
   };
@@ -68,7 +69,7 @@ export default function CategoryListPage() {
     try {
       await toggleCategoryActive({ id: category.id, active: nextActiveState }).unwrap();
     } catch (err: any) {
-      alert(err?.data?.message || err?.message || 'Lỗi khi cập nhật trạng thái');
+      toast.error(err?.data?.message || err?.message || 'Lỗi khi cập nhật trạng thái');
     }
   };
 

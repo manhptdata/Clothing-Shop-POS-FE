@@ -64,9 +64,9 @@ export const routes: RouteObject[] = [
       {
         element: <MainLayout />,
         children: [
-          // Dashboard (Admin, Sale)
+          // Dashboard (Admin)
           {
-            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_SALE"]} />,
+            element: <RoleRoute allowedRoles={["ROLE_ADMIN"]} />,
             children: [
               { index: true, element: <DashboardPage /> },
               { path: "dashboard", element: <DashboardPage /> },

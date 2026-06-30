@@ -1,5 +1,5 @@
-
 import { Button } from '@/components/ui/Button';
+import toast from 'react-hot-toast';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGetProductsQuery, useDeleteProductMutation } from '@/redux/api/productApi';
 import { useState, useEffect } from 'react';
@@ -45,11 +45,11 @@ export default function ProductListPage() {
 
     try {
       await deleteProduct(id).unwrap();
-      alert('Xóa sản phẩm thành công!');
+      toast.success('Xóa sản phẩm thành công!');
     } catch (err: any) {
       console.error('Lỗi khi xóa sản phẩm:', err);
       const errorMsg = err?.data?.message || err?.message || 'Đã xảy ra lỗi không xác định';
-      alert(`Xóa thất bại! Lỗi: ${errorMsg}`);
+      toast.error(`Xóa thất bại! Lỗi: ${errorMsg}`);
     }
   };
 

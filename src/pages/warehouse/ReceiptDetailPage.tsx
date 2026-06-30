@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useGetReceiptByIdQuery, useConfirmReceiptMutation, useCancelReceiptMutation } from '@/redux/api/receiptApi';
@@ -31,9 +32,9 @@ export default function ReceiptDetailPage() {
         try {
             await confirmReceipt(receipt.id).unwrap();
             setShowConfirmModal(false);
-            alert('Duyệt phiếu thành công! Tồn kho đã được cập nhật.');
+            toast.success('Duyệt phiếu thành công! Tồn kho đã được cập nhật.');
         } catch (err: any) {
-            alert(err?.data?.message || err?.message || 'Lỗi khi duyệt phiếu');
+            toast.error(err?.data?.message || err?.message || 'Lỗi khi duyệt phiếu');
         }
     };
 
@@ -42,9 +43,9 @@ export default function ReceiptDetailPage() {
         try {
             await cancelReceipt(receipt.id).unwrap();
             setShowCancelModal(false);
-            alert('Hủy phiếu thành công! Tồn kho và giá vốn đã được khôi phục.');
+            toast.success('Hủy phiếu thành công! Tồn kho và giá vốn đã được khôi phục.');
         } catch (err: any) {
-            alert(err?.data?.message || err?.message || 'Lỗi khi hủy phiếu');
+            toast.error(err?.data?.message || err?.message || 'Lỗi khi hủy phiếu');
         }
     };
 

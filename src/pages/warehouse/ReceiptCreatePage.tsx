@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useGetSuppliersQuery } from '@/redux/api/supplierApi';
@@ -109,7 +110,7 @@ export default function ReceiptCreatePage() {
             }).unwrap();
             navigate(`/warehouse/receipts/${receipt.id}`);
         } catch (err: any) {
-            alert(err?.data?.message || err?.message || 'Lỗi khi tạo phiếu nhập');
+            toast.error(err?.data?.message || err?.message || 'Lỗi khi tạo phiếu nhập');
         }
     };
 

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import { useCreateCustomerMutation } from "@/redux/api/customerApi";
 import { Button } from "@/components/ui/Button";
@@ -103,13 +104,13 @@ export default function CustomerFormPage() {
 
       const res = await createCustomer(payload).unwrap();
 
-      alert("Tạo mới tài khoản khách hàng thành công!");
+      toast.success("Tạo mới tài khoản khách hàng thành công!");
       navigate("/customers/list");
 
     } catch (error: any) {
       console.error(error);
       const errorMsg = error?.data?.message || error?.error || "Lỗi không xác định";
-      alert(`Tạo mới thất bại! Lỗi Server: ${errorMsg}`);
+      toast.error(`Tạo mới thất bại! Lỗi Server: ${errorMsg}`);
     }
   };
 

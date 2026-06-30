@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { uploadMultipleImagesToCloudinary, deleteImageFromCloudinary } from '@/utils/cloudinary';
 
 interface ImageUploaderProps {
@@ -21,7 +22,7 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
             onChange([...images, ...uploadedUrls]);
         } catch (error) {
             console.error('Lỗi khi tải ảnh lên:', error);
-            alert('Có lỗi xảy ra khi tải ảnh lên. Vui lòng kiểm tra lại cấu hình.');
+            toast.error('Có lỗi xảy ra khi tải ảnh lên. Vui lòng kiểm tra lại cấu hình.');
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) {

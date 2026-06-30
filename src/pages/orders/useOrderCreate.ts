@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useGetProductsQuery } from '@/redux/api/productApi';
 import { useCreateOrderMutation, useUpdateOrderMutation } from '@/redux/api/orderApi';
 import type { CartItem } from './hooks/useCart';
@@ -64,9 +65,8 @@ export function useOrderCreate() {
         if (matchingVariant.quantity > 0) {
           cart.handleAddToCart(p, matchingVariant);
           setSearchProductQuery('');
-          return true;
         } else {
-          alert(`Sản phẩm ${p.name} - SKU: ${matchingVariant.sku} đã hết hàng!`);
+          toast.error(`Sản phẩm ${p.name} - SKU: ${matchingVariant.sku} đã hết hàng!`);
           return true;
         }
       }
@@ -86,7 +86,7 @@ export function useOrderCreate() {
 
   const handleSaveTemporary = async () => {
     if (cart.cart.length === 0) {
-      alert('Vui lòng thêm sản phẩm vào giỏ hàng trước khi lưu tạm.');
+      toast.error('Vui lòng thêm sản phẩm vào giỏ hàng trước khi lưu tạm.');
       return;
     }
 
@@ -109,14 +109,14 @@ export function useOrderCreate() {
       let response;
       if (pendingOrders.pendingOrderId) {
         response = await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap();
-        alert(`Cập nhật đơn hàng chờ thành công! Mã hóa đơn: ${response.data.orderNumber}`);
+        toast.success(`Cập nhật đơn hàng chờ thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       } else {
         response = await createOrder(orderPayload).unwrap();
-        alert(`Lưu tạm đơn hàng thành công! Mã hóa đơn: ${response.data.orderNumber}`);
+        toast.success(`Lưu tạm đơn hàng thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       }
       clearPOSState();
     } catch (error: any) {
-      alert(error?.data?.message || 'Có lỗi xảy ra khi lưu tạm đơn hàng. Vui lòng thử lại.');
+      toast.error(error?.data?.message || 'Có lỗi xảy ra khi lưu tạm đơn hàng. Vui lòng thử lại.');
     }
   };
 
@@ -191,32 +191,37 @@ export function useOrderCreate() {
       let response;
       if (pendingOrders.pendingOrderId) {
         response = await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap();
-        alert(`Thanh toán thành công đơn hàng chờ! Mã hóa đơn: ${response.data.orderNumber}`);
+        toast.success(`Thanh toán thành công đơn hàng chờ! Mã hóa đơn: ${response.data.orderNumber}`);
       } else {
         response = await createOrder(orderPayload).unwrap();
-        alert(`Thanh toán thành công! Mã hóa đơn: ${response.data.orderNumber}`);
+        toast.success(`Thanh toán thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       }
       checkout.setIsQRModalOpen(false);
       clearPOSState();
-      navigate('/orders');
+      
+      if (checkout.autoPrint) {
+        navigate(`/orders/${response.data.id}?print=true`);
+      } else {
+        navigate('/orders');
+      }
     } catch (error: any) {
-      alert(error?.data?.message || 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.');
+      toast.error(error?.data?.message || 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.');
     }
   };
 
   const handleCheckout = async () => {
     if (cart.cart.length === 0) {
-      alert('Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.');
+      toast.error('Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.');
       return;
     }
     if (customer.customerType === 'MEMBER' && !customer.selectedCustomer) {
-      alert('Vui lòng chọn khách hàng thành viên để thanh toán.');
+      toast.error('Vui lòng chọn khách hàng thành viên để thanh toán.');
       return;
     }
 
     if (checkout.paymentMethod === 'CASH') {
       if (checkout.customerPaid === '' || checkout.customerPaid < discounts.total) {
-        alert('Số tiền khách thanh toán không hợp lệ hoặc thiếu.');
+        toast.error('Số tiền khách thanh toán không hợp lệ hoặc thiếu.');
         return;
       }
       await confirmCheckout();
@@ -270,7 +275,8 @@ export function useOrderCreate() {
       pendingOrdersCount: pendingOrders.pendingOrdersCount,
       isSavingTemporary: isCreatingOrder || isUpdatingOrder,
       isCancellingOrder: pendingOrders.isCancellingOrder,
-      orderIdToCancel: pendingOrders.orderIdToCancel
+      orderIdToCancel: pendingOrders.orderIdToCancel,
+      autoPrint: checkout.autoPrint
     },
     actions: {
       setActiveCategory,
@@ -297,6 +303,7 @@ export function useOrderCreate() {
       handleCheckout,
       setPaymentMethod: checkout.setPaymentMethod,
       setIsQRModalOpen: checkout.setIsQRModalOpen,
+      setAutoPrint: checkout.setAutoPrint,
       confirmCheckout,
       setIsPendingOrdersModalOpen: pendingOrders.setIsPendingOrdersModalOpen,
       handleSaveTemporary,

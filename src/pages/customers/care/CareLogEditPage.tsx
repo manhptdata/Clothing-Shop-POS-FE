@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from 'react-hot-toast';
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGetCareLogByIdQuery,
@@ -76,7 +77,7 @@ export default function CareLogEditPage() {
       navigate(-1);
     } catch (error: any) {
       console.error("Lỗi khi cập nhật lịch sử:", error);
-      alert(
+      toast.error(
         `Đã xảy ra lỗi khi cập nhật!\nChi tiết: ${JSON.stringify(error.data || error.message || error)}`,
       );
     }

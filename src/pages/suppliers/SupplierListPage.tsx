@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { 
   useGetSuppliersQuery, 
@@ -54,25 +55,25 @@ export default function SupplierListPage() {
     if (window.confirm(confirmMessage)) {
       try {
         await softDeleteSupplier(supplier.id).unwrap();
-        alert('Ngừng hoạt động thành công!');
+        toast.success('Ngừng hoạt động thành công!');
       } catch (err: any) {
-        alert(err?.data?.message || err?.message || 'Lỗi khi ngừng hoạt động');
+        toast.error(err?.data?.message || err?.message || 'Lỗi khi ngừng hoạt động');
       }
     }
   };
 
   const handleHardDelete = async (supplier: Supplier) => {
     if (supplier.active) {
-      alert('Nhà cung cấp vẫn đang hoạt động, không thể xóa cứng. Hãy ngừng hoạt động trước!');
+      toast.error('Nhà cung cấp vẫn đang hoạt động, không thể xóa cứng. Hãy ngừng hoạt động trước!');
       return;
     }
 
     if (window.confirm(`CẢNH BÁO: Xóa cứng nhà cung cấp "${supplier.name}" không thể hoàn tác. Bạn có chắc chắn không?`)) {
       try {
         await hardDeleteSupplier(supplier.id).unwrap();
-        alert('Xóa cứng thành công');
+        toast.success('Xóa cứng thành công');
       } catch (err: any) {
-        alert(err?.data?.message || err?.message || 'Lỗi khi xóa cứng');
+        toast.error(err?.data?.message || err?.message || 'Lỗi khi xóa cứng');
       }
     }
   };

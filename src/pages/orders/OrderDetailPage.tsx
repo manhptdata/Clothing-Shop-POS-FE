@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   useGetOrderByIdQuery, 
   useCancelOrderMutation,
@@ -13,10 +14,21 @@ import { Badge } from '@/components/ui/Badge';
 export default function OrderDetailPage() {
   const { id } = useParams();
   const orderId = Number(id);
+  const [searchParams] = useSearchParams();
+  const shouldPrint = searchParams.get('print') === 'true';
 
   // --- Fetch Order details ---
   const { data: orderResponse, isLoading: isOrderLoading, error } = useGetOrderByIdQuery(orderId);
   const order = orderResponse?.data;
+
+  useEffect(() => {
+    if (shouldPrint && order && !isOrderLoading) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldPrint, order, isOrderLoading]);
 
   // --- Return Order State & Hooks ---
   const { data: returnOrdersResponse } = useGetReturnOrdersByOriginalOrderIdQuery(orderId, { skip: !orderId });
@@ -65,9 +77,9 @@ export default function OrderDetailPage() {
     if (window.confirm('Bạn có chắc chắn muốn hủy / hoàn trả hóa đơn này không?')) {
       try {
         await cancelOrder(orderId).unwrap();
-        alert('Hủy đơn hàng thành công!');
+        toast.success('Hủy đơn hàng thành công!');
       } catch (err: any) {
-        alert(err?.data?.message || 'Không thể hủy đơn hàng này.');
+        toast.error(err?.data?.message || 'Không thể hủy đơn hàng này.');
       }
     }
   };
@@ -134,7 +146,7 @@ export default function OrderDetailPage() {
       .filter(item => item.quantity > 0);
 
     if (items.length === 0) {
-      alert('Vui lòng chọn ít nhất 1 sản phẩm để trả hàng.');
+      toast.error('Vui lòng chọn ít nhất 1 sản phẩm để trả hàng.');
       return;
     }
 
@@ -144,12 +156,12 @@ export default function OrderDetailPage() {
         reason,
         items
       }).unwrap();
-      alert('Tạo phiếu trả hàng thành công!');
+      toast.success('Tạo phiếu trả hàng thành công!');
       setIsReturnModalOpen(false);
       setReturnQuantities({});
       setReason('');
     } catch (err: any) {
-      alert(err?.data?.message || 'Không thể tạo phiếu trả hàng này.');
+      toast.error(err?.data?.message || 'Không thể tạo phiếu trả hàng này.');
     }
   };
 

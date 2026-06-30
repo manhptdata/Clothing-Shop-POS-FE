@@ -35,19 +35,18 @@ export default function StockHistoryPage() {
     const totalElements = pageData?.totalElements ?? 0;
 
     return (
-        <div className="max-w-[1440px] mx-auto w-full">
+        <div className="flex-1 px-6 pb-6 pt-2 max-w-7xl mx-auto w-full">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-md">
                 <div>
-                    <h2 className="font-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
+                    <h2 className="font-display-lg text-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
                         Lịch sử thay đổi kho
                     </h2>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
-                        Các phiếu nhập đã được duyệt – tồn kho đã thực sự thay đổi.
+                        Lịch sử các phiếu nhập kho đã được duyệt và làm thay đổi số lượng tồn kho thực tế.
                     </p>
                 </div>
-                {/* Info badge */}
-                <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg text-sm text-primary">
-                    <span className="material-symbols-outlined text-[18px]">info</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-xs font-semibold text-blue-600">
+                    <span className="material-symbols-outlined text-[16px]">info</span>
                     <span>Chỉ hiển thị phiếu đã duyệt (CONFIRMED)</span>
                 </div>
             </div>

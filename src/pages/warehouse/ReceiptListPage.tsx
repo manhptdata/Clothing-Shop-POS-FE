@@ -52,47 +52,53 @@ export default function ReceiptListPage() {
     ];
 
     return (
-        <div className="max-w-[1440px] mx-auto w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-md">
+        <div className="flex-1 px-6 pb-6 pt-2 max-w-7xl mx-auto w-full">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-md">
                 <div>
-                    <h2 className="font-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
+                    <h2 className="font-display-lg text-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
                         Phiếu nhập kho
                     </h2>
                     <p className="font-body-sm text-body-sm text-on-surface-variant">
-                        Quản lý và tạo các phiếu nhập hàng từ nhà cung cấp.
+                        Quản lý việc nhập hàng vào kho từ nhà cung cấp.
                     </p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                    <div className="w-full sm:w-64">
-                        <Input
-                            id="search-receipt"
-                            placeholder="Tìm theo mã hoặc ghi chú..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setPage(0);
-                            }}
-                            leftIcon={<span className="material-symbols-outlined text-outline">search</span>}
-                            className="bg-surface"
-                        />
-                    </div>
-                    <div className="w-full sm:w-48">
-                        <Select
-                            id="status-filter"
-                            options={statusOptions}
-                            value={status}
-                            onChange={(val) => {
-                                setStatus(val);
-                                setPage(0); // Reset page on filter
-                            }}
-                        />
-                    </div>
-                    <Button
-                        onClick={() => navigate('/warehouse/receipts/new')}
-                        leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                <Button
+                    onClick={() => navigate('/warehouse/receipts/new')}
+                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                >
+                    Tạo phiếu nhập
+                </Button>
+            </div>
+
+            {/* TÌM KIẾM & BỘ LỌC */}
+            <div className="bg-surface rounded-xl border border-outline/10 p-4 flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative flex-1 max-w-md">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <input
+                        type="text"
+                        placeholder="Tìm theo mã hoặc ghi chú..."
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(0);
+                        }}
+                        className="w-full pl-10 pr-4 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm transition-all"
+                    />
+                </div>
+                <div className="relative w-full sm:w-48">
+                    <select
+                        value={status}
+                        onChange={(e) => {
+                            setStatus(e.target.value);
+                            setPage(0); // Reset page on filter
+                        }}
+                        className="w-full pl-4 pr-10 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm appearance-none cursor-pointer transition-all"
                     >
-                        Tạo phiếu nhập
-                    </Button>
+                        {statusOptions.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">filter_list</span>
                 </div>
             </div>
 
