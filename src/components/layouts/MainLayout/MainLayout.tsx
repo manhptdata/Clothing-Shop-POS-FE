@@ -7,17 +7,17 @@ export default function MainLayout() {
   const isPosPage = location.pathname === '/orders/new';
 
   return (
-    <div className="font-body-md text-body-md text-on-surface antialiased bg-surface min-h-screen flex">
+    <div className="font-body-md text-body-md text-on-surface antialiased bg-surface min-h-screen">
       <div data-sidebar>
         <Sidebar />
       </div>
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className="ml-64 flex flex-col min-h-screen overflow-hidden">
         {!isPosPage && (
           <div data-header>
             <Header />
           </div>
         )}
-        <main className={`flex-1 bg-surface ${isPosPage ? 'p-0' : 'p-8'}`}>
+        <main className={`flex-1 bg-surface ${isPosPage ? 'p-0' : 'p-8'} overflow-hidden`}>
           <Outlet />
         </main>
       </div>
