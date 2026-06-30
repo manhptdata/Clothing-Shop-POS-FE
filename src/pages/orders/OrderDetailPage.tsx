@@ -559,7 +559,7 @@ export default function OrderDetailPage() {
                                   max={maxAllowed}
                                   value={returnQuantities[variantId] || 0}
                                   onChange={(e) => handleQtyChange(variantId, parseInt(e.target.value) || 0, maxAllowed)}
-                                  className="w-10 text-center border-b border-outline/30 bg-transparent py-0.5 focus:border-primary focus:outline-none"
+                                  className="w-12 text-center border-b border-outline/30 bg-transparent py-0.5 focus:border-primary focus:outline-none text-on-surface [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <button
                                   type="button"
@@ -593,7 +593,7 @@ export default function OrderDetailPage() {
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Nhập lý do trả hàng..."
                   rows={3}
-                  className="w-full px-sm py-xs border border-outline/30 rounded-xl bg-transparent text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                  className="w-full px-sm py-xs border border-outline/30 rounded-xl bg-transparent text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 text-on-surface"
                 />
               </div>
             </div>
