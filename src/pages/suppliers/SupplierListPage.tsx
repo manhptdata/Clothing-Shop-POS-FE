@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { 
   useGetSuppliersQuery, 
   useSoftDeleteSupplierMutation, 
+  useReactivateSupplierMutation,
   useHardDeleteSupplierMutation 
 } from '@/redux/api/supplierApi';
 import SupplierFormModal from './components/SupplierFormModal';
@@ -35,6 +36,7 @@ export default function SupplierListPage() {
   const totalElements = pageData?.totalElements || 0;
 
   const [softDeleteSupplier] = useSoftDeleteSupplierMutation();
+  const [reactivateSupplier] = useReactivateSupplierMutation();
   const [hardDeleteSupplier] = useHardDeleteSupplierMutation();
 
   const handleEdit = (supplier: Supplier) => {
@@ -57,6 +59,20 @@ export default function SupplierListPage() {
         alert('Ngừng hoạt động thành công!');
       } catch (err: any) {
         alert(err?.data?.message || err?.message || 'Lỗi khi ngừng hoạt động');
+      }
+    }
+  };
+
+  const handleReactivate = async (supplier: Supplier) => {
+    if (supplier.active) return;
+    
+    const confirmMessage = `Bạn có muốn kích hoạt lại nhà cung cấp "${supplier.name}"?`;
+    if (window.confirm(confirmMessage)) {
+      try {
+        await reactivateSupplier(supplier.id).unwrap();
+        alert('Kích hoạt lại thành công!');
+      } catch (err: any) {
+        alert(err?.data?.message || err?.message || 'Lỗi khi kích hoạt lại');
       }
     }
   };
@@ -191,12 +207,11 @@ export default function SupplierListPage() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <button
-                        onClick={() => handleSoftDelete(s)}
-                        disabled={!s.active} // Không có API kích hoạt lại, nên ẩn chức năng toggle khi đã inactive
+                        onClick={() => s.active ? handleSoftDelete(s) : handleReactivate(s)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                          s.active ? 'bg-primary cursor-pointer' : 'bg-outline-variant/50 cursor-not-allowed'
+                          s.active ? 'bg-primary cursor-pointer' : 'bg-outline-variant/50 cursor-pointer'
                         }`}
-                        title={!s.active ? "Không thể kích hoạt lại" : "Ngừng hoạt động"}
+                        title={s.active ? "Ngừng hoạt động" : "Kích hoạt lại"}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
