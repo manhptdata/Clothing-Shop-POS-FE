@@ -272,14 +272,18 @@ export default function ProductFormModal({
                                 Thông tin cơ bản
                             </h3>
                             <div className="space-y-3">
-                                <Input
-                                    id="product-name"
-                                    label="Tên sản phẩm *"
-                                    value={formData.name}
-                                    onChange={(e) => updateField('name', e.target.value)}
-                                    placeholder="VD: Áo khoác Trench len"
-                                    error={errors.name}
-                                />
+                                <div className="flex flex-col gap-1 w-full">
+                                    <label htmlFor="product-name" className="font-label-caps text-label-caps text-on-surface">
+                                        Tên sản phẩm <span className="text-error">*</span>
+                                    </label>
+                                    <Input
+                                        id="product-name"
+                                        value={formData.name}
+                                        onChange={(e) => updateField('name', e.target.value)}
+                                        placeholder="VD: Áo khoác Trench len"
+                                        error={errors.name}
+                                    />
+                                </div>
 
                                 <div className="flex flex-col gap-1">
                                     <label className="font-label-caps text-label-caps text-on-surface">
@@ -294,14 +298,18 @@ export default function ProductFormModal({
                                     />
                                 </div>
 
-                                <Select
-                                    id="product-category"
-                                    label="Danh mục *"
-                                    value={formData.categoryId}
-                                    onChange={(value) => updateField('categoryId', value)}
-                                    options={categoryOptions}
-                                    error={errors.categoryId}
-                                />
+                                <div className="flex flex-col gap-1 w-full">
+                                    <label htmlFor="product-category" className="font-label-caps text-label-caps text-on-surface">
+                                        Danh mục <span className="text-error">*</span>
+                                    </label>
+                                    <Select
+                                        id="product-category"
+                                        value={formData.categoryId}
+                                        onChange={(value) => updateField('categoryId', value)}
+                                        options={categoryOptions}
+                                        error={errors.categoryId}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -383,6 +391,8 @@ export default function ProductFormModal({
                         variants={formData.variants}
                         onChange={handleVariantsChange}
                         isEditing={isEditing}
+                        productImages={formData.imageUrls}
+                        onProductImagesChange={(urls) => updateField('imageUrls', urls)}
                     />
                     {errors.variants && (
                         <p className="text-error text-xs mt-1">{errors.variants}</p>

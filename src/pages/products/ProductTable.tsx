@@ -1,17 +1,14 @@
-// ProductTable.tsx
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { ProductVariant } from '@/types/product.types';
 
 interface ProductTableProps {
     products: any[];
-    getStatus: (variants: ProductVariant[]) => { text: string; class: 'success' | 'warning' | 'danger' | 'default' };
     getVariantStatus: (quantity: number, threshold?: number) => any;
-    onEdit: (product: any) => void;
     onDelete: (id: number, name: string) => void;
 }
 
-export default function ProductTable({ products, getStatus, getVariantStatus, onEdit, onDelete }: ProductTableProps) {
+export default function ProductTable({ products, getVariantStatus, onDelete }: ProductTableProps) {
     if (products.length === 0) {
         return (
             <div className="text-center py-16 text-on-surface-variant">
@@ -31,14 +28,11 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                             <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Sản phẩm</th>
                             <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Danh mục</th>
                             <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Biến thể - Tồn kho</th>
-                            <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Giá bán</th>
-                            <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Trạng thái</th>
                             <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-outline/10">
                         {products.map((product: any) => {
-                            const statusInfo = getStatus(product.variants);
                             const variants = product.variants || [];
                             const displayVariants = variants.slice(0, 3);
                             const hasMore = variants.length > 3;
@@ -71,63 +65,55 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                                         </span>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <div className="space-y-1">
-                                            {displayVariants.map((variant: ProductVariant, idx: number) => {
-                                                const variantStatus = getVariantStatus(variant.quantity || 0, variant.lowStockThreshold || 10);
-                                                const quantity = variant.quantity || 0;
-                                                const optionValues = [variant.option1Value, variant.option2Value, variant.option3Value]
-                                                    .filter(Boolean)
-                                                    .join(' / ');
+                                        <table className="w-fit border-separate" style={{ borderSpacing: '0 4px', marginTop: '-4px' }}>
+                                            <tbody>
+                                                {displayVariants.map((variant: ProductVariant, idx: number) => {
+                                                    const variantStatus = getVariantStatus(variant.quantity || 0, variant.lowStockThreshold || 10);
+                                                    const quantity = variant.quantity || 0;
+                                                    const optionValues = [variant.option1Value, variant.option2Value, variant.option3Value]
+                                                        .filter(Boolean)
+                                                        .join(' / ');
 
-                                                return (
-                                                    <div key={idx} className={`flex items-center gap-2 px-2 py-0.5 rounded text-xs ${variantStatus.class === 'critical' ? 'bg-error-container/20 border-l-2 border-error' :
-                                                        variantStatus.class === 'low' ? 'bg-warning-container/20 border-l-2 border-warning' :
-                                                            'bg-surface-container'
-                                                        }`}>
-                                                        <span className="font-medium text-on-surface">{optionValues || `Biến thể ${idx + 1}`}</span>
-                                                        <span className={`font-semibold ${variantStatus.class === 'critical' ? 'text-error' :
-                                                            variantStatus.class === 'low' ? 'text-warning' :
-                                                                'text-success'
-                                                            }`}>
-                                                            : {quantity}
-                                                        </span>
-                                                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${variantStatus.class === 'critical' ? 'bg-error' :
-                                                            variantStatus.class === 'low' ? 'bg-warning' :
-                                                                'bg-success'
-                                                            }`}></span>
-                                                        {variantStatus.class !== 'ok' && (
-                                                            <span className={`text-[10px] font-medium ${variantStatus.class === 'critical' ? 'text-error' : 'text-warning'
-                                                                }`}>
-                                                                {variantStatus.label}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                            {hasMore && (
-                                                <div className="text-xs text-on-surface-variant/60 px-2">
-                                                    +{variants.length - 3} biến thể khác
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="font-semibold text-on-surface">
-                                            {variants.length > 0
-                                                ? `${Math.min(...variants.map((v: any) => v.salePrice || 0)).toLocaleString('vi-VN')} ₫`
-                                                : 'Liên hệ'}
-                                        </div>
-                                        {variants.length > 1 && (
-                                            <div className="text-xs text-on-surface-variant/60">
-                                                {variants.length} mức giá
+                                                    const bgClass = variantStatus.class === 'critical' ? 'bg-error-container/20' :
+                                                        variantStatus.class === 'low' ? 'bg-warning-container/20' :
+                                                            'bg-surface-container';
+
+                                                    const textColorClass = variantStatus.class === 'critical' ? 'text-error' :
+                                                        variantStatus.class === 'low' ? 'text-warning' :
+                                                            'text-success';
+
+                                                    return (
+                                                        <tr key={idx} className={`text-xs transition-colors hover:brightness-95`}>
+                                                            <td className={`px-2 py-1 rounded-l ${bgClass} ${variantStatus.class !== 'ok' ? `border-l-2 ${variantStatus.class === 'critical' ? 'border-error' : 'border-warning'}` : ''}`}>
+                                                                <span className="font-medium text-on-surface whitespace-nowrap">
+                                                                    {optionValues || `Biến thể ${idx + 1}`}
+                                                                </span>
+                                                            </td>
+                                                            <td className={`px-2 py-1 font-semibold text-right whitespace-nowrap ${bgClass} ${textColorClass}`}>
+                                                                : {quantity}
+                                                            </td>
+                                                            <td className={`px-2 py-1 rounded-r whitespace-nowrap ${bgClass}`}>
+                                                                <div className="flex items-center gap-1.5 justify-start">
+                                                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${variantStatus.class === 'critical' ? 'bg-error' :
+                                                                        variantStatus.class === 'low' ? 'bg-warning' :
+                                                                            'bg-success'
+                                                                        }`}></span>
+                                                                    {variantStatus.class !== 'ok' && (
+                                                                        <span className={`text-[10px] font-medium ${textColorClass}`}>
+                                                                            {variantStatus.label}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                        {hasMore && (
+                                            <div className="text-xs text-on-surface-variant/60 px-2 mt-1">
+                                                +{variants.length - 3} biến thể khác
                                             </div>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        {product.isDeleted ? (
-                                            <Badge variant="default">ĐÃ XÓA</Badge>
-                                        ) : (
-                                            <Badge variant={statusInfo.class}>{statusInfo.text}</Badge>
                                         )}
                                     </td>
                                     <td className="px-4 py-3">
@@ -135,14 +121,6 @@ export default function ProductTable({ products, getStatus, getVariantStatus, on
                                             <Link to={`/products/${product.id}`} className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem chi tiết">
                                                 <span className="material-symbols-outlined text-sm">visibility</span>
                                             </Link>
-                                            <button
-                                                type="button"
-                                                onClick={() => onEdit(product)}
-                                                className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
-                                                title="Sửa sản phẩm"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">edit</span>
-                                            </button>
                                             {!product.isDeleted && (
                                                 <button
                                                     type="button"

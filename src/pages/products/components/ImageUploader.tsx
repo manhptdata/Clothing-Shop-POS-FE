@@ -115,13 +115,22 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
                             onDragOver={(e) => handleDragOver(e, index)}
                             onDrop={() => handleDrop(index)}
                             onDragEnd={handleDragEnd}
-                            className={`relative aspect-square rounded-lg overflow-hidden group cursor-move transition-all duration-200 ${draggedIndex === index
+                            className={`relative aspect-square rounded-lg overflow-hidden group cursor-move transition-all duration-200 border border-outline/10 ${draggedIndex === index
                                 ? 'opacity-40 scale-95'
                                 : ''
                                 }`}
                         >
-                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-contain select-none pointer-events-none p-1" />
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between p-1.5 items-start">
+                            <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover select-none pointer-events-none" />
+                            
+                            {/* Overlay cho Ảnh đại diện (chỉ áp dụng cho ảnh đầu tiên) */}
+                            {index === 0 && (
+                                <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-center py-1 text-[11px] font-medium z-10">
+                                    Ảnh đại diện
+                                </div>
+                            )}
+
+                            {/* Hover overlay chung */}
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between p-1.5 items-start z-20">
                                 <span className="bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded font-mono select-none">
                                     #{index + 1}
                                 </span>

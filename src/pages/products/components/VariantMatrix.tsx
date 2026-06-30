@@ -1,5 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { Button } from '@/components/ui/Button';
+import { uploadMultipleImagesToCloudinary } from '@/utils/cloudinary';
 import type { ProductOption, ProductOptionValue, ProductVariant } from '@/types/product.types';
 
 export type VariantFormData = Partial<ProductVariant> & { _selected?: boolean };
@@ -10,6 +13,8 @@ interface VariantMatrixProps {
   variants: VariantFormData[];
   onChange: (variants: VariantFormData[]) => void;
   isEditing?: boolean;
+  productImages?: string[];
+  onProductImagesChange?: (images: string[]) => void;
 }
 
 /**
@@ -38,7 +43,7 @@ function generateProductInitials(name: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D');
-  
+
   return noTone
     .split(/[^a-zA-Z0-9]/)
     .filter(Boolean)
@@ -56,7 +61,39 @@ function generateOptionValueCode(val: string): string {
   return noTone.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 }
 
-export function VariantMatrix({ productName, options, variants, onChange, isEditing }: VariantMatrixProps) {
+export function VariantMatrix({ productName, options, variants, onChange, isEditing, productImages, onProductImagesChange }: VariantMatrixProps) {
+  const [selectingImageIndex, setSelectingImageIndex] = useState<number | null>(null);
+  const [tempSelectedImageUrl, setTempSelectedImageUrl] = useState<string | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleVariantImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+
+      try {
+          setIsUploadingImage(true);
+          const uploadedUrls = await uploadMultipleImagesToCloudinary(files);
+          
+          if (onProductImagesChange && productImages) {
+              onProductImagesChange([...productImages, ...uploadedUrls]);
+          } else if (onProductImagesChange) {
+              onProductImagesChange([...uploadedUrls]);
+          }
+
+          if (uploadedUrls.length > 0) {
+              setTempSelectedImageUrl(uploadedUrls[0]);
+          }
+      } catch (error) {
+          console.error('Lỗi khi tải ảnh lên:', error);
+          alert('Có lỗi xảy ra khi tải ảnh lên.');
+      } finally {
+          setIsUploadingImage(false);
+          if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+          }
+      }
+  };
   // Lọc options hợp lệ (có name + ít nhất 1 value)
   const activeOptions = useMemo(
     () => options.filter(o => o.name.trim() && o.values.length > 0),
@@ -140,6 +177,23 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
     onChange(updated);
   };
 
+  const handleOpenImageSelector = (index: number) => {
+    if (variants[index]._selected === false) return;
+    if (!productImages || productImages.length === 0) {
+      alert("Vui lòng tải ảnh sản phẩm lên trước ở phần Thư viện Ảnh bên cạnh.");
+      return;
+    }
+    setSelectingImageIndex(index);
+    setTempSelectedImageUrl(variants[index].imageUrl);
+  };
+
+  const handleApplyImage = () => {
+    if (selectingImageIndex !== null) {
+      updateVariant(selectingImageIndex, 'imageUrl', tempSelectedImageUrl);
+    }
+    setSelectingImageIndex(null);
+  };
+
   if (activeOptions.length === 0 || combinations.length === 0) {
     return null;
   }
@@ -174,6 +228,9 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
                   className="rounded border-outline/20 text-primary focus:ring-primary"
                 />
               </th>
+              <th className="text-center px-3 py-2.5 text-xs font-semibold text-on-surface-variant/80 uppercase tracking-wider whitespace-nowrap w-12">
+                Ảnh
+              </th>
               {activeOptions.map((opt, i) => (
                 <th
                   key={i}
@@ -195,7 +252,7 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
                 Tồn kho
               </th>
               <th className="text-right px-3 py-2.5 text-xs font-semibold text-on-surface-variant/80 uppercase tracking-wider whitespace-nowrap">
-                Ngưỡng
+                Tồn kho thấp
               </th>
             </tr>
           </thead>
@@ -218,6 +275,21 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
                       onChange={(e) => updateVariant(index, '_selected', e.target.checked)}
                       className="rounded border-outline/20 text-primary focus:ring-primary"
                     />
+                  </td>
+
+                  {/* Ảnh */}
+                  <td className="px-3 py-2 text-center">
+                    <div 
+                      className={`w-8 h-8 rounded border flex items-center justify-center overflow-hidden cursor-pointer ${isSelected ? 'border-outline/30 hover:border-primary bg-surface-container-lowest' : 'border-outline/10 opacity-50 bg-surface-container'}`}
+                      onClick={() => handleOpenImageSelector(index)}
+                      title={(!productImages || productImages.length === 0) ? "Vui lòng thêm ảnh ở Thư viện ảnh trước" : "Nhấn để chọn ảnh"}
+                    >
+                      {variant.imageUrl ? (
+                        <img src={variant.imageUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="material-symbols-outlined text-sm text-on-surface-variant/50">image</span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Option value chips */}
@@ -302,6 +374,69 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
           </tbody>
         </table>
       </div>
+
+      {/* Modal Chọn Ảnh */}
+      <Modal
+        isOpen={selectingImageIndex !== null}
+        onClose={() => setSelectingImageIndex(null)}
+        title="Chọn ảnh cho phiên bản"
+        size="md"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setSelectingImageIndex(null)}>
+              Thoát
+            </Button>
+            <Button variant="primary" onClick={handleApplyImage}>
+              Áp dụng
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-wrap gap-4 py-2">
+          {/* Nút thêm ảnh (+) */}
+          <div
+            className={`w-24 h-24 rounded-lg border-2 border-dashed border-outline/30 flex items-center justify-center transition-colors ${isUploadingImage ? 'opacity-50 cursor-not-allowed bg-surface-container-high' : 'cursor-pointer hover:border-primary/50 hover:bg-surface-container'}`}
+            onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+            title="Thêm ảnh mới"
+          >
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleVariantImageUpload}
+                disabled={isUploadingImage}
+            />
+            {isUploadingImage ? (
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+                <span className="material-symbols-outlined text-4xl text-outline-variant">add</span>
+            )}
+          </div>
+
+          {/* Danh sách ảnh */}
+          {productImages?.map((url, i) => {
+            const isSelected = tempSelectedImageUrl === url;
+            return (
+              <div
+                key={i}
+                className={`relative w-24 h-24 rounded-lg border-2 cursor-pointer overflow-hidden transition-all bg-surface-container-lowest ${
+                  isSelected ? 'border-primary ring-1 ring-primary' : 'border-transparent hover:border-outline/50 shadow-sm'
+                }`}
+                onClick={() => setTempSelectedImageUrl(isSelected ? undefined : url)}
+              >
+                <img src={url} alt={`Lựa chọn ${i}`} className="w-full h-full object-cover" />
+                {isSelected && (
+                  <div className="absolute top-1 left-1 bg-white rounded-full flex items-center justify-center shadow-sm">
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
   );
 }

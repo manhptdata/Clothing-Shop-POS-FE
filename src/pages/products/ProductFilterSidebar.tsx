@@ -33,8 +33,8 @@ export default function ProductFilterSidebar({
     handleClearFilters,
 }: ProductFilterSidebarProps) {
     return (
-        <aside className="w-full lg:w-80 flex-shrink-0 mb-lg lg:mb-0">
-            <div className="space-y-4 sticky top-28">
+        <aside className="w-full h-full">
+            <div className="space-y-4">
                 <div className="bg-primary-container text-on-primary-container p-md rounded-lg shadow-sm">
                     <div className="flex items-center justify-between mb-md border-b border-on-primary-container/20 pb-sm">
                         <h2 className="font-headline-md text-headline-md text-on-primary">Bộ lọc</h2>
@@ -119,8 +119,6 @@ export default function ProductFilterSidebar({
                         </Button>
                     </div>
                 </div>
-
-
             </div>
         </aside>
     );

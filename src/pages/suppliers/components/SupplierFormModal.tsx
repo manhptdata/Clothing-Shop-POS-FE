@@ -123,24 +123,32 @@ export default function SupplierFormModal({ isOpen, onClose, supplier, onSuccess
               {/* Số điện thoại */}
               <div>
                 <label className="block font-label-md text-label-md text-on-surface mb-1">
-                  Số điện thoại
+                  Số điện thoại <span className="text-error">*</span>
                 </label>
                 <input
                   type="text"
-                  {...register('phone')}
+                  {...register('phone', { required: 'Số điện thoại không được để trống' })}
                   placeholder="Nhập số điện thoại..."
-                  className="w-full px-4 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
+                  className={`w-full px-4 py-2 bg-transparent border rounded-lg focus:outline-none focus:ring-1 transition-all ${
+                    errors.phone 
+                      ? 'border-error focus:border-error focus:ring-error/20' 
+                      : 'border-outline/20 focus:border-primary focus:ring-primary/20'
+                  }`}
                 />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-error">{errors.phone.message}</p>
+                )}
               </div>
 
               {/* Email */}
               <div>
                 <label className="block font-label-md text-label-md text-on-surface mb-1">
-                  Email
+                  Email <span className="text-error">*</span>
                 </label>
                 <input
                   type="email"
                   {...register('email', {
+                    required: 'Email không được để trống',
                     pattern: {
                       value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                       message: 'Email không đúng định dạng',

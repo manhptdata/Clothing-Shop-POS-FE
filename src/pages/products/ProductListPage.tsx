@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGetProductsQuery, useDeleteProductMutation } from '@/redux/api/productApi';
@@ -14,6 +13,7 @@ export default function ProductListPage() {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   // Filter states (gửi lên API)
   const [search, setSearch] = useState('');
@@ -31,12 +31,6 @@ export default function ProductListPage() {
   const [tempStatus, setTempStatus] = useState('Tất cả');
 
   const [deleteProduct] = useDeleteProductMutation();
-
-  // Hàm mở modal khi sửa
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
-  };
 
   // Hàm xóa mềm sản phẩm
   const handleDeleteProduct = async (id: number, name: string) => {
@@ -83,27 +77,6 @@ export default function ProductListPage() {
   }, [products]);
 
   // ===== HELPER FUNCTIONS =====
-  // Định nghĩa type ở đầu file
-  type StatusType = 'success' | 'warning' | 'danger' | 'default';
-
-  const getStatus = (variants: ProductVariant[]): { text: string; class: StatusType } => {
-    if (!variants?.length) return { text: 'HẾT HÀNG', class: 'danger' };
-
-    const hasStock = variants.some(v => (v.quantity || 0) > (v.lowStockThreshold || 5));
-    const hasLowStock = variants.some(v => {
-      const qty = v.quantity || 0;
-      const threshold = v.lowStockThreshold || 5;
-      return qty > 0 && qty <= threshold;
-    });
-
-    if (hasStock) return { text: 'CÒN HÀNG', class: 'success' };
-    if (hasLowStock) {
-      const total = variants.reduce((sum, v) => sum + (v.quantity || 0), 0);
-      return { text: `SẮP HẾT (${total})`, class: 'warning' };
-    }
-    return { text: 'HẾT HÀNG', class: 'danger' };
-  };
-
   const getVariantStatus = (quantity: number, threshold: number = 10) => {
     if (quantity === 0) return { label: 'Hết hàng', class: 'out-of-stock', dotColor: 'gray' };
     if (quantity <= 3) return { label: 'Cực kỳ thấp', class: 'critical', dotColor: 'red' };
@@ -157,6 +130,7 @@ export default function ProductListPage() {
     }
 
     setPage(0);
+    setIsFilterOpen(false); // Đóng drawer sau khi áp dụng
   };
 
   const handleClearFilters = () => {
@@ -175,6 +149,7 @@ export default function ProductListPage() {
     setIsDeleted(false);
     setStockStatus(undefined); // 👈 RESET STOCK STATUS
     setPage(0);
+    setIsFilterOpen(false); // Đóng drawer sau khi xóa lọc
   };
 
   const handleQuickSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -197,36 +172,47 @@ export default function ProductListPage() {
 
   // ===== RENDER =====
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* ===== CỘT BÊN TRÁI: Filter + Button ===== */}
-      <div className="w-full lg:w-80 flex-shrink-0">
-        {/* Filter Sidebar */}
-        <ProductFilterSidebar
-          tempProductName={tempProductName}
-          setTempProductName={setTempProductName}
-          tempSku={tempSku}
-          setTempSku={setTempSku}
-          tempCategoryID={tempCategoryID}
-          setTempCategoryID={setTempCategoryID}
-          tempStatus={tempStatus}
-          setTempStatus={setTempStatus}
-          categories={categories}
-          handleApplyFilter={handleApplyFilter}
-          handleClearFilters={handleClearFilters}
+    <div className="relative">
+      {/* Overlay cho Drawer */}
+      {isFilterOpen && (
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setIsFilterOpen(false)}
         />
+      )}
 
-        {/* Button Thêm sản phẩm */}
-        <Button
-          variant="primary"
-          onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
-          className="w-full justify-center mt-4"
-          leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
-        >
-          Thêm sản phẩm
-        </Button>
+      {/* Drawer lọc */}
+      <div 
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-surface shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-outline/10">
+          <h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">filter_alt</span>
+            Bộ lọc nâng cao
+          </h2>
+          <button 
+            onClick={() => setIsFilterOpen(false)}
+            className="p-2 rounded-full hover:bg-surface-container transition-colors text-on-surface-variant"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <ProductFilterSidebar
+            tempProductName={tempProductName}
+            setTempProductName={setTempProductName}
+            tempSku={tempSku}
+            setTempSku={setTempSku}
+            tempCategoryID={tempCategoryID}
+            setTempCategoryID={setTempCategoryID}
+            tempStatus={tempStatus}
+            setTempStatus={setTempStatus}
+            categories={categories}
+            handleApplyFilter={handleApplyFilter}
+            handleClearFilters={handleClearFilters}
+          />
+        </div>
       </div>
-
-
 
       {/*  Product Table  */}
       <div className="flex-1 min-w-0">
@@ -250,8 +236,8 @@ export default function ProductListPage() {
             </p>
           </div>
 
-          {/* Quick search */}
-          <div className="flex gap-2 w-full sm:w-auto">
+          {/* Quick search & Actions */}
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-none">
               <input
                 type="text"
@@ -265,7 +251,22 @@ export default function ProductListPage() {
                 search
               </span>
             </div>
+            
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterOpen(true)}
+              leftIcon={<span className="material-symbols-outlined text-sm">filter_list</span>}
+            >
+              Lọc
+            </Button>
 
+            <Button
+              variant="primary"
+              onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
+              leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+            >
+              Thêm sản phẩm
+            </Button>
           </div>
         </div>
 
@@ -275,9 +276,7 @@ export default function ProductListPage() {
           <>
             <ProductTable
               products={products.length === 0 && (isFetching || isLoading) ? cachedProducts : products}
-              getStatus={getStatus}
               getVariantStatus={getVariantStatus}
-              onEdit={handleEditProduct}
               onDelete={handleDeleteProduct}
             />
             <div className="mt-xl">
