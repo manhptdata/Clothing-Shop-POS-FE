@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useGetCustomerGroupByIdQuery } from "@/redux/api/customerApi";
+import { useGetCustomerGroupByIdQuery, useDeleteCustomerGroupMutation } from "@/redux/api/customerApi";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import CustomerGroupEditModal from "./components/CustomerGroupEditModal";
+import toast from "react-hot-toast";
 
 export default function CustomerGroupDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [deleteCustomerGroup, { isLoading: isDeleting }] = useDeleteCustomerGroupMutation();
 
   // Gọi API lấy dữ liệu chi tiết nhóm
   const { data: responseData, isLoading } = useGetCustomerGroupByIdQuery(id as string, {
@@ -15,15 +20,37 @@ export default function CustomerGroupDetailPage() {
 
   const group = responseData?.data;
 
+  const handleDelete = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa hạng thẻ này không? Hệ thống sẽ không thể khôi phục lại dữ liệu!")) {
+      try {
+        await deleteCustomerGroup(id as string).unwrap();
+        toast.success("Xóa hạng thẻ thành công!");
+        navigate("/customers/groups", { replace: true });
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Lỗi khi xóa hạng thẻ!");
+      }
+    }
+  };
+
   // Xử lý icon theo mã hạng
   const getGroupIcon = (code?: string) => {
     switch (code) {
+      case "MEMBER":
+        return <i className="fa-solid fa-user text-base"></i>;
       case "BRONZE":
         return <i className="fa-solid fa-award text-base"></i>;
       case "SILVER":
         return <i className="fa-solid fa-medal text-base"></i>;
       case "GOLD":
         return <i className="fa-solid fa-crown text-base"></i>;
+      case "PLATINUM":
+        return <i className="fa-solid fa-star text-base"></i>;
+      case "RUBY":
+        return <i className="fa-solid fa-gem text-base"></i>;
+      case "DIAMOND":
+        return <i className="fa-solid fa-gem text-base"></i>;
+      case "BLACK":
+        return <i className="fa-solid fa-gem text-base"></i>;
       default:
         return <i className="fa-solid fa-users text-base"></i>;
     }
@@ -31,12 +58,22 @@ export default function CustomerGroupDetailPage() {
 
   const getGroupColorClass = (code?: string) => {
     switch (code) {
+      case "MEMBER":
+        return "bg-gray-100 text-gray-600";
       case "BRONZE":
         return "bg-orange-100 text-orange-600";
       case "SILVER":
         return "bg-slate-100 text-slate-600";
       case "GOLD":
         return "bg-amber-100 text-amber-600";
+      case "PLATINUM":
+        return "bg-teal-100 text-teal-600";
+      case "RUBY":
+        return "bg-rose-100 text-rose-600";
+      case "DIAMOND":
+        return "bg-blue-100 text-blue-400";
+      case "BLACK":
+        return "bg-gray-800 text-white";
       default:
         return "bg-blue-100 text-blue-600";
     }
@@ -87,6 +124,22 @@ export default function CustomerGroupDetailPage() {
           >
             Quay lại
           </Button>
+          <Button
+            variant="primary"
+            leftIcon={<i className="fa-solid fa-pen-to-square"></i>}
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            Sửa thông tin
+          </Button>
+          <Button
+            variant="danger"
+            leftIcon={<i className="fa-solid fa-trash"></i>}
+            onClick={handleDelete}
+            isLoading={isDeleting}
+            disabled={isDeleting}
+          >
+            Xóa nhóm
+          </Button>
         </div>
       </header>
 
@@ -103,6 +156,18 @@ export default function CustomerGroupDetailPage() {
                 <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
                   {group.code === 'BRONZE' ? 'Đồng' : group.code === 'SILVER' ? 'Bạc' : group.code === 'GOLD' ? 'Vàng' : group.code}
                 </span>
+              </div>
+
+              <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
+                <span className="text-gray-500">Voucher sinh nhật</span>
+                {group.birthdayVoucherName ? (
+                  <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded flex items-center gap-1 max-w-[55%] text-right truncate" title={group.birthdayVoucherName}>
+                    <i className="fa-solid fa-gift text-[10px]"></i>
+                    {group.birthdayVoucherName}
+                  </span>
+                ) : (
+                  <span className="text-gray-400 italic font-medium">Chưa cài</span>
+                )}
               </div>
 
               <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
@@ -198,6 +263,12 @@ export default function CustomerGroupDetailPage() {
           </div>
         </div>
       </div>
+
+      <CustomerGroupEditModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        group={group}
+      />
     </div>
   );
 }

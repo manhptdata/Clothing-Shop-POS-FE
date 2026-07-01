@@ -161,10 +161,27 @@ export default function CustomerListPage() {
         const cus = row;
         const code = cus.customerGroup?.code;
         if (!code) {
-          return <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>;
+          return (
+            <Badge variant="secondary">
+              Thành Viên
+            </Badge>
+          );
         }
 
-        const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
+        let variant = "info";
+        let label = code;
+        
+        switch (code) {
+          case "MEMBER": label = "Thành Viên"; variant = "secondary"; break;
+          case "BRONZE": label = "Đồng"; variant = "info"; break;
+          case "SILVER": label = "Bạc"; variant = "default"; break;
+          case "GOLD": label = "Vàng"; variant = "warning"; break;
+          case "PLATINUM": label = "Bạch Kim"; variant = "success"; break;
+          case "RUBY": label = "Ruby"; variant = "destructive"; break;
+          case "DIAMOND": label = "Kim Cương"; variant = "info"; break;
+          case "BLACK": label = "Thẻ Đen"; variant = "secondary"; break;
+        }
+
         return (
           <div 
             onClick={(e) => {
@@ -177,7 +194,7 @@ export default function CustomerListPage() {
             title="Xem chi tiết cấu hình hạng thẻ"
           >
             <Badge variant={variant as any}>
-              {code === 'BRONZE' ? 'Đồng' : code === 'SILVER' ? 'Bạc' : code === 'GOLD' ? 'Vàng' : code}
+              {label}
             </Badge>
           </div>
         );
@@ -196,14 +213,17 @@ export default function CustomerListPage() {
     {
       key: "vouchers",
       header: "Ưu đãi",
-      render: (row) => (
-        <button
-          onClick={() => openVoucherModal(row)}
-          className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-[11px] font-bold transition"
-        >
-          <i className="fa-solid fa-ticket-simple"></i> {row.vouchers?.length || 0} Voucher
-        </button>
-      )
+      render: (row) => {
+        const usableVouchers = row.vouchers?.filter(v => v.status === 'UNUSED' && new Date(v.expiredAt) > new Date()) || [];
+        return (
+          <button
+            onClick={() => openVoucherModal(row)}
+            className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-[11px] font-bold transition"
+          >
+            <i className="fa-solid fa-ticket-simple"></i> {usableVouchers.length} Khả dụng
+          </button>
+        );
+      }
     },
     {
       key: "note",
@@ -326,15 +346,57 @@ export default function CustomerListPage() {
                 <span>Khách hàng này hiện chưa sở hữu mã ưu đãi nào.</span>
               </div>
             ) : (
-              selectedVoucherData.vouchers.map((v) => (
-                <div key={v.id} className="relative bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/80 rounded-xl p-3 flex justify-between shadow-sm">
-                  <div className="pl-2 space-y-0.5">
-                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">{v.voucherCode}</span>
-                    <div className="text-xs font-bold text-gray-900 mt-1">{v.voucherName}</div>
-                    <div className="text-sm font-black text-red-600">Giảm: {v.discountAmount.toLocaleString()}đ</div>
+              selectedVoucherData.vouchers.map((v) => {
+                const isExpired = new Date(v.expiredAt) < new Date() && v.status === 'UNUSED';
+                return (
+                  <div key={v.id} className={`relative border rounded-xl p-3 flex justify-between shadow-sm overflow-hidden ${
+                    v.status === 'UNUSED' && !isExpired ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200' : 'bg-gray-50 border-gray-200 grayscale-[0.5]'
+                  }`}>
+                    <div className="pl-2 space-y-0.5 w-full">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          v.status === 'UNUSED' && !isExpired ? 'text-red-700 bg-red-100' : 'text-gray-600 bg-gray-200'
+                        }`}>
+                          {v.voucherCode}
+                        </span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          v.status === 'USED' ? 'bg-gray-200 text-gray-600' :
+                          isExpired ? 'bg-orange-100 text-orange-600' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {v.status === 'USED' ? 'Đã sử dụng' : isExpired ? 'Hết hạn' : 'Khả dụng'}
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-gray-900 mt-1">{v.voucherName}</div>
+                      <div className="flex justify-between items-end mt-1">
+                        <div>
+                          <div className={`text-sm font-black ${v.status === 'UNUSED' && !isExpired ? 'text-red-600' : 'text-gray-500'}`}>
+                            Giảm: {v.discountAmount.toLocaleString()}đ
+                          </div>
+                          <div className="text-[10px] text-gray-500 font-medium">
+                            HĐ từ {v.minOrderValue ? v.minOrderValue.toLocaleString() : "0"}đ
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-medium text-right flex flex-col gap-0.5 items-end">
+                          <span>HSD: {new Date(v.expiredAt).toLocaleDateString('vi-VN')}</span>
+                          {v.status === 'USED' && v.usedAt && (
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-[9px] text-red-500 bg-red-50 px-1 rounded font-bold border border-red-100">
+                                Đã dùng lúc: {new Date(v.usedAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                              </span>
+                              {v.usedOrderCode && (
+                                <span className="text-[9px] text-gray-500 font-bold hover:text-blue-600 cursor-pointer">
+                                  Mã ĐH: {v.usedOrderCode}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </Modal>

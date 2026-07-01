@@ -83,7 +83,7 @@ export default function CampaignListPage() {
       key: "fullName",
       header: "Khách hàng",
       render: (cust) => (
-        <span 
+        <span
           className="font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors inline-block"
           onClick={() => navigate(`/customers/${cust.id}`)}
         >

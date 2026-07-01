@@ -97,11 +97,6 @@ export default function CareLogListPage() {
                 <i className="fa-solid fa-face-thinking text-[8px]"></i> Mông lung
               </span>
             )}
-            {log.potentialStatus === "KHONG_XAC_DINH" && (
-              <span className="bg-gray-100 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 rounded border border-gray-200 uppercase flex items-center gap-1">
-                <i className="fa-solid fa-question text-[8px]"></i> K.X.Định
-              </span>
-            )}
           </div>
         );
       },
@@ -272,7 +267,6 @@ export default function CareLogListPage() {
                 { label: "🌟 Tiềm năng", value: "TIEM_NANG" },
                 { label: "👎 Không tiềm năng", value: "KHONG_TIEM_NANG" },
                 { label: "🤔 Mông lung", value: "MONG_LUNG" },
-                { label: "❓ Không xác định", value: "KHONG_XAC_DINH" },
               ]}
             />
           </div>

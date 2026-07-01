@@ -107,11 +107,10 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
               setCustomerType('GUEST');
               setSelectedCustomer(defaultCustomer);
             }}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
-              customerType === 'GUEST'
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${customerType === 'GUEST'
                 ? 'bg-white text-gray-800 shadow-sm'
                 : 'bg-transparent text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             Khách lẻ
           </button>
@@ -122,11 +121,10 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                 setSelectedCustomer(null);
               }
             }}
-            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${
-              customerType === 'MEMBER'
+            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-200 ${customerType === 'MEMBER'
                 ? 'bg-white text-gray-800 shadow-sm'
                 : 'bg-transparent text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             Thành viên
           </button>

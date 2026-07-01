@@ -12,11 +12,12 @@ const axiosBaseQuery = (
     data?: AxiosRequestConfig['data'];
     params?: AxiosRequestConfig['params'];
     headers?: AxiosRequestConfig['headers'];
+    timeout?: number;
   },
   unknown,
   unknown
 > =>
-  async ({ url, method = 'GET', data, params, headers }) => {
+  async ({ url, method = 'GET', data, params, headers, timeout }) => {
     try {
       const result = await axiosInstance({
         url: baseUrl + url,
@@ -24,6 +25,7 @@ const axiosBaseQuery = (
         data,
         params,
         headers,
+        ...(timeout ? { timeout } : {}),
       });
       return { data: result.data };
     } catch (axiosError) {

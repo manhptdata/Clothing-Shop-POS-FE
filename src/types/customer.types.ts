@@ -37,6 +37,10 @@ export interface VoucherInfo {
   minOrderValue: number;
   status: 'UNUSED' | 'USED' | 'EXPIRED';
   expiredAt: string;
+  receivedAt: string;
+  usedAt: string | null;
+  usedOrderId?: number;
+  usedOrderCode?: string;
 }
 
 export interface CustomerRequest {
@@ -122,8 +126,19 @@ export interface CustomerGroups extends CustomerGroup {
   totalCustomers: number;
   note?: string;
   minSpending: number;
-  maxSpending: number;
+  maxSpending: number | null;
   createdAt: string;
+  birthdayVoucherId?: number | null;
+  birthdayVoucherName?: string | null;
+}
+
+export interface VoucherOption {
+  id: number;
+  name: string;
+  code: string;
+  discountAmount?: number;
+  minOrderValue?: number;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 
 
@@ -163,4 +178,11 @@ export interface UpdateCareLogRequest {
   campaignId?: number;
   note?: string;
   nextRetryAt?: string | null;
+}
+
+
+export interface AiSuggestionResponseDto {
+  callScript: string;
+  smsTemplate: string;
+  objectionHandling: string;
 }

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Table, Column } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
+import { Input } from "@/components/ui/Input";
 
 export default function CustomerDetailPage() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function CustomerDetailPage() {
   const [activeTab, setActiveTab] = useState<"orders" | "care">("orders");
   const [orderPage, setOrderPage] = useState(0); // State quản lý trang hiện tại
   const [orderSize, setOrderSize] = useState(5); // State quản lý số dòng mỗi trang
+  const [orderKeyword, setOrderKeyword] = useState("");
 
   // Gọi API lấy dữ liệu chi tiết
   const { data: responseData, isLoading, error } = useGetCustomerByIdQuery(
@@ -26,7 +28,7 @@ export default function CustomerDetailPage() {
 
   // Lấy danh sách lịch sử đơn hàng
   const { data: ordersResponse, isLoading: isOrdersLoading, isFetching: isOrdersFetching } = useGetCustomerOrdersQuery(
-    { id: id as string, page: orderPage, size: orderSize },
+    { id: id as string, page: orderPage, size: orderSize, keyword: orderKeyword || undefined },
     { skip: !id }
   );
 
@@ -173,9 +175,9 @@ export default function CustomerDetailPage() {
               </label>
               <div className="mt-1 flex items-center gap-2">
                 {!rankCode ? (
-                  <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">
-                    Chưa xếp hạng
-                  </span>
+                  <Badge variant="secondary">
+                    Thành Viên
+                  </Badge>
                 ) : (
                   <>
                     <Badge variant={rankVariant as any}>{rankCode === 'BRONZE' ? 'Đồng' : rankCode === 'SILVER' ? 'Bạc' : rankCode === 'GOLD' ? 'Vàng' : rankCode}</Badge>
@@ -210,37 +212,67 @@ export default function CustomerDetailPage() {
                 Kho Voucher của khách ({customer.vouchers?.length || 0})
               </label>
 
-              {customer.vouchers?.map((voucher) => (
-                <div
-                  key={voucher.id}
-                  className="relative bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/80 rounded-xl p-3 flex items-center justify-between shadow-sm overflow-hidden mb-2"
-                >
-                  <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-4 bg-white border border-red-200 rounded-full"></div>
-                  <div className="pl-2 space-y-0.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">
-                        {voucher.voucherCode}
-                      </span>
-                      <Badge
-                        variant={
-                          voucher.status === "UNUSED" ? "success" : "default"
-                        }
-                      >
-                        {voucher.status === 'UNUSED' ? 'Chưa sử dụng' : 'Đã sử dụng'}
-                      </Badge>
-                    </div>
-                    <div className="text-[12px] font-bold text-gray-900">
-                      {voucher.voucherName}
-                    </div>
-                    <div className="text-[10px] text-gray-400 font-medium">
-                      HĐ từ {voucher.minOrderValue.toLocaleString()}đ
+              {customer.vouchers?.map((voucher) => {
+                const isExpired = new Date(voucher.expiredAt) < new Date() && voucher.status === 'UNUSED';
+                return (
+                  <div
+                    key={voucher.id}
+                    className={`relative border rounded-xl p-3 flex items-center justify-between shadow-sm overflow-hidden mb-2 ${
+                      voucher.status === 'UNUSED' && !isExpired ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200' : 'bg-gray-50 border-gray-200 grayscale-[0.5]'
+                    }`}
+                  >
+                    <div className={`absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-4 bg-white border rounded-full ${
+                      voucher.status === 'UNUSED' && !isExpired ? 'border-red-200' : 'border-gray-200'
+                    }`}></div>
+                    <div className="pl-2 space-y-0.5 w-full">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                          voucher.status === 'UNUSED' && !isExpired ? 'text-red-700 bg-red-100' : 'text-gray-600 bg-gray-200'
+                        }`}>
+                          {voucher.voucherCode}
+                        </span>
+                        <Badge
+                          variant={
+                            voucher.status === 'USED' ? 'secondary' :
+                            isExpired ? 'warning' :
+                            'success'
+                          }
+                        >
+                          {voucher.status === 'USED' ? 'Đã sử dụng' : isExpired ? 'Hết hạn' : 'Khả dụng'}
+                        </Badge>
+                      </div>
+                      <div className="text-[12px] font-bold text-gray-900">
+                        {voucher.voucherName}
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <div className={`text-sm font-black ${voucher.status === 'UNUSED' && !isExpired ? 'text-red-600' : 'text-gray-500'}`}>
+                            Giảm: {voucher.discountAmount.toLocaleString()}đ
+                          </div>
+                          <div className="text-[10px] text-gray-500 font-medium">
+                            HĐ từ {voucher.minOrderValue ? voucher.minOrderValue.toLocaleString() : "0"}đ
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-medium text-right flex flex-col gap-0.5 items-end">
+                          <span>HSD: {new Date(voucher.expiredAt).toLocaleDateString('vi-VN')}</span>
+                          {voucher.status === 'USED' && voucher.usedAt && (
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-[9px] text-red-500 bg-red-50 px-1 rounded font-bold border border-red-100">
+                                Đã dùng: {new Date(voucher.usedAt).toLocaleDateString('vi-VN')}
+                              </span>
+                              {voucher.usedOrderCode && (
+                                <span className="text-[9px] text-gray-500 font-bold hover:text-blue-600 cursor-pointer">
+                                  Mã ĐH: {voucher.usedOrderCode}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-red-500/20 text-2xl pr-1">
-                    <i className="fa-solid fa-ticket-simple"></i>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
               {!customer.vouchers?.length && (
                 <div className="text-center text-gray-400 italic text-[11px] py-4 bg-gray-50 rounded-lg border border-gray-100">
@@ -286,6 +318,20 @@ export default function CustomerDetailPage() {
             {/* CONTENT TAB: ĐƠN HÀNG CUSTOM GIAO DIỆN */}
             {activeTab === "orders" && (
               <div className="space-y-5 block">
+                <div className="flex justify-between items-center bg-gray-50/50 p-3 rounded-lg border border-gray-100 mb-2">
+                  <div className="w-full max-w-sm">
+                    <Input
+                      placeholder="Tìm theo mã đơn hàng, ghi chú..."
+                      value={orderKeyword}
+                      onChange={(e) => {
+                        setOrderKeyword(e.target.value);
+                        setOrderPage(0);
+                      }}
+                      leftIcon={<i className="fa-solid fa-magnifying-glass text-gray-400"></i>}
+                      className="bg-white"
+                    />
+                  </div>
+                </div>
 
                 {(isOrdersLoading || isOrdersFetching) ? (
                   <div className="p-10 flex justify-center bg-white rounded-xl border border-gray-200">

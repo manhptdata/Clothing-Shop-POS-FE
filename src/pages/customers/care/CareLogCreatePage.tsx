@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import toast from 'react-hot-toast';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useCreateCareLogMutation } from "@/redux/api/customerApi";
+import { useCreateCareLogMutation, useLazyGetAiSuggestScriptQuery } from "@/redux/api/customerApi";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import AiSuggestionModal from "./components/AiSuggestionModal";
 
 export default function CareLogCreatePage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -16,12 +17,25 @@ export default function CareLogCreatePage() {
   const campaignId = location.state?.campaignId;
 
   const [createCareLog, { isLoading }] = useCreateCareLogMutation();
+  const [fetchAiScript, { data: aiResponse, isFetching: isAiFetching, error: aiError }] = useLazyGetAiSuggestScriptQuery();
 
   const [result, setResult] = useState<string>("");
+  const [potentialStatus, setPotentialStatus] = useState<string>(""); // State mới cho Đánh giá tiềm năng
   const [note, setNote] = useState("");
   const [nextRetryAt, setNextRetryAt] = useState("");
   const [errorResult, setErrorResult] = useState("");
-  const [useAi, setUseAi] = useState(false);
+  const [errorPotentialStatus, setErrorPotentialStatus] = useState("");
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
+  const handleOpenAiSuggestion = () => {
+    setIsAiModalOpen(true);
+    if (campaignId) {
+      fetchAiScript({ campaignId: Number(campaignId), customerId: Number(customerId) });
+    } else {
+      toast.error("Không có thông tin chiến dịch để gợi ý kịch bản!");
+      setIsAiModalOpen(false);
+    }
+  };
 
   const handleGoBack = () => {
     navigate(-1);
@@ -29,24 +43,34 @@ export default function CareLogCreatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let hasError = false;
 
-    const payloadResult = useAi ? "BO_TRONG" : result;
-
-    if (!useAi && !result) {
-      setErrorResult("Kết quả cuộc gọi không được để trống");
-      return;
+    if (!result) {
+      setErrorResult("Vui lòng chọn kết quả cuộc gọi");
+      hasError = true;
+    } else {
+      setErrorResult("");
     }
-    setErrorResult("");
+
+    if (!potentialStatus) {
+      setErrorPotentialStatus("Vui lòng đánh giá mức độ tiềm năng của khách hàng");
+      hasError = true;
+    } else {
+      setErrorPotentialStatus("");
+    }
+
+    if (hasError) return;
 
     let nextRetryAtISO = undefined;
-    if (!useAi && result === "HEN_GOI_LAI" && nextRetryAt) {
+    if (result === "HEN_GOI_LAI" && nextRetryAt) {
       nextRetryAtISO = new Date(nextRetryAt).toISOString();
     }
 
     try {
       await createCareLog({
         customerId: Number(customerId),
-        result: payloadResult,
+        result: result,
+        potentialStatus: potentialStatus || undefined, // Truyền thêm potentialStatus
         note: note || undefined,
         nextRetryAt: nextRetryAtISO,
         campaignId: campaignId ? Number(campaignId) : undefined,
@@ -106,30 +130,15 @@ export default function CareLogCreatePage() {
             </div>
           </div>
 
-          {/* CÔNG TẮC PHÂN LOẠI AI */}
-          <div className="flex items-center justify-between bg-purple-50 p-4 rounded-xl border border-purple-100 mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-purple-900 flex items-center gap-1.5">
-                <i className="fa-solid fa-wand-magic-sparkles"></i> Phân loại tự động bằng AI
-              </h3>
-              <p className="text-[11px] text-purple-700/80 font-medium mt-0.5">
-                AI sẽ tự động phân tích "Ghi chú" của bạn để đánh giá thái độ khách hàng và kết quả cuộc gọi.
-              </p>
-            </div>
-
-            {/* Nút Toggle Switch */}
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={useAi}
-                onChange={(e) => {
-                  setUseAi(e.target.checked);
-                  if (e.target.checked) setResult(""); // Xoá lựa chọn kết quả khi bật AI
-                }}
-              />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-            </label>
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              onClick={handleOpenAiSuggestion}
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity shadow-sm"
+            >
+              <i className="fa-solid fa-wand-magic-sparkles"></i>
+              Gợi ý kịch bản bằng AI
+            </button>
           </div>
 
           <div>
@@ -161,11 +170,18 @@ export default function CareLogCreatePage() {
               ].map((opt) => (
                 <label
                   key={opt.value}
-                  className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${useAi
-                    ? "border-gray-100 bg-gray-50/50 cursor-not-allowed"
-                    : result === opt.value
-                      ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
-                      : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
+                  onClick={(e) => {
+                    e.preventDefault(); // Chặn hành vi mặc định của label
+                    if (result === opt.value) {
+                      setResult(""); // Bỏ chọn nếu đang được chọn
+                    } else {
+                      setResult(opt.value);
+                      setErrorResult(""); // Xoá lỗi khi chọn mới
+                    }
+                  }}
+                  className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${result === opt.value
+                    ? "border-blue-500 bg-blue-50/20 ring-2 ring-blue-500/30 shadow-md shadow-blue-500/20 scale-[1.02]"
+                    : "border-gray-200 hover:border-blue-500 hover:bg-blue-50/10 hover:shadow-sm"
                     }`}
                 >
                   <input
@@ -173,33 +189,23 @@ export default function CareLogCreatePage() {
                     name="result"
                     value={opt.value}
                     className="sr-only"
-                    checked={!useAi && result === opt.value}
-                    onChange={(e) => setResult(e.target.value)}
-                    disabled={useAi}
+                    checked={result === opt.value}
+                    readOnly
                   />
-                  <i className={`fa-solid ${opt.icon} text-sm mb-1.5 ${useAi ? "opacity-50 grayscale" : ""}`}></i>
-                  <span className={`font-bold ${useAi ? "text-gray-400" : "text-gray-900"}`}>{opt.label}</span>
+                  <i className={`fa-solid ${opt.icon} text-sm mb-1.5`}></i>
+                  <span className="font-bold text-gray-900">{opt.label}</span>
                 </label>
               ))}
             </div>
             {errorResult && (
-              <p className="text-rose-500 text-[10px] mt-1 font-semibold">
-                {errorResult}
-              </p>
+              <div className="mt-2 text-rose-500 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                <i className="fa-solid fa-circle-exclamation text-xs"></i>
+                <span className="text-[11px] font-bold">{errorResult}</span>
+              </div>
             )}
           </div>
 
-          {useAi && (
-            <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-xl transition-all flex items-start gap-2.5">
-              <i className="fa-solid fa-robot text-blue-500 mt-0.5"></i>
-              <div className="text-blue-800 text-[11px] font-medium leading-relaxed">
-                <strong className="block mb-0.5">AI đang theo dõi thời gian!</strong>
-                Hãy ghi chú thời gian gọi lại vào ô bên dưới (VD: <i>"chiều mai 5h gọi lại", "hẹn sang tuần mùng 5"</i>). AI sẽ tự đọc hiểu và đặt lịch hệ thống thay bạn.
-              </div>
-            </div>
-          )}
-
-          {!useAi && result === "HEN_GOI_LAI" && (
+          {result === "HEN_GOI_LAI" && (
             <div className="bg-amber-50/40 border border-amber-100 p-4 rounded-xl transition-all">
               <Input
                 type="datetime-local"
@@ -213,6 +219,65 @@ export default function CareLogCreatePage() {
               />
             </div>
           )}
+
+          <div>
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+              Đánh giá tiềm năng <span className="text-rose-500">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              {[
+                {
+                  value: "TIEM_NANG",
+                  label: "Tiềm năng",
+                  icon: "fa-star text-amber-400",
+                },
+                {
+                  value: "MONG_LUNG",
+                  label: "Chưa rõ (Mông lung)",
+                  icon: "fa-circle-question text-indigo-400",
+                },
+                {
+                  value: "KHONG_TIEM_NANG",
+                  label: "Không tiềm năng",
+                  icon: "fa-thumbs-down text-gray-400",
+                },
+              ].map((opt) => (
+                <label
+                  key={opt.value}
+                  onClick={(e) => {
+                    e.preventDefault(); // Chặn hành vi mặc định của label
+                    if (potentialStatus === opt.value) {
+                      setPotentialStatus(""); // Bỏ chọn nếu đang được chọn
+                    } else {
+                      setPotentialStatus(opt.value);
+                      setErrorPotentialStatus(""); // Xoá lỗi khi chọn mới
+                    }
+                  }}
+                  className={`border rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all select-none ${potentialStatus === opt.value
+                    ? "border-indigo-500 bg-indigo-50/40 ring-2 ring-indigo-500/30 shadow-md scale-[1.02]"
+                    : "border-gray-200 hover:border-indigo-500 hover:bg-indigo-50/10 hover:shadow-sm"
+                    }`}
+                >
+                  <input
+                    type="radio"
+                    name="potentialStatus"
+                    value={opt.value}
+                    className="sr-only"
+                    checked={potentialStatus === opt.value}
+                    readOnly
+                  />
+                  <i className={`fa-solid ${opt.icon} text-sm mb-1.5`}></i>
+                  <span className="font-bold text-gray-900">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+            {errorPotentialStatus && (
+              <div className="mt-2 text-rose-500 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                <i className="fa-solid fa-circle-exclamation text-xs"></i>
+                <span className="text-[11px] font-bold">{errorPotentialStatus}</span>
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
@@ -247,6 +312,14 @@ export default function CareLogCreatePage() {
           </div>
         </form>
       </div>
+
+      <AiSuggestionModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        isLoading={isAiFetching}
+        aiData={aiResponse?.data}
+        error={aiError}
+      />
     </div>
   );
 }

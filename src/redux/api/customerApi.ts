@@ -10,7 +10,9 @@ import type {
   CustomerGroups,
   PendingCustomerRequest,
   CreateCareLogRequest,
-  UpdateCareLogRequest
+  UpdateCareLogRequest,
+  AiSuggestionResponseDto,
+  VoucherOption
 } from '@/types/customer.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
@@ -114,11 +116,11 @@ export const customerApi = baseApi.injectEndpoints({
       ],
     }),
 
-    getCustomerOrders: builder.query<RestResponse<PageResponse<CustomerOrderHistory>>, { id: string | number; page?: number; size?: number }>({
-      query: ({ id, page = 0, size = 5 }) => ({
+    getCustomerOrders: builder.query<RestResponse<PageResponse<CustomerOrderHistory>>, { id: string | number; page?: number; size?: number; keyword?: string }>({
+      query: ({ id, page = 0, size = 5, keyword }) => ({
         url: `/crm/customers/${id}/orders`,
         method: 'GET',
-        params: { page: page + 1, size },
+        params: { page: page + 1, size, keyword },
       }),
       providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `ORDERS_${id}` }],
     }),
@@ -146,6 +148,84 @@ export const customerApi = baseApi.injectEndpoints({
           size: params.size || 10,
         },
       }),
+      providesTags: ['Customer'],
+    }),
+
+    createCustomerGroup: builder.mutation<RestResponse<CustomerGroups>, Partial<CustomerGroups>>({
+      query: (data) => ({
+        url: '/crm/customer-groups',
+        method: 'POST',
+        data,
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    updateCustomerGroup: builder.mutation<RestResponse<CustomerGroups>, { id: number | string; data: Partial<CustomerGroups> }>({
+      query: ({ id, data }) => ({
+        url: `/crm/customer-groups/${id}`,
+        method: 'PUT',
+        data,
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    deleteCustomerGroup: builder.mutation<RestResponse<void>, number | string>({
+      query: (id) => ({
+        url: `/crm/customer-groups/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    syncCustomerRanks: builder.mutation<RestResponse<void>, void>({
+      query: () => ({
+        url: '/crm/customer-groups/sync-ranks',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    triggerBirthdayVouchers: builder.mutation<RestResponse<void>, void>({
+      query: () => ({
+        url: '/crm/customer-groups/trigger-birthday-vouchers',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    getVoucherOptions: builder.query<RestResponse<VoucherOption[]>, { status?: string } | void>({
+      query: (params) => ({
+        url: '/crm/customer-groups/vouchers',
+        method: 'GET',
+        params: params ? params : undefined,
+      }),
+      providesTags: ['Customer'],
+    }),
+
+    createVoucher: builder.mutation<RestResponse<void>, { name: string; code: string; discountAmount: number; minOrderValue?: number }>({
+      query: (data) => ({
+        url: '/crm/customer-groups/vouchers',
+        method: 'POST',
+        data,
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    updateVoucher: builder.mutation<RestResponse<void>, { id: number; data: { name: string; code: string; discountAmount: number; minOrderValue?: number } }>({
+      query: ({ id, data }) => ({
+        url: `/crm/customer-groups/vouchers/${id}`,
+        method: 'PUT',
+        data,
+      }),
+      invalidatesTags: ['Customer'],
+    }),
+
+    toggleVoucherStatus: builder.mutation<RestResponse<void>, number>({
+      query: (id) => ({
+        url: `/crm/customer-groups/vouchers/${id}/toggle`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Customer'],
     }),
 
     // Lấy chi tiết 1 nhóm khách hàng
@@ -286,7 +366,20 @@ export const customerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Customer'],
     }),
 
-  }), // <--- Lưu ý: Dấu đóng ngoặc nhọn này phải nằm dưới cùng của khối endpoints
+    getAiSuggestScript: builder.query<
+      RestResponse<AiSuggestionResponseDto>,
+      { campaignId: number; customerId: number }
+    >({
+      query: ({ campaignId, customerId }) => ({
+        url: `/crm/campaigns/${campaignId}/customers/${customerId}/ai-suggest`,
+        method: 'GET',
+        timeout: 60000,
+      }),
+      // Không lưu cache quá lâu để tránh AI bị cứng nhắc
+      keepUnusedDataFor: 0,
+    }),
+
+  }),
 
   overrideExisting: false,
 });
@@ -303,6 +396,15 @@ export const {
   useGetCustomerOrdersQuery,
   useGetCustomerCareLogsQuery,
   useSearchCustomerGroupsQuery,
+  useCreateCustomerGroupMutation,
+  useUpdateCustomerGroupMutation,
+  useDeleteCustomerGroupMutation,
+  useSyncCustomerRanksMutation,
+  useTriggerBirthdayVouchersMutation,
+  useGetVoucherOptionsQuery,
+  useCreateVoucherMutation,
+  useUpdateVoucherMutation,
+  useToggleVoucherStatusMutation,
   useGetCustomerGroupByIdQuery,
   useGetCustomerGroupMembersQuery,
   useGetPendingCustomersByCampaignQuery,
@@ -313,4 +415,5 @@ export const {
   useUpdateCareLogMutation,
   useDeleteCareLogMutation,
   useImportCustomersMutation,
+  useLazyGetAiSuggestScriptQuery
 } = customerApi;
