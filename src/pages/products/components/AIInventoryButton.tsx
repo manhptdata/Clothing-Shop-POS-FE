@@ -69,7 +69,7 @@ export const AIInventoryButton = () => {
 
       <Modal 
         isOpen={isModalVisible} 
-        onClose={() => !loading && setIsModalVisible(false)}
+        onClose={() => setIsModalVisible(false)}
         title={
           <div className="flex items-center gap-2 text-purple-600">
             <span className="material-symbols-outlined">smart_toy</span> 
