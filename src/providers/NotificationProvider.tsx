@@ -39,6 +39,8 @@ interface NotificationContextType {
   submitShiftHandover: (data: { shiftName: string; systemAmount: number; actualAmount: number; note?: string }) => Promise<ShiftHandoverItem>;
   fetchHandoverHistory: () => Promise<ShiftHandoverItem[]>;
   fetchSystemAmount: () => Promise<number>;
+  deleteNotification: (id: number) => Promise<void>;
+  deleteAllNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -47,6 +49,7 @@ export default function NotificationProvider({ children }: { children: React.Rea
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const user = useAppSelector((state) => state.auth.user);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const token = useAppSelector((state) => state.auth.accessToken);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -131,6 +134,26 @@ export default function NotificationProvider({ children }: { children: React.Rea
     }
   };
 
+  const deleteNotification = async (id: number) => {
+    try {
+      await axiosInstance.delete(`notifications/${id}`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      toast.success('Đã xóa thông báo');
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể xóa thông báo');
+    }
+  };
+
+  const deleteAllNotifications = async () => {
+    try {
+      await axiosInstance.delete('notifications');
+      setNotifications([]);
+      toast.success('Đã xóa tất cả thông báo');
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể xóa tất cả thông báo');
+    }
+  };
+
   const fetchHandoverHistory = async () => {
     try {
       const res = await axiosInstance.get<ShiftHandoverItem[]>('shifts/history');
@@ -153,14 +176,10 @@ export default function NotificationProvider({ children }: { children: React.Rea
 
   // Setup EventSource for real-time notifications
   useEffect(() => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !user || !token) {
       setNotifications([]);
       return;
     }
-
-    // Lấy token từ localStorage
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
 
     // Fetch notifications ban đầu
     fetchNotifications();
@@ -189,14 +208,13 @@ export default function NotificationProvider({ children }: { children: React.Rea
     });
 
     eventSource.onerror = (err) => {
-      console.warn('SSE connection encountered an error. Reconnecting...', err);
-      eventSource.close();
+      console.warn('SSE connection encountered an error. Browser will auto-reconnect...', err);
     };
 
     return () => {
       eventSource.close();
     };
-  }, [isAuthenticated, user, fetchNotifications]);
+  }, [isAuthenticated, user, token, fetchNotifications]);
 
   // Hàm sinh Toast cực chất và chuyên nghiệp
   const showToast = (notif: NotificationItem) => {
@@ -293,6 +311,8 @@ export default function NotificationProvider({ children }: { children: React.Rea
         submitShiftHandover,
         fetchHandoverHistory,
         fetchSystemAmount,
+        deleteNotification,
+        deleteAllNotifications,
       }}
     >
       {children}
