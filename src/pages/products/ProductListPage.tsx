@@ -8,6 +8,7 @@ import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import ProductFilterSidebar from './ProductFilterSidebar';
 import ProductTable from './ProductTable';
 import ProductFormModal from './components/ProductFormModal';
+import { AIInventoryButton } from './components/AIInventoryButton';
 
 export default function ProductListPage() {
   // ===== STATE =====
@@ -268,6 +269,7 @@ export default function ProductListPage() {
             >
               Thêm sản phẩm
             </Button>
+            <AIInventoryButton />
           </div>
         </div>
 
