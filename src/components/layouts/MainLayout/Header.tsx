@@ -6,7 +6,16 @@ import { useNotifications, NotificationItem } from '@/providers/NotificationProv
 export default function Header() {
   const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
-  const { notifications, unreadCount, markRead, markAllRead, approveRequest, rejectRequest } = useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    markRead,
+    markAllRead,
+    approveRequest,
+    rejectRequest,
+    deleteNotification,
+    deleteAllNotifications,
+  } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -82,14 +91,24 @@ export default function Header() {
             <div className="absolute right-0 mt-2 w-80 md:w-96 bg-surface shadow-2xl rounded-2xl border border-outline/10 z-40 overflow-hidden flex flex-col max-h-[500px]">
               <div className="p-4 border-b border-outline/10 flex items-center justify-between bg-outline/5">
                 <span className="font-semibold text-sm text-on-surface">Thông báo ({unreadCount})</span>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={markAllRead}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
-                    Đọc tất cả
-                  </button>
-                )}
+                <div className="flex gap-3">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >
+                      Đọc tất cả
+                    </button>
+                  )}
+                  {user?.role === 'ROLE_ADMIN' && notifications.length > 0 && (
+                    <button
+                      onClick={deleteAllNotifications}
+                      className="text-xs font-semibold text-rose-500 hover:underline"
+                    >
+                      Xóa tất cả
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Notification List */}
@@ -107,7 +126,7 @@ export default function Header() {
                       <div
                         key={notif.id}
                         onClick={() => handleNotificationClick(notif)}
-                        className={`p-4 flex flex-col gap-2 transition-colors cursor-pointer ${
+                        className={`p-4 flex flex-col gap-2 transition-colors cursor-pointer group ${
                           notif.read ? 'hover:bg-outline/5' : 'bg-primary/5 hover:bg-primary/10'
                         }`}
                       >
@@ -133,7 +152,21 @@ export default function Header() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-on-surface truncate">{notif.title}</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-xs font-semibold text-on-surface truncate">{notif.title}</p>
+                              {user?.role === 'ROLE_ADMIN' && (
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await deleteNotification(notif.id);
+                                  }}
+                                  className="text-on-surface-variant/40 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100 p-0.5 rounded-full hover:bg-outline/5 flex items-center justify-center"
+                                  title="Xóa thông báo"
+                                >
+                                  <span className="material-symbols-outlined text-[16px] leading-none">delete</span>
+                                </button>
+                              )}
+                            </div>
                             <p className="text-xs text-on-surface-variant mt-1 leading-normal break-words">
                               {notif.message}
                             </p>
