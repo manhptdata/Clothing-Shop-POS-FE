@@ -48,12 +48,12 @@ export default function CustomerGroupListPage() {
       header: "ID",
       className: "text-center w-12",
       render: (row) => (
-        <span className="text-gray-400 font-mono text-[11px]">#{row.id}</span>
+        <span className="text-gray-400 text-[11px]">#{row.id}</span>
       ),
     },
     {
       key: "name",
-      header: "Tên nhóm (name)",
+      header: "Tên nhóm",
       className: "w-48",
       render: (row) => (
         <button
@@ -61,17 +61,22 @@ export default function CustomerGroupListPage() {
           className="flex items-center gap-1.5 font-bold text-gray-800 hover:text-blue-600 transition-colors text-left"
           title="Xem chi tiết nhóm"
         >
-          {getGroupIcon(row.code)} {row.name}
+          {row.name.replace(/\s*\([A-Za-z]+\)/g, '')}
         </button>
       ),
     },
     {
       key: "code",
-      header: "Mã hạng thẻ",
-      className: "w-28",
-      render: (row) => (
-        <span className="font-mono text-[11px] text-gray-500">{row.code}</span>
-      ),
+      header: "Hạng thẻ",
+      className: "w-28 whitespace-nowrap",
+      render: (row) => {
+        const variant = row.code === "GOLD" ? "warning" : row.code === "SILVER" ? "default" : "info";
+        return (
+          <Badge variant={variant as any}>
+            {row.code === 'BRONZE' ? 'Đồng' : row.code === 'SILVER' ? 'Bạc' : row.code === 'GOLD' ? 'Vàng' : row.code}
+          </Badge>
+        );
+      },
     },
     {
       key: "description",
@@ -81,7 +86,7 @@ export default function CustomerGroupListPage() {
           {row.description}
           {row.note && (
             <span className="text-[9px] text-purple-600 block font-bold italic mt-0.5">
-              (Note: {row.note})
+              (Ghi chú: {row.note})
             </span>
           )}
         </div>
@@ -92,8 +97,8 @@ export default function CustomerGroupListPage() {
       header: "Chi tiêu tối thiểu",
       className: "text-right",
       render: (row) => (
-        <span className="font-mono text-gray-900">
-          {(row.minSpending || 0).toLocaleString("vi-VN")}đ
+        <span className="font-bold text-gray-900">
+          {(row.minSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span>
         </span>
       ),
     },
@@ -104,10 +109,10 @@ export default function CustomerGroupListPage() {
       render: (row) => {
         const isInfinite = !row.maxSpending || row.maxSpending >= 999999999;
         return isInfinite ? (
-          <span className="text-gray-400 font-mono italic text-[11px]">Vô cực</span>
+          <span className="text-gray-400 italic text-[11px]">Vô cực</span>
         ) : (
-          <span className="font-mono text-gray-900">
-            {(row.maxSpending || 0).toLocaleString("vi-VN")}đ
+          <span className="font-bold text-gray-900">
+            {(row.maxSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span>
           </span>
         );
       },
@@ -115,32 +120,28 @@ export default function CustomerGroupListPage() {
     {
       key: "totalCustomers",
       header: "Thành viên",
-      className: "text-center w-32",
+      className: "text-center w-32 whitespace-nowrap",
       render: (row) => (
         <span
-          className={`font-semibold px-2 py-1 rounded-md text-[11px] ${row.totalCustomers > 0
-              ? "text-blue-600 bg-blue-50 font-bold"
+          className={`font-semibold px-2 py-1 rounded-md text-[11px] transition-colors ${row.totalCustomers > 0
+              ? "text-blue-600 bg-blue-50 font-bold hover:bg-blue-100 hover:text-blue-700 cursor-pointer"
               : "text-gray-500"
             }`}
+          onClick={() => {
+            if (row.totalCustomers > 0) {
+              navigate(`/customers/groups/${row.id}/members`);
+            }
+          }}
         >
           {row.totalCustomers} KH
         </span>
       ),
     },
-    {
-      key: "status",
-      header: "Trạng thái",
-      className: "text-center w-24",
-      render: (row) => (
-        <Badge variant={row.status === "ACTIVE" ? "success" : "danger"}>
-          {row.status}
-        </Badge>
-      ),
-    },
+
     {
       key: "actions",
       header: "Thao tác",
-      className: "text-center w-24",
+      className: "text-center w-24 whitespace-nowrap",
       render: (row) => (
         <button
           onClick={() => navigate(`/customers/groups/${row.id}`)}

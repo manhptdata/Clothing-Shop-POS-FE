@@ -118,13 +118,7 @@ export default function CustomerFormPage() {
     <div className="flex-1 p-6 max-w-4xl mx-auto w-full">
       <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button onClick={() => navigate("/customers/list")} className="hover:text-blue-600 transition">
-              Quản lý khách hàng
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px]"></i>
-            <span className="text-gray-900 font-semibold">Thêm mới tài khoản</span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-user-plus text-blue-600"></i> Thêm mới khách hàng tại quầy
           </h1>
@@ -146,8 +140,10 @@ export default function CustomerFormPage() {
         <form ref={formRef} onSubmit={handleSubmit} className="p-6 space-y-5 text-sm" noValidate>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <label className="block font-label-caps text-label-caps text-on-surface mb-1">
+                Họ và tên <span className="text-error">*</span>
+              </label>
               <Input
-                label="Họ và tên (fullName) *"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
@@ -158,8 +154,10 @@ export default function CustomerFormPage() {
               />
             </div>
             <div>
+              <label className="block font-label-caps text-label-caps text-on-surface mb-1">
+                Số điện thoại <span className="text-error">*</span>
+              </label>
               <Input
-                label="Số điện thoại (phone) *"
                 name="phone"
                 type="tel"
                 value={formData.phone}
@@ -174,7 +172,7 @@ export default function CustomerFormPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Input
-                label="Ngày sinh (dateOfBirth)"
+                label="Ngày sinh"
                 name="dateOfBirth"
                 type="date"
                 value={formData.dateOfBirth}
@@ -186,21 +184,18 @@ export default function CustomerFormPage() {
 
             <div>
               <label className="block font-label-caps text-label-caps text-on-surface mb-1">
-                Giới tính (GenderEnum) <span className="text-error">*</span>
+                Giới tính <span className="text-error">*</span>
               </label>
               <div className="grid grid-cols-3 gap-3 h-[42px]">
                 <label className={`flex items-center justify-center gap-2 p-2 border rounded transition-colors font-semibold text-xs cursor-pointer ${formData.gender === "MALE" ? "border-blue-500 bg-blue-50 text-blue-600" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
                   <input type="radio" name="gender" value="MALE" checked={formData.gender === "MALE"} onChange={() => handleGenderChange("MALE")} className="hidden" />
-                  <i className="fa-solid fa-mars"></i> MALE
-                </label>
+                  <i className="fa-solid fa-mars"></i> Nam</label>
                 <label className={`flex items-center justify-center gap-2 p-2 border rounded transition-colors font-semibold text-xs cursor-pointer ${formData.gender === "FEMALE" ? "border-pink-500 bg-pink-50 text-pink-600" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
                   <input type="radio" name="gender" value="FEMALE" checked={formData.gender === "FEMALE"} onChange={() => handleGenderChange("FEMALE")} className="hidden" />
-                  <i className="fa-solid fa-venus"></i> FEMALE
-                </label>
+                  <i className="fa-solid fa-venus"></i> Nữ</label>
                 <label className={`flex items-center justify-center gap-2 p-2 border rounded transition-colors font-semibold text-xs cursor-pointer ${formData.gender === "OTHER" ? "border-gray-500 bg-gray-100 text-gray-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
                   <input type="radio" name="gender" value="OTHER" checked={formData.gender === "OTHER"} onChange={() => handleGenderChange("OTHER")} className="hidden" />
-                  OTHER
-                </label>
+                  Khác</label>
               </div>
             </div>
           </div>
@@ -208,7 +203,7 @@ export default function CustomerFormPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Input
-                label="Địa chỉ cư trú (address)"
+                label="Địa chỉ cư trú"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}

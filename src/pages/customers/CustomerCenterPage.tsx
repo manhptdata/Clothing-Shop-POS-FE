@@ -9,12 +9,10 @@ export default function CustomerCenterPage() {
     <div className="w-full max-w-7xl mx-auto bg-transparent p-4 md:p-8">
       {/* --- PHẦN HEADER TIÊU ĐỀ --- */}
       <div className="mb-8">
-        <h2 className="text-3xl font-sans font-bold text-gray-900 tracking-tight">
+        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
           Trung tâm Khách hàng
         </h2>
-        <p className="text-xs text-gray-400 mt-1.5 font-medium">
-          Lựa chọn phân hệ chức năng CRM để xử lý nghiệp vụ bán hàng tại quầy
-        </p>
+
       </div>
 
       {/* --- PHẦN DANH SÁCH CÁC THẺ (GRID CARDS) --- */}

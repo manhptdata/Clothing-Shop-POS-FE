@@ -60,49 +60,33 @@ export default function CampaignListPage() {
   };
 
   const getRankBadge = (code?: string) => {
-    switch (code) {
-      case "GOLD":
-        return (
-          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm">
-            <i className="fa-solid fa-crown text-[9px] text-amber-500"></i> GOLD
-          </span>
-        );
-      case "SILVER":
-        return (
-          <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm">
-            <i className="fa-solid fa-medal text-[9px] text-slate-400"></i>{" "}
-            SILVER
-          </span>
-        );
-      case "BRONZE":
-        return (
-          <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 border border-orange-200 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm">
-            <i className="fa-solid fa-award text-[9px] text-orange-500"></i>{" "}
-            BRONZE
-          </span>
-        );
-      default:
-        return (
-          <span className="text-gray-400 text-[11px] font-medium">
-            Chưa xếp hạng
-          </span>
-        );
+    if (!code) {
+      return <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>;
     }
+
+    const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
+    return (
+      <Badge variant={variant as any}>
+        {code === 'BRONZE' ? 'Đồng' : code === 'SILVER' ? 'Bạc' : code === 'GOLD' ? 'Vàng' : code}
+      </Badge>
+    );
   };
 
   const columns: Column<Customer>[] = [
     {
       key: "stt",
       header: <span className="text-center w-full block">STT</span>,
-      className: "text-center text-gray-400 font-mono text-[11px]",
+      className: "text-center text-gray-400 text-[11px]",
       render: (cust) => (cust as any).stt,
     },
     {
       key: "fullName",
       header: "Khách hàng",
-      className: "font-bold text-gray-900 cursor-pointer",
       render: (cust) => (
-        <span onClick={() => navigate(`/customers/${cust.id}`)}>
+        <span 
+          className="font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors inline-block"
+          onClick={() => navigate(`/customers/${cust.id}`)}
+        >
           {cust.fullName}
         </span>
       ),
@@ -110,45 +94,8 @@ export default function CampaignListPage() {
     {
       key: "phone",
       header: "SĐT",
-      className: "font-mono text-gray-900 font-semibold text-blue-600",
+      className: "text-gray-900 font-semibold text-blue-600",
       render: (cust) => cust.phone,
-    },
-    {
-      key: "email",
-      header: "Email",
-      render: (cust) => {
-        const customer = cust as CustomerWithEmail;
-        return (
-          <span className="text-gray-600 text-[13px] font-medium">
-            {customer.email ? (
-              <div className="flex items-center gap-1.5">
-                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
-                {customer.email}
-              </div>
-            ) : (
-              <span className="text-gray-400 italic font-normal">---</span>
-            )}
-          </span>
-        );
-      }
-    },
-    {
-      key: "dobGender",
-      header: "Ngày sinh & Giới tính",
-      className: "text-gray-500",
-      render: (cust) => (
-        <>
-          <span className="inline-flex items-center gap-1">
-            <i className="fa-solid fa-cake-candles text-gray-400 text-[10px]"></i>{" "}
-            {cust.dateOfBirth || "--"}
-          </span>
-          <span
-            className={`ml-2 font-bold px-1.5 py-0.5 rounded text-[10px] ${cust.gender === "MALE" ? "text-blue-600 bg-blue-50" : "text-pink-600 bg-pink-50"}`}
-          >
-            {cust.gender}
-          </span>
-        </>
-      ),
     },
     {
       key: "rank",
@@ -156,28 +103,27 @@ export default function CampaignListPage() {
       render: (cust) => getRankBadge(cust.customerGroup?.code),
     },
     {
-      key: "address",
-      header: "Địa chỉ",
-      className: "text-gray-600 max-w-[120px] truncate",
-      render: (cust) => <span title={cust.address}>{cust.address || "--"}</span>,
+      key: "totalSpent",
+      header: "Tổng chi tiêu",
+      className: "text-gray-900 font-bold",
+      render: (cust) => (
+        <span>{((cust as any).totalSpent || 0).toLocaleString("vi-VN")} <span className="underline">₫</span></span>
+      ),
+    },
+    {
+      key: "points",
+      header: "Điểm tích lũy",
+      render: (cust) => (
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-800">
+          <i className="fa-solid fa-star text-yellow-400"></i> {cust.rewardPoints?.toLocaleString() || 0}
+        </span>
+      )
     },
     {
       key: "note",
       header: "Ghi chú",
       className: "text-amber-600 italic max-w-[120px] truncate",
       render: (cust) => <span title={cust.note}>{cust.note || "--"}</span>,
-    },
-    {
-      key: "status",
-      header: <span className="text-center w-full block">Trạng thái</span>,
-      className: "text-center",
-      render: (cust) => (
-        <div className="flex justify-center">
-          <Badge variant={cust.status === "ACTIVE" ? "success" : "danger"}>
-            {cust.status}
-          </Badge>
-        </div>
-      ),
     },
     {
       key: "actions",
@@ -223,20 +169,9 @@ export default function CampaignListPage() {
     <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button
-              onClick={() => navigate("/customers")}
-              className="hover:text-blue-600 transition"
-            >
-              CRM / Chiến dịch
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-            <span className="text-gray-900 font-semibold">
-              Khách hàng chờ xử lý
-            </span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <i className="fa-solid fa-headset text-blue-600"></i> Xử lý danh sách gọi điện theo chiến dịch
+            <i className="fa-solid fa-headset text-blue-600"></i> Chăm sóc khách hàng
           </h1>
         </div>
         <Button
@@ -274,16 +209,7 @@ export default function CampaignListPage() {
               </span>
             </div>
           </div>
-          <div
-            className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex shrink-0 items-center justify-center hover:bg-blue-200 transition-colors cursor-pointer"
-            title="Xem kịch bản gọi điện"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedScript(scriptAfter7Days);
-            }}
-          >
-            <i className="fa-solid fa-robot"></i>
-          </div>
+
         </button>
 
         <button
@@ -310,16 +236,7 @@ export default function CampaignListPage() {
               </span>
             </div>
           </div>
-          <div
-            className="w-8 h-8 rounded-full bg-amber-50 text-amber-500 flex shrink-0 items-center justify-center hover:bg-amber-200 transition-colors cursor-pointer"
-            title="Xem kịch bản gọi điện"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedScript(scriptAfter30Days);
-            }}
-          >
-            <i className="fa-solid fa-robot"></i>
-          </div>
+
         </button>
 
         <button
@@ -346,16 +263,7 @@ export default function CampaignListPage() {
               </span>
             </div>
           </div>
-          <div
-            className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex shrink-0 items-center justify-center hover:bg-rose-200 transition-colors cursor-pointer"
-            title="Xem kịch bản gọi điện"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedScript(scriptRecallSchedule);
-            }}
-          >
-            <i className="fa-solid fa-robot"></i>
-          </div>
+
         </button>
 
         <button
@@ -382,16 +290,7 @@ export default function CampaignListPage() {
               </span>
             </div>
           </div>
-          <div
-            className="w-8 h-8 rounded-full bg-purple-50 text-purple-500 flex shrink-0 items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
-            title="Xem kịch bản gọi điện"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedScript(scriptHappyBirthday);
-            }}
-          >
-            <i className="fa-solid fa-robot"></i>
-          </div>
+
         </button>
       </div>
 
@@ -433,23 +332,7 @@ export default function CampaignListPage() {
         )}
       </div>
       {/* Modal kịch bản gọi */}
-      <Modal
-        isOpen={!!selectedScript}
-        onClose={() => setSelectedScript(null)}
-        title="Kịch bản gọi điện"
-        size="lg"
-      >
-        <div className="p-5 max-h-[75vh] overflow-y-auto">
-          <div className="flex items-start gap-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-              <i className="fa-solid fa-robot text-lg"></i>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              {selectedScript}
-            </div>
-          </div>
-        </div>
-      </Modal>
+
     </div>
   );
 }

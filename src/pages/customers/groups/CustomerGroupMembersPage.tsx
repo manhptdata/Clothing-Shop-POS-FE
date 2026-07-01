@@ -4,12 +4,13 @@ import {
   useGetCustomerGroupMembersQuery,
   useGetCustomerGroupByIdQuery,
 } from "@/redux/api/customerApi";
-import type { Customer, CustomerWithEmail } from "@/types/customer.types";
+import type { Customer, CustomerWithEmail, CustomerVoucher } from "@/types/customer.types";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
 import { Table, Column } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
+import { Modal } from "@/components/ui/Modal";
 
 export default function CustomerGroupMembersPage() {
   const { id } = useParams();
@@ -19,6 +20,22 @@ export default function CustomerGroupMembersPage() {
   const [keyword, setKeyword] = useState("");
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(0);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedVoucherData, setSelectedVoucherData] = useState<{
+    name: string;
+    group: string;
+    vouchers: CustomerVoucher[];
+  } | null>(null);
+
+  const openVoucherModal = (customer: Customer) => {
+    setSelectedVoucherData({
+      name: customer.fullName,
+      group: customer.customerGroup?.code || "CHƯA XẾP HẠNG",
+      vouchers: customer.vouchers || [],
+    });
+    setIsModalOpen(true);
+  };
 
   // Gọi API lấy TÊN của nhóm (để hiển thị trên Header)
   const { data: groupResponse } = useGetCustomerGroupByIdQuery(id as string, {
@@ -57,111 +74,89 @@ export default function CustomerGroupMembersPage() {
       key: "id",
       header: "STT",
       className: "text-center w-12",
-      render: (row) => <span className="text-gray-500 font-mono text-[11px] font-semibold">{row.stt}</span>,
+      render: (row) => <span className="text-gray-500 text-[11px] font-semibold">{row.stt}</span>,
     },
     {
       key: "fullName",
-      header: "Tên khách hàng",
+      header: "Khách hàng",
       render: (row) => (
-        <button
+        <span
+          className="font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors inline-block"
           onClick={() => navigate(`/customers/${row.id}`)}
-          className="font-bold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer text-left"
-          title="Xem chi tiết khách hàng"
         >
           {row.fullName}
-        </button>
-      ),
+        </span>
+      )
     },
     {
       key: "phone",
       header: "Số điện thoại",
-      render: (row) => (
-        <span className="font-mono text-gray-900 font-semibold">
-          {row.phone}
-        </span>
-      ),
+      render: (row) => <span className="text-gray-900 font-semibold">{row.phone}</span>
     },
     {
-      key: "email",
-      header: "Email",
+      key: "group",
+      header: "Hạng",
       render: (row) => {
-        const customer = row as CustomerWithEmail;
+        const cus = row;
+        const code = cus.customerGroup?.code;
+        if (!code) {
+          return <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>;
+        }
+
+        const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
         return (
-          <span className="text-gray-600 text-[13px] font-medium">
-            {customer.email ? (
-              <div className="flex items-center gap-1.5">
-                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
-                {customer.email}
-              </div>
-            ) : (
-              <span className="text-gray-400 italic font-normal">---</span>
-            )}
-          </span>
+          <Badge variant={variant as any}>
+            {code === 'BRONZE' ? 'Đồng' : code === 'SILVER' ? 'Bạc' : code === 'GOLD' ? 'Vàng' : code}
+          </Badge>
         );
       }
     },
     {
-      key: "dob_gender",
-      header: "Ngày sinh & Giới tính",
+      key: "points",
+      header: "Điểm tích lũy",
       render: (row) => (
-        <div className="flex items-center gap-2">
-          {row.dateOfBirth && (
-            <span className="inline-flex items-center gap-1 text-gray-500 text-[11px]">
-              <i className="fa-solid fa-cake-candles text-gray-400"></i>{" "}
-              {row.dateOfBirth}
-            </span>
-          )}
-          <span
-            className={`font-bold px-1.5 py-0.5 rounded text-[10px] ${row.gender === "MALE" ? "text-blue-600 bg-blue-50" : "text-pink-600 bg-pink-50"}`}
-          >
-            {row.gender}
-          </span>
-        </div>
-      ),
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-800">
+          <i className="fa-solid fa-star text-yellow-400"></i> {row.rewardPoints?.toLocaleString() || 0}
+        </span>
+      )
     },
     {
-      key: "address",
-      header: "Địa chỉ",
+      key: "vouchers",
+      header: "Ưu đãi",
       render: (row) => (
-        <div
-          className="text-gray-600 max-w-[150px] truncate"
-          title={row.address}
+        <button
+          onClick={() => openVoucherModal(row as Customer)}
+          className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-[11px] font-bold transition"
         >
-          {row.address || "--"}
-        </div>
-      ),
+          <i className="fa-solid fa-ticket-simple"></i> {row.vouchers?.length || 0} Voucher
+        </button>
+      )
     },
     {
       key: "note",
       header: "Ghi chú",
+      className: "max-w-[150px]",
       render: (row) => (
-        <div
-          className="text-amber-600 italic max-w-[150px] truncate"
-          title={row.note}
-        >
-          {row.note || "--"}
+        <div className="text-gray-500 italic text-[12px] truncate" title={row.note || ""}>
+          {row.note || "---"}
         </div>
-      ),
+      )
     },
     {
-      key: "status",
-      header: "Trạng thái",
-      className: "text-center w-28",
+      key: "actions",
+      header: "Thao tác",
+      className: "text-center w-24",
       render: (row) => (
-        <Badge variant={row.status === "ACTIVE" ? "success" : "danger"}>
-          {row.status}
-        </Badge>
-      ),
-    },
-    {
-      key: "createdAt",
-      header: "Ngày tham gia nhóm",
-      className: "text-center w-40",
-      render: (row) => (
-        <span className="text-gray-400 font-mono text-[11px]">
-          {new Date(row.createdAt).toLocaleString("vi-VN")}
-        </span>
-      ),
+        <div className="flex items-center justify-center gap-1.5">
+          <button
+            onClick={() => navigate(`/customers/${row.id}`)}
+            className="p-1.5 bg-gray-50 text-gray-400 hover:text-blue-600 rounded-lg transition border border-gray-200"
+            title="Xem chi tiết"
+          >
+            <i className="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      )
     },
   ];
 
@@ -170,22 +165,11 @@ export default function CustomerGroupMembersPage() {
       {/* HEADER */}
       <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button
-              onClick={() => navigate("/customers/groups")}
-              className="hover:text-blue-600 transition"
-            >
-              Nhóm khách hàng
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-            <span className="text-gray-900 font-semibold">
-              Danh sách thành viên
-            </span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-users text-slate-700"></i> Thành viên
             nhóm:
-            <span className="text-slate-700 ml-1">{groupName}</span>
+            <span className="text-slate-700 ml-1">{groupName.replace(/\s*\([A-Za-z]+\)/g, '')}</span>
           </h1>
         </div>
       </header>
@@ -196,9 +180,9 @@ export default function CustomerGroupMembersPage() {
           <Button
             variant="outline"
             leftIcon={<i className="fa-solid fa-arrow-left"></i>}
-            onClick={() => navigate(`/customers/groups/${id}`)}
+            onClick={() => navigate(-1)}
           >
-            Quay lại nhóm
+            Quay lại
           </Button>
         </div>
 
@@ -216,29 +200,7 @@ export default function CustomerGroupMembersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end shrink-0">
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-bold">
-            <label
-              htmlFor="filter-size"
-              className="whitespace-nowrap uppercase tracking-wider text-gray-400"
-            >
-              Hiển thị dòng:
-            </label>
-            <select
-              id="filter-size"
-              value={size}
-              onChange={(e) => {
-                setSize(Number(e.target.value));
-                setPage(0);
-              }}
-              className="border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none text-xs font-bold text-gray-700 cursor-pointer"
-            >
-              <option value="10">10 thành viên</option>
-              <option value="20">20 thành viên</option>
-              <option value="50">50 thành viên</option>
-            </select>
-          </div>
-        </div>
+
       </div>
 
       {/* BẢNG DỮ LIỆU */}
@@ -256,8 +218,45 @@ export default function CustomerGroupMembersPage() {
           totalElements={totalElements}
           pageSize={size}
           onPageChange={(newPage) => setPage(newPage)}
+          onSizeChange={(newSize) => {
+            setSize(newSize);
+            setPage(0);
+          }}
         />
       </div>
+
+      {isModalOpen && selectedVoucherData && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Danh sách ưu đãi"
+          size="md"
+        >
+          <div className="mb-4">
+            <p className="text-xs text-gray-500 font-medium">
+              Khách hàng: <span className="text-gray-900 font-bold">{selectedVoucherData.name}</span>
+            </p>
+          </div>
+          <div className="max-h-[380px] overflow-y-auto space-y-3.5 pr-2">
+            {selectedVoucherData.vouchers.length === 0 ? (
+              <div className="text-center py-8 text-gray-400 italic flex flex-col items-center gap-2">
+                <i className="fa-solid fa-ticket-simple text-2xl text-gray-300"></i>
+                <span>Khách hàng này hiện chưa sở hữu mã ưu đãi nào.</span>
+              </div>
+            ) : (
+              selectedVoucherData.vouchers.map((v) => (
+                <div key={v.id} className="relative bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/80 rounded-xl p-3 flex justify-between shadow-sm">
+                  <div className="pl-2 space-y-0.5">
+                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">{v.voucherCode}</span>
+                    <div className="text-xs font-bold text-gray-900 mt-1">{v.voucherName}</div>
+                    <div className="text-sm font-black text-red-600">Giảm: {v.discountAmount.toLocaleString()}đ</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

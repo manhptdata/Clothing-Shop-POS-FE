@@ -27,7 +27,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const generatedId = useId();
     const inputId = id || generatedId;
-    
+
     return (
       <div className="flex flex-col gap-1 w-full">
         {label && (
@@ -48,10 +48,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={`w-full bg-transparent border font-body-md text-body-md p-2 rounded transition-colors focus:outline-none focus:ring-1 
               ${leftIcon ? 'pl-10' : ''} 
               ${rightIcon ? 'pr-10' : ''}
-              ${
-                error
-                  ? 'border-error focus:border-error focus:ring-error text-error placeholder:text-error/60'
-                  : 'border-outline/20 text-on-surface placeholder:text-outline-variant focus:border-primary focus:ring-primary'
+              ${error
+                ? 'border-error focus:border-error focus:ring-error text-error placeholder:text-error/60'
+                : 'border-outline/20 text-on-surface placeholder:text-outline-variant focus:border-primary focus:ring-primary'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed bg-surface-container-low' : ''}
               ${className}

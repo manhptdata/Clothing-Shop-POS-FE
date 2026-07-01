@@ -88,16 +88,7 @@ export default function CustomerDetailPage() {
       {/* HEADER */}
       <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button
-              onClick={() => navigate("/customers/list")}
-              className="hover:text-blue-600 transition"
-            >
-              Quản lý khách hàng
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px]"></i>
-            <span className="text-gray-900 font-semibold">Hồ sơ chi tiết</span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-user-check text-blue-600"></i> Hồ sơ khách
             hàng: {customer.fullName}
@@ -145,7 +136,7 @@ export default function CustomerDetailPage() {
               <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">
                 Số điện thoại
               </label>
-              <div className="font-mono text-sm font-bold text-gray-900">
+              <div className="text-sm font-bold text-gray-900">
                 {customer.phone}
               </div>
             </div>
@@ -153,7 +144,7 @@ export default function CustomerDetailPage() {
               <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">
                 Email
               </label>
-              <div className="font-mono text-gray-800 font-semibold text-[15px] mt-1 tracking-tight flex items-center gap-2">
+              <div className="text-gray-800 font-semibold text-[15px] mt-1 tracking-tight flex items-center gap-2">
                 {customer.email || "Chưa cập nhật"}
               </div>
             </div>
@@ -164,7 +155,7 @@ export default function CustomerDetailPage() {
               <div className="font-semibold text-gray-800 flex items-center gap-2 mt-1">
                 {customer.dateOfBirth || "Chưa cập nhật"} —
                 <Badge variant={customer.gender === "MALE" ? "info" : "danger"}>
-                  {customer.gender}
+                  {customer.gender === 'MALE' ? 'Nam' : customer.gender === 'FEMALE' ? 'Nữ' : 'Khác'}
                 </Badge>
               </div>
             </div>
@@ -187,31 +178,17 @@ export default function CustomerDetailPage() {
                   </span>
                 ) : (
                   <>
-                    <Badge variant={rankVariant as any}>{rankCode}</Badge>
-                    <span className="text-[11px] text-slate-600 font-bold tracking-wide">
-                      · {customer.customerGroup?.name}
-                    </span>
+                    <Badge variant={rankVariant as any}>{rankCode === 'BRONZE' ? 'Đồng' : rankCode === 'SILVER' ? 'Bạc' : rankCode === 'GOLD' ? 'Vàng' : rankCode}</Badge>
                   </>
                 )}
               </div>
             </div>
-            <div>
-              <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">
-                Trạng thái hệ thống
-              </label>
-              <div className="mt-1">
-                <Badge
-                  variant={customer.status === "ACTIVE" ? "success" : "danger"}
-                >
-                  {customer.status}
-                </Badge>
-              </div>
-            </div>
+
             <div>
               <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">
                 Ngày tạo hồ sơ
               </label>
-              <div className="font-mono text-gray-700 font-semibold">
+              <div className="text-gray-700 font-semibold">
                 {new Date(customer.createdAt).toLocaleDateString("vi-VN")}
               </div>
             </div>
@@ -219,9 +196,9 @@ export default function CustomerDetailPage() {
             {customer.note && (
               <div className="pt-3 border-t border-gray-100">
                 <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-1">
-                  Ghi chú (note)
+                  Ghi chú
                 </label>
-                <div className="bg-amber-50/60 border border-amber-100/80 rounded-xl p-3 text-amber-800 italic font-medium leading-relaxed shadow-sm">
+                <div className="bg-amber-50/60 border border-amber-100/80 rounded-xl p-3 text-amber-800 italic font-medium leading-relaxed shadow-sm break-words whitespace-pre-wrap">
                   "{customer.note}"
                 </div>
               </div>
@@ -241,7 +218,7 @@ export default function CustomerDetailPage() {
                   <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-4 bg-white border border-red-200 rounded-full"></div>
                   <div className="pl-2 space-y-0.5">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-[11px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">
+                      <span className="text-[11px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">
                         {voucher.voucherCode}
                       </span>
                       <Badge
@@ -249,7 +226,7 @@ export default function CustomerDetailPage() {
                           voucher.status === "UNUSED" ? "success" : "default"
                         }
                       >
-                        {voucher.status}
+                        {voucher.status === 'UNUSED' ? 'Chưa sử dụng' : 'Đã sử dụng'}
                       </Badge>
                     </div>
                     <div className="text-[12px] font-bold text-gray-900">
@@ -324,7 +301,7 @@ export default function CustomerDetailPage() {
                       {/* HEADER ĐƠN HÀNG */}
                       <div className="bg-slate-50/80 px-4 py-3 border-b border-gray-200 flex flex-wrap justify-between items-center gap-2 text-xs">
                         <div className="flex items-center gap-3">
-                          <span className="font-mono font-bold text-gray-900 text-sm">{order.orderNumber}</span>
+                          <span className="font-bold text-gray-900 text-sm">{order.orderNumber}</span>
                           <span className="text-gray-400">|</span>
                           <span className="text-gray-500 font-medium">
                             <i className="fa-regular fa-clock mr-1"></i>
@@ -333,7 +310,7 @@ export default function CustomerDetailPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant={order.status === "COMPLETED" ? "success" : "warning"}>
-                            {order.status}
+                            {order.status === 'COMPLETED' ? 'Hoàn thành' : order.status === 'PENDING' ? 'Chờ xử lý' : 'Đã hủy'}
                           </Badge>
                         </div>
                       </div>
@@ -354,7 +331,7 @@ export default function CustomerDetailPage() {
                             {order.items?.map((item) => (
                               <tr key={item.id}>
                                 <td className="py-3 px-4 font-bold text-gray-900">{item.productName}</td>
-                                <td className="py-3 px-4 font-mono text-gray-500">{item.productSku}</td>
+                                <td className="py-3 px-4 text-gray-500">{item.productSku}</td>
                                 <td className="py-3 px-4 text-center font-bold text-gray-900">{item.quantity}</td>
                                 <td className="py-3 px-4 text-right">{item.unitPrice.toLocaleString()}đ</td>
                                 <td className="py-3 px-4 text-right font-bold text-gray-900">{item.subtotal.toLocaleString()}đ</td>
@@ -378,15 +355,15 @@ export default function CustomerDetailPage() {
                         </div>
                         <div className="space-y-1.5 text-right max-w-xs ml-auto w-full">
                           <div className="flex justify-between text-gray-500">
-                            <span>Tổng tiền (totalAmount):</span>
+                            <span>Tổng tiền:</span>
                             <span className="font-bold text-gray-900">{order.totalAmount.toLocaleString()}đ</span>
                           </div>
                           <div className="flex justify-between text-emerald-600 font-semibold">
-                            <span>Khách đã trả (paidAmount):</span>
+                            <span>Khách đã trả:</span>
                             <span>{order.paidAmount.toLocaleString()}đ</span>
                           </div>
                           <div className="flex justify-between text-gray-500 border-t border-gray-200/60 pt-1.5 font-bold">
-                            <span>Tiền thừa (changeAmount):</span>
+                            <span>Tiền thừa:</span>
                             <span className="text-blue-600">{order.changeAmount.toLocaleString()}đ</span>
                           </div>
                         </div>
@@ -447,7 +424,7 @@ export default function CustomerDetailPage() {
                                 </span>
                               </div>
                             </div>
-                            <span className="font-mono text-gray-600 text-[11px] bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200/60 flex items-center gap-1.5 self-start sm:self-auto">
+                            <span className="text-gray-600 text-[11px] bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200/60 flex items-center gap-1.5 self-start sm:self-auto">
                               <i className="fa-regular fa-clock text-gray-400 text-xs"></i>
                               {log.calledAt ? new Date(log.calledAt).toLocaleString("vi-VN") : "Chưa gọi"}
                             </span>
@@ -486,7 +463,7 @@ export default function CustomerDetailPage() {
                               </span>
                             )}
                             {log.order && (
-                              <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg border border-blue-200/60 font-mono font-medium">
+                              <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg border border-blue-200/60 font-medium">
                                 <i className="fa-solid fa-link mr-0.5"></i> Có kèm đơn hàng
                               </span>
                             )}
@@ -496,7 +473,7 @@ export default function CustomerDetailPage() {
                             <i className="fa-solid fa-quote-left absolute -top-1 -left-1 text-gray-200/40 text-3xl font-black select-none"></i>
                             <div className="relative z-10 pl-5">
                               <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">
-                                Nội dung cuộc gọi (note)
+                                Nội dung cuộc gọi
                               </div>
                               <p className="font-medium text-gray-800">
                                 "{log.note || "Không có nội dung ghi chú"}"
@@ -504,10 +481,10 @@ export default function CustomerDetailPage() {
                             </div>
                           </div>
 
-                          <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400 font-mono uppercase tracking-wider">
+                          <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400 uppercase tracking-wider">
                             <i className="fa-solid fa-server text-[9px]"></i>
                             <span>
-                              Hệ thống ghi nhận (createdAt): {log.createdAt}
+                              Hệ thống ghi nhận: {log.createdAt}
                             </span>
                           </div>
                         </div>

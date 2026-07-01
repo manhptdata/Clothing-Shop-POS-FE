@@ -141,11 +141,10 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
             <button
               type="button"
               onClick={() => setPaymentMethod('CASH')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${
-                paymentMethod === 'CASH'
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${paymentMethod === 'CASH'
                   ? 'bg-green-500 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined text-[16px]">payments</span>
               Tiền mặt
@@ -157,11 +156,10 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
                 setCustomerPaid('');
                 setIsPaidModified(false);
               }}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${
-                paymentMethod === 'QR_PAYOS'
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-md transition-all ${paymentMethod === 'QR_PAYOS'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-800'
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined text-[16px]">qr_code_scanner</span>
               Chuyển khoản QR

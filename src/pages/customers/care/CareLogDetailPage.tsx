@@ -41,18 +41,7 @@ export default function CareLogDetailPage() {
       {/* Header */}
       <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <span
-              className="hover:text-blue-600 transition cursor-pointer"
-              onClick={() => navigate(-1)}
-            >
-              Nhật ký chăm sóc
-            </span>
-            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-            <span className="text-gray-900 font-semibold">
-              Lịch sử chăm sóc
-            </span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             Chi tiết nhật ký chăm sóc
           </h1>
@@ -105,7 +94,7 @@ export default function CareLogDetailPage() {
 
               <div>
                 <label className="block text-gray-400 uppercase tracking-wider text-[10px] mb-1">
-                  Chi tiết trao đổi (note)
+                  Chi tiết trao đổi
                 </label>
                 <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-gray-800 text-sm font-medium leading-relaxed whitespace-normal italic">
                   "{log.note || "Không có ghi chú"}"
@@ -115,9 +104,9 @@ export default function CareLogDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div>
                   <span className="block text-gray-400 uppercase tracking-wider text-[10px] mb-0.5">
-                    Thời gian gọi thực tế (calledAt)
+                    Thời gian gọi thực tế
                   </span>
-                  <div className="flex items-center gap-1.5 text-gray-700 font-mono">
+                  <div className="flex items-center gap-1.5 text-gray-700 ">
                     <i className="fa-solid fa-phone-volume text-gray-400 text-[11px]"></i>
                     <span>
                       {log.calledAt
@@ -128,9 +117,9 @@ export default function CareLogDetailPage() {
                 </div>
                 <div>
                   <span className="block text-gray-400 uppercase tracking-wider text-[10px] mb-0.5">
-                    Hệ thống tạo lúc (createdAt)
+                    Hệ thống tạo lúc
                   </span>
-                  <div className="flex items-center gap-1.5 text-gray-500 font-mono font-normal">
+                  <div className="flex items-center gap-1.5 text-gray-500 font-normal">
                     <i className="fa-solid fa-clock text-gray-400 text-[11px]"></i>
                     <span>
                       {log.createdAt
@@ -148,9 +137,9 @@ export default function CareLogDetailPage() {
                   </div>
                   <div>
                     <span className="block text-amber-800 uppercase tracking-wider text-[9px] font-bold">
-                      Lịch hẹn gọi lại lần sau (nextRetryAt)
+                      Lịch hẹn gọi lại lần sau
                     </span>
-                    <span className="text-sm font-mono font-bold text-amber-900">
+                    <span className="text-sm font-bold text-amber-900">
                       {new Date(log.nextRetryAt).toLocaleString("vi-VN")}
                     </span>
                   </div>
@@ -165,7 +154,7 @@ export default function CareLogDetailPage() {
                 </div>
                 <div>
                   <span className="block text-gray-400 uppercase tracking-wider text-[10px] mb-0.5">
-                    Chiến dịch (campaign)
+                    Chiến dịch
                   </span>
                   {log.campaign ? (
                     <span className="block font-bold text-gray-900 text-sm">
@@ -210,7 +199,7 @@ export default function CareLogDetailPage() {
             <h4 className="text-sm font-bold text-gray-900">
               {log.customer.fullName}
             </h4>
-            <p className="text-gray-600 font-mono mt-0.5">
+            <p className="text-gray-600 mt-0.5">
               <i className="fa-solid fa-phone text-[10px] text-gray-400"></i>{" "}
               {log.customer.phone}
             </p>
@@ -226,7 +215,7 @@ export default function CareLogDetailPage() {
             <h4 className="text-sm font-bold text-slate-800">
               {log.calledBy.fullName}
             </h4>
-            <p className="text-blue-600 font-mono mt-0.5">
+            <p className="text-blue-600 mt-0.5">
               @{log.calledBy.username}
             </p>
           </div>

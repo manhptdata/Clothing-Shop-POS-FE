@@ -103,18 +103,7 @@ export default function CareLogEditPage() {
     <div className="p-6 max-w-2xl mx-auto w-full text-gray-800 antialiased">
       <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <span
-              className="cursor-pointer hover:text-blue-600 transition"
-              onClick={() => navigate(-1)}
-            >
-              CRM / Nhật ký
-            </span>
-            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-            <span className="text-gray-900 font-semibold">
-              Chỉnh sửa nhật ký
-            </span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-file-pen text-amber-500"></i> Cập nhật
             nhật ký chăm sóc
@@ -148,7 +137,7 @@ export default function CareLogEditPage() {
               <span className="block text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">
                 Số điện thoại
               </span>
-              <span className="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-xs">
+              <span className="font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-xs">
                 {log.customer.phone}
               </span>
             </div>
@@ -182,7 +171,7 @@ export default function CareLogEditPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
-              Kết quả cuộc gọi (result) <span className="text-rose-500">*</span>
+              Kết quả cuộc gọi <span className="text-rose-500">*</span>
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
@@ -252,7 +241,7 @@ export default function CareLogEditPage() {
           >
             <Input
               type="datetime-local"
-              label="Thời gian hẹn gọi lại (nextRetryAt)"
+              label="Thời gian hẹn gọi lại"
               value={nextRetryAt}
               onChange={(e) => setNextRetryAt(e.target.value)}
               leftIcon={
@@ -264,7 +253,7 @@ export default function CareLogEditPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Nội dung cuộc trao đổi / Ghi chú (note)
+              Nội dung cuộc trao đổi / Ghi chú
             </label>
             <textarea
               rows={4}

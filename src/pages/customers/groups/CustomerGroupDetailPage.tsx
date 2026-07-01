@@ -67,16 +67,7 @@ export default function CustomerGroupDetailPage() {
       {/* HEADER */}
       <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button
-              onClick={() => navigate("/customers/groups")}
-              className="hover:text-blue-600 transition"
-            >
-              Nhóm khách hàng
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px] text-gray-400"></i>
-            <span className="text-gray-900 font-semibold">Cấu hình chi tiết</span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
             <span
               className={`${getGroupColorClass(
@@ -85,16 +76,16 @@ export default function CustomerGroupDetailPage() {
             >
               {getGroupIcon(group.code)}
             </span>
-            Nhóm: {group.name}
+            Nhóm: {group.name.replace(/\s*\([A-Za-z]+\)/g, '')}
           </h1>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             leftIcon={<i className="fa-solid fa-arrow-left"></i>}
-            onClick={() => navigate("/customers/groups")}
+            onClick={() => navigate(-1)}
           >
-            Quay lại danh sách
+            Quay lại
           </Button>
         </div>
       </header>
@@ -104,24 +95,19 @@ export default function CustomerGroupDetailPage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
             <h3 className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-4 flex items-center gap-1.5">
-              <i className="fa-solid fa-server text-gray-300"></i> Thông tin hệ thống (Read-Only)
+              <i className="fa-solid fa-server text-gray-300"></i> Thông tin hệ thống
             </h3>
             <div className="space-y-4 text-xs font-semibold">
               <div className="flex justify-between items-center">
-                <span className="text-gray-500">Mã định danh (code)</span>
-                <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-                  {group.code}
+                <span className="text-gray-500">Hạng thẻ</span>
+                <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                  {group.code === 'BRONZE' ? 'Đồng' : group.code === 'SILVER' ? 'Bạc' : group.code === 'GOLD' ? 'Vàng' : group.code}
                 </span>
               </div>
+
               <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
-                <span className="text-gray-500">Trạng thái (status)</span>
-                <Badge variant={group.status === "ACTIVE" ? "success" : "danger"}>
-                  {group.status}
-                </Badge>
-              </div>
-              <div className="flex justify-between items-center border-t border-gray-100 pt-3.5">
-                <span className="text-gray-500">Thời gian tạo (createdAt)</span>
-                <span className="text-gray-700 font-mono text-xs">
+                <span className="text-gray-500">Thời gian tạo</span>
+                <span className="text-gray-700 text-xs">
                   {new Date(group.createdAt).toLocaleString("vi-VN")}
                 </span>
               </div>
@@ -138,13 +124,13 @@ export default function CustomerGroupDetailPage() {
 
             <div className="flex items-center justify-between mb-1 relative z-10">
               <span className="text-slate-200 text-[10px] font-bold uppercase tracking-wider">
-                Thành viên thuộc hạng (totalCustomers)
+                Thành viên thuộc hạng
               </span>
               <i className="fa-solid fa-users text-slate-400/40 text-lg transition-transform group-hover:scale-110"></i>
             </div>
-            <div className="text-3xl font-black font-mono relative z-10 flex items-baseline justify-between">
+            <div className="text-3xl font-black relative z-10 flex items-baseline justify-between">
               <span>{group.totalCustomers}</span>
-              <span className="text-xs text-slate-300 font-sans font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs text-slate-300 font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 Xem ngay
                 <i className="fa-solid fa-circle-arrow-right text-[10px]"></i>
               </span>
@@ -166,27 +152,27 @@ export default function CustomerGroupDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                  Chi tiêu tối thiểu (minSpending)
+                  Chi tiêu tối thiểu
                 </label>
-                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 font-mono">
-                  {(group.minSpending || 0).toLocaleString("vi-VN")}đ
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 ">
+                  {(group.minSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span>
                 </div>
               </div>
-              <div className="bg-orange-50/50 p-3 rounded-lg border border-orange-100/50">
-                <div className="text-sm text-gray-500 mb-1">
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
                   Chi tiêu tối đa
-                </div>
-                <div className="font-mono font-medium text-gray-900">
+                </label>
+                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 ">
                   {!group.maxSpending || group.maxSpending >= 999999999
                     ? "Không giới hạn (Vô cực)"
-                    : `${(group.maxSpending || 0).toLocaleString("vi-VN")}đ`}
+                    : <>{(group.maxSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span></>}
                 </div>
               </div>
             </div>
 
             <div>
               <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                Mô tả nhóm định mục (description)
+                Mô tả nhóm định mục
               </label>
               <div className="text-xs text-gray-700 leading-relaxed bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-100 font-medium">
                 {group.description}
@@ -195,7 +181,7 @@ export default function CustomerGroupDetailPage() {
 
             <div>
               <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                Ghi chú hệ thống (note)
+                Ghi chú hệ thống
               </label>
               {group.note ? (
                 <div className="text-xs text-amber-700 bg-amber-50/50 px-4 py-3.5 rounded-xl border border-amber-100 leading-relaxed font-medium flex items-center gap-2">

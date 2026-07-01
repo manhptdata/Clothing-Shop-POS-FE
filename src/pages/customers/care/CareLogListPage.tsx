@@ -45,7 +45,7 @@ export default function CareLogListPage() {
     {
       key: "id",
       header: <span className="text-center w-full block">STT</span>,
-      className: "text-center text-gray-400 font-mono text-[11px]",
+      className: "text-center text-gray-400 text-[11px]",
       render: (log) => (log as any).stt,
     },
     {
@@ -109,7 +109,7 @@ export default function CareLogListPage() {
     {
       key: "calledAt",
       header: <span className="text-center w-full block">Thời gian gọi</span>,
-      className: "text-center text-gray-700 font-mono text-[11px]",
+      className: "text-center text-gray-700 text-[11px]",
       render: (log) =>
         log.calledAt ? new Date(log.calledAt).toLocaleString("vi-VN") : "--",
     },
@@ -119,12 +119,12 @@ export default function CareLogListPage() {
       render: (log) => (
         <div>
           <div
-            className="font-bold text-gray-900 cursor-pointer"
+            className="font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors inline-block"
             onClick={() => navigate(`/customers/${log.customer.id}`)}
           >
             {log.customer.fullName}
           </div>
-          <div className="text-[11px] text-gray-500 font-mono mt-0.5">
+          <div className="text-[11px] text-gray-500 mt-0.5">
             <i className="fa-solid fa-phone text-[9px] text-gray-400"></i>{" "}
             {log.customer.phone}
           </div>
@@ -133,18 +133,30 @@ export default function CareLogListPage() {
     },
     {
       key: "campaign",
-      header: "Chiến dịch",
-      render: (log) => (
-        <div className="flex justify-center">
-          {log.campaign ? (
-            <div className="text-[11px] font-bold text-purple-600 font-mono px-2 py-1 bg-purple-50 rounded border border-purple-100 uppercase tracking-wider">
-              {log.campaign.type || log.campaign.name}
-            </div>
-          ) : (
-            <span className="text-gray-400 italic text-[11px]">Không có</span>
-          )}
-        </div>
-      ),
+      header: <span className="text-center w-full block">Chiến dịch</span>,
+      render: (log) => {
+        const getCampaignName = (type?: string, defaultName?: string) => {
+          switch (type) {
+            case "HAPPY_BIRTHDAY": return "Chúc mừng sinh nhật";
+            case "RECALL_SCHEDULE": return "Lịch hẹn gọi lại";
+            case "LONG_TIME_NO_BUY": return "Khách hàng lâu không mua";
+            case "AFTER_7_DAYS": return "Chăm sóc khách sau mua 7 ngày";
+            default: return defaultName || type || "Không có";
+          }
+        };
+        
+        return (
+          <div className="flex justify-center">
+            {log.campaign ? (
+              <div className="text-[11px] font-bold text-purple-600 px-2 py-1 bg-purple-50 rounded border border-purple-100 uppercase tracking-wider">
+                {getCampaignName(log.campaign.type, log.campaign.name)}
+              </div>
+            ) : (
+              <span className="text-gray-400 italic text-[11px]">Không có</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "calledBy",
@@ -154,7 +166,7 @@ export default function CareLogListPage() {
           <div className="font-bold text-gray-800">
             {log.calledBy?.fullName || "--"}
           </div>
-          <div className="text-[11px] text-blue-600 font-mono mt-0.5">
+          <div className="text-[11px] text-blue-600 mt-0.5">
             <i className="fa-solid fa-user-tie text-[9px] text-blue-400"></i>{" "}
             {log.calledBy?.username || "--"}
           </div>

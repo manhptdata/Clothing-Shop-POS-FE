@@ -131,25 +131,7 @@ export default function CustomerEditPage() {
       {/* HEADER */}
       <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
-            <button
-              onClick={() => navigate("/customers/list")}
-              className="hover:text-blue-600 transition"
-            >
-              Quản lý khách hàng
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px]"></i>
-            <button
-              onClick={() => navigate(`/customers/${id}`)}
-              className="hover:text-blue-600 transition"
-            >
-              Hồ sơ chi tiết
-            </button>
-            <i className="fa-solid fa-chevron-right text-[10px]"></i>
-            <span className="text-gray-900 font-semibold">
-              Cập nhật thông tin
-            </span>
-          </div>
+
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-user-gear text-amber-600"></i> Chỉnh sửa
             khách hàng: {formData.fullName}
@@ -192,7 +174,7 @@ export default function CustomerEditPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                Họ và tên (fullName) <span className="text-rose-500">*</span>
+                Họ và tên <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <i className="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -213,7 +195,7 @@ export default function CustomerEditPage() {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                Số điện thoại (phone) <span className="text-rose-500">*</span>
+                Số điện thoại <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <i className="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -222,7 +204,7 @@ export default function CustomerEditPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold font-mono text-gray-900 transition shadow-sm"
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold text-gray-900 transition shadow-sm"
                 />
               </div>
               {errors.phone && (
@@ -261,7 +243,7 @@ export default function CustomerEditPage() {
                   name="email"
                   value={formData.email || ""}
                   onChange={handleChange}
-                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold font-mono text-gray-900 transition shadow-sm"
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-semibold text-gray-900 transition shadow-sm"
                 />
               </div>
             </div>
@@ -296,13 +278,13 @@ export default function CustomerEditPage() {
               <div className="grid grid-cols-3 gap-3">
                 {["MALE", "FEMALE", "OTHER"].map((g) => (
                   <label
-                    key={g}
+                    key={g === 'MALE' ? 'Nam' : g === 'FEMALE' ? 'Nữ' : 'Khác'}
                     className={`flex items-center justify-center gap-2 p-2.5 border rounded-xl cursor-pointer font-semibold text-xs transition-colors ${formData.gender === g ? "border-blue-200 bg-blue-50/20 text-blue-600" : "border-gray-200 hover:bg-gray-50 text-gray-500"}`}
                   >
                     <input
                       type="radio"
                       name="gender"
-                      value={g}
+                      value={g === 'MALE' ? 'Nam' : g === 'FEMALE' ? 'Nữ' : 'Khác'}
                       checked={formData.gender === g}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 focus:ring-blue-500 hidden"
@@ -311,7 +293,7 @@ export default function CustomerEditPage() {
                       <i
                         className={`fa-solid ${g === "MALE" ? "fa-mars" : g === "FEMALE" ? "fa-venus" : "fa-genderless"}`}
                       ></i>{" "}
-                      {g}
+                      {g === 'MALE' ? 'Nam' : g === 'FEMALE' ? 'Nữ' : 'Khác'}
                     </span>
                   </label>
                 ))}
@@ -319,22 +301,6 @@ export default function CustomerEditPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-              Trạng thái hoạt động <span className="text-rose-500">*</span>
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-bold text-emerald-600 cursor-pointer shadow-sm"
-            >
-              <option value="ACTIVE">ACTIVE (Đang hoạt động)</option>
-              <option value="INACTIVE">
-                INACTIVE (Tạm khóa / Ngừng hoạt động)
-              </option>
-            </select>
-          </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
