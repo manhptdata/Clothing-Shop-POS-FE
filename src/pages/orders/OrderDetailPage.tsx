@@ -280,7 +280,7 @@ export default function OrderDetailPage() {
             </button>
           )}
 
-          {order.status === 'COMPLETED' && user?.role === 'ROLE_ADMIN' && (
+          {order.status === 'COMPLETED' && (user?.role === 'ROLE_ADMIN' || (user?.permissions || []).includes('CANCEL_ORDER')) && (
             <button 
               disabled={isCancelling}
               onClick={handleCancelOrder}
@@ -291,7 +291,7 @@ export default function OrderDetailPage() {
             </button>
           )}
 
-          {order.status === 'COMPLETED' && user?.role === 'ROLE_SALE' && (
+          {order.status === 'COMPLETED' && !((user?.permissions || []).includes('CANCEL_ORDER')) && user?.role !== 'ROLE_ADMIN' && (user?.permissions || []).includes('CREATE_ORDER') && (
             <button 
               onClick={() => setIsCancelRequestModalOpen(true)}
               className="px-md py-sm border border-rose-500 text-rose-500 rounded font-button text-button hover:bg-rose-500/10 flex items-center gap-xs transition-colors"

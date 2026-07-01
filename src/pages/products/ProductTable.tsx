@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { ProductVariant } from '@/types/product.types';
+import { useAppSelector } from '@/redux/hooks';
 
 interface ProductTableProps {
     products: any[];
@@ -9,6 +10,11 @@ interface ProductTableProps {
 }
 
 export default function ProductTable({ products, getVariantStatus, onDelete }: ProductTableProps) {
+    const { user } = useAppSelector((state) => state.auth);
+    const userPerms = user?.permissions || [];
+    const isAdmin = user?.role === 'ROLE_ADMIN';
+    const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
+
     if (products.length === 0) {
         return (
             <div className="text-center py-16 text-on-surface-variant">
@@ -121,7 +127,7 @@ export default function ProductTable({ products, getVariantStatus, onDelete }: P
                                             <Link to={`/products/${product.id}`} className="p-1.5 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem chi tiết">
                                                 <span className="material-symbols-outlined text-sm">visibility</span>
                                             </Link>
-                                            {!product.isDeleted && (
+                                            {hasManageProductPermission && !product.isDeleted && (
                                                 <button
                                                     type="button"
                                                     onClick={() => onDelete(product.id, product.name)}

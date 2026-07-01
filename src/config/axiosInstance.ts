@@ -26,11 +26,19 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response: auto-refresh khi 401
+// Response: auto-refresh khi 401, redirect 403
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Xử lý lỗi 403 - Không có quyền truy cập
+    if (error.response?.status === 403) {
+      if (!window.location.pathname.includes('/restricted') && !window.location.pathname.includes('/403')) {
+        window.location.replace('/restricted');
+      }
+      return Promise.reject(error);
+    }
 
     // Tránh vòng lặp vô tận: không tự động refresh token nếu request bị lỗi chính là login hoặc refresh
     const isAuthRequest = originalRequest?.url?.includes('/auth/login') || originalRequest?.url?.includes('/auth/refresh');

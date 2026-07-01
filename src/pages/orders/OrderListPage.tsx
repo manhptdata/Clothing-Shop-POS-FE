@@ -7,8 +7,15 @@ import { Pagination } from '@/components/ui/Pagination';
 import { useGetOrdersQuery, useGetReturnOrdersQuery } from '@/redux/api/orderApi';
 import type { Order, ReturnOrder } from '@/types/order.types';
 
+import { useAppSelector } from '@/redux/hooks';
+
 export default function OrderListPage() {
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.auth.user);
+  
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasCreateOrderPermission = isAdmin || userPerms.includes('CREATE_ORDER');
 
   // --- Main Tab (Sales vs Returns) ---
   const [mainTab, setMainTab] = useState<'sales' | 'returns'>('sales');
@@ -214,13 +221,15 @@ export default function OrderListPage() {
           <p className="font-body-md text-body-md text-on-surface-variant mt-2">Quản lý giao dịch, hóa đơn bán hàng và phiếu trả hàng của cửa hàng.</p>
         </div>
         <div className="flex gap-sm">
-          <Link to="/orders/new">
-            <Button
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            >
-              Tạo đơn mới (POS)
-            </Button>
-          </Link>
+          {hasCreateOrderPermission && (
+            <Link to="/orders/new">
+              <Button
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              >
+                Tạo đơn mới (POS)
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 

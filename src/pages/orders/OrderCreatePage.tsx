@@ -6,6 +6,9 @@ import { CustomerSelection } from './components/CustomerSelection';
 import { VariantSelectorModal } from './components/VariantSelectorModal';
 import { CreateCustomerModal } from './components/CreateCustomerModal';
 import { ProductSearchAutocomplete } from './components/ProductSearchAutocomplete';
+import { QRTransferModal } from './components/QRTransferModal';
+import { PendingOrdersModal } from './components/PendingOrdersModal';
+import { CartItemsList } from './components/CartItemsList';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -157,112 +160,11 @@ export default function OrderCreatePage() {
 
           {/* Cart Scrolling Container */}
           <div className="bg-white rounded-xl border border-gray-200/80 overflow-y-auto flex-1 shadow-sm flex flex-col relative">
-            {state.cart.length === 0 ? (
-              // Sapo-like Empty State
-              <div className="flex-1 flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-300">
-                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100 shadow-inner">
-                  <span className="material-symbols-outlined text-4xl text-gray-300">inbox</span>
-                </div>
-                <h3 className="text-sm font-bold text-gray-700">Giỏ hàng của bạn đang trống</h3>
-                <p className="text-xs text-gray-400 mt-1 max-w-[280px]">
-                  Vui lòng quét mã barcode hoặc nhấn phím <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-[10px] text-gray-500 font-bold mx-0.5 shadow-sm">F3</kbd> để tìm và chọn sản phẩm đưa vào đơn.
-                </p>
-              </div>
-            ) : (
-              // Selected Products List Rows
-              <div className="divide-y divide-gray-100 flex flex-col">
-                {state.cart.map((item, index) => {
-                  const itemTotal = item.variant.salePrice * item.quantity;
-                  const priceFmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.salePrice);
-                  const totalFmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemTotal);
-
-                  return (
-                    <div
-                      key={item.variant.id}
-                      className="p-3.5 flex justify-between items-center transition-colors hover:bg-gray-50/50"
-                    >
-                      {/* Product details */}
-                      <div className="flex-1 min-w-0 flex gap-3 items-center">
-                        {/* Fallback image */}
-                        <div className="w-10 h-12 bg-gray-50 border border-gray-100 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {item.product.imageUrls && item.product.imageUrls.length > 0 ? (
-                            <img
-                              src={item.product.imageUrls[0]}
-                              alt={item.product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="material-symbols-outlined text-gray-300 text-lg">checkroom</span>
-                          )}
-                        </div>
-
-                        <div className="min-w-0">
-                          <h4 className="text-xs font-bold text-gray-900 truncate" title={item.product.name}>
-                            {item.product.name}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[9px] font-mono text-gray-500 bg-gray-100 px-1 py-0.2 rounded font-semibold uppercase">
-                              {item.variant.sku}
-                            </span>
-                            {item.variant.option1Value && (
-                              <span className="text-[10px] text-gray-500 font-medium">
-                                {item.variant.option1Value.value}
-                              </span>
-                            )}
-                            {item.variant.option2Value && (
-                              <span className="text-[10px] text-gray-500 font-medium">
-                                - {item.variant.option2Value.value}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Unit Price */}
-                      <div className="w-28 text-right text-xs font-bold text-gray-800">
-                        {priceFmt}
-                      </div>
-
-                      {/* Quantity Selector */}
-                      <div className="w-32 flex justify-center items-center gap-1 select-none">
-                        <button
-                          onClick={() => actions.handleUpdateQuantity(item.variant.id!, -1)}
-                          className="w-7 h-7 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-600 rounded-lg flex items-center justify-center font-bold text-sm transition-all"
-                        >
-                          -
-                        </button>
-                        <span className="w-10 text-center font-bold text-xs text-gray-800">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => actions.handleUpdateQuantity(item.variant.id!, 1)}
-                          disabled={item.quantity >= (item.variant.quantity || 999)}
-                          className="w-7 h-7 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-600 rounded-lg flex items-center justify-center font-bold text-sm transition-all disabled:opacity-40 disabled:pointer-events-none"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      {/* Total Line Price */}
-                      <div className="w-28 text-right text-xs font-extrabold text-blue-600">
-                        {totalFmt}
-                      </div>
-
-                      {/* Remove Button */}
-                      <div className="w-12 text-center">
-                        <button
-                          onClick={() => actions.handleRemoveFromCart(item.variant.id!)}
-                          className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-all"
-                          title="Xóa dòng"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <CartItemsList
+              cart={state.cart}
+              handleUpdateQuantity={actions.handleUpdateQuantity}
+              handleRemoveFromCart={actions.handleRemoveFromCart}
+            />
           </div>
 
           {/* AI RECOMMENDATIONS SECTION */}
@@ -417,87 +319,13 @@ export default function OrderCreatePage() {
       </div>
 
       {/* LIGHT-THEMED QR MODAL */}
-      {state.isQRModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => actions.setIsQRModalOpen(false)}
-          />
-          <div className="relative w-full max-w-[360px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-6 pb-4">
-              <div>
-                <h2 className="text-gray-950 text-base font-bold">Chuyển khoản QR</h2>
-                <p className="text-gray-500 text-xs mt-0.5">Quét bằng App ngân hàng bất kỳ</p>
-              </div>
-              <button
-                onClick={() => actions.setIsQRModalOpen(false)}
-                className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-200 transition-all"
-              >
-                <span className="material-symbols-outlined text-[16px]">close</span>
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="mx-6 h-px bg-gray-100" />
-
-            {/* QR Code */}
-            <div className="flex justify-center py-6">
-              <div className="bg-white rounded-2xl p-2 shadow border border-gray-100">
-                <img
-                  src={`https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=${state.total}&addInfo=Thanh toan don POS&accountName=SHOP QUAN AO`}
-                  alt="Mã QR"
-                  className="w-[200px] h-[220px] object-contain rounded-lg"
-                />
-              </div>
-            </div>
-
-            {/* Bank + Amount */}
-            <div className="mx-6 mb-5 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200/80">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Đến tài khoản</p>
-                  <p className="text-gray-800 text-xs font-bold">MB Bank · 0987654321</p>
-                  <p className="text-gray-500 text-[10px] font-semibold mt-0.5">SHOP QUAN AO</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Số tiền</p>
-                  <p className="text-blue-600 font-extrabold text-base">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(state.total)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 px-6 pb-6">
-              <button
-                onClick={() => actions.setIsQRModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all border border-gray-200"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={actions.confirmCheckout}
-                disabled={state.isCreatingOrder}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#2ecc71] hover:bg-[#27ae60] disabled:opacity-60 text-white text-xs font-bold rounded-xl py-2.5 transition-all shadow"
-              >
-                {state.isCreatingOrder ? (
-                  <>
-                    <span className="material-symbols-outlined animate-spin text-[15px]">sync</span>
-                    Đang xử lý...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-[15px]">check_circle</span>
-                    Xác nhận đã nhận tiền
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <QRTransferModal
+        isOpen={state.isQRModalOpen}
+        onClose={() => actions.setIsQRModalOpen(false)}
+        total={state.total}
+        isCreatingOrder={state.isCreatingOrder}
+        confirmCheckout={actions.confirmCheckout}
+      />
 
       {/* MOCK CUSTOM PRODUCT DIALOG (F2) */}
       {isCustomProductOpen && (
@@ -592,110 +420,17 @@ export default function OrderCreatePage() {
         groups={state.groups}
       />
 
-      {/* MODAL 3: PENDING ORDERS LIST */}
-      {state.isPendingOrdersModalOpen && (
-        <Modal
-          isOpen={state.isPendingOrdersModalOpen}
-          onClose={() => actions.setIsPendingOrdersModalOpen(false)}
-          title="Đơn hàng chờ thanh toán"
-          size="full"
-        >
-          {state.pendingOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">receipt_long</span>
-              <p className="text-sm font-semibold">Không có đơn hàng chờ nào</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto min-h-[300px] bg-white rounded-xl border border-gray-200 shadow-sm">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200 text-gray-500 font-bold text-xs uppercase bg-gray-50">
-                    <th className="py-3.5 px-4">Mã đơn hàng</th>
-                    <th className="py-3.5 px-4">Khách hàng</th>
-                    <th className="py-3.5 px-4">Tổng tiền</th>
-                    <th className="py-3.5 px-4">Ngày tạo</th>
-                    <th className="py-3.5 px-4">Ghi chú</th>
-                    <th className="py-3.5 px-4 text-right">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-gray-800 text-xs">
-                  {state.pendingOrders.map((order: any) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-blue-600">{order.orderNumber}</td>
-                      <td className="py-3.5 px-4 font-bold">{order.customerName || 'Khách lẻ'}</td>
-                      <td className="py-3.5 px-4 font-extrabold text-green-600">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-500">
-                        {new Date(order.createdAt).toLocaleString('vi-VN')}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-500 max-w-[150px] truncate">{order.note || '-'}</td>
-                      <td className="py-3.5 px-4 text-right flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-red-50 hover:bg-red-100 text-red-600 border-red-200 text-xs py-1 px-3 h-8 font-semibold"
-                          onClick={() => actions.setOrderIdToCancel(order.id)}
-                          disabled={state.isCancellingOrder}
-                        >
-                          Hủy đơn
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-[#2ecc71] hover:bg-[#27ae60] text-white text-xs py-1 px-3 h-8 font-bold"
-                          onClick={() => actions.handleResumePendingOrder(order)}
-                        >
-                          Tiếp tục
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Modal>
-      )}
-
-      {/* MODAL 4: CANCEL CONFIRMATION */}
-      {state.orderIdToCancel !== null && (
-        <Modal
-          isOpen={true}
-          onClose={() => actions.setOrderIdToCancel(null)}
-          title="Xác nhận hủy đơn"
-          size="sm"
-        >
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-gray-600">
-              Bạn có chắc chắn muốn hủy đơn hàng chờ này không? Thao tác này không thể hoàn tác.
-            </p>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => actions.setOrderIdToCancel(null)}
-                className="font-semibold text-gray-500"
-              >
-                Bỏ qua
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                className="bg-red-600 hover:bg-red-700 text-white font-bold border-none"
-                onClick={async () => {
-                  const id = state.orderIdToCancel;
-                  actions.setOrderIdToCancel(null);
-                  if (id) {
-                    await actions.handleCancelPendingOrder(id);
-                  }
-                }}
-              >
-                Hủy đơn hàng
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      {/* MODAL 3 & 4: PENDING ORDERS LIST & CANCEL CONFIRMATION */}
+      <PendingOrdersModal
+        isOpen={state.isPendingOrdersModalOpen}
+        onClose={() => actions.setIsPendingOrdersModalOpen(false)}
+        pendingOrders={state.pendingOrders}
+        isCancellingOrder={state.isCancellingOrder}
+        orderIdToCancel={state.orderIdToCancel}
+        setOrderIdToCancel={actions.setOrderIdToCancel}
+        handleResumePendingOrder={actions.handleResumePendingOrder}
+        handleCancelPendingOrder={actions.handleCancelPendingOrder}
+      />
     </div>
   );
 }

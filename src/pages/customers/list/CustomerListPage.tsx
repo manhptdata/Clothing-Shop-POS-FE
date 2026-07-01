@@ -8,6 +8,7 @@ import {
   useImportCustomersMutation
 } from "@/redux/api/customerApi";
 import type { Customer, CustomerVoucher, CustomerWithEmail } from "@/types/customer.types";
+import { useAppSelector } from "@/redux/hooks";
 import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +18,10 @@ import { Modal } from "@/components/ui/Modal";
 
 export default function CustomerListPage() {
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasManageCustomerPermission = isAdmin || userPerms.includes('MANAGE_CUSTOMER');
 
   const [keyword, setKeyword] = useState("");
   const [size, setSize] = useState(10);
@@ -244,15 +249,19 @@ export default function CustomerListPage() {
           <button
             onClick={() => navigate(`/customers/${row.id}`)}
             className="p-1.5 bg-gray-50 text-gray-400 hover:text-blue-600 rounded-lg transition border border-gray-200"
+            title="Xem chi tiết"
           >
             <i className="fa-solid fa-eye text-xs"></i>
           </button>
-          <button
-            onClick={() => handleToggleStatus(row.id, row.status, row.fullName)}
-            className="p-1.5 bg-gray-50 text-gray-400 hover:text-rose-600 rounded-lg transition border border-gray-200"
-          >
-            <i className="fa-solid fa-user-slash text-xs"></i>
-          </button>
+          {hasManageCustomerPermission && (
+            <button
+              onClick={() => handleToggleStatus(row.id, row.status, row.fullName)}
+              className="p-1.5 bg-gray-50 text-gray-400 hover:text-rose-600 rounded-lg transition border border-gray-200"
+              title="Đổi trạng thái"
+            >
+              <i className="fa-solid fa-user-slash text-xs"></i>
+            </button>
+          )}
         </div>
       )
     }
@@ -279,27 +288,33 @@ export default function CustomerListPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <input 
-            type="file" 
-            accept=".xlsx, .xls" 
-            ref={fileInputRef} 
-            className="hidden" 
-            onChange={handleFileChange} 
-          />
-          <Button 
-            variant="outline" 
-            onClick={() => fileInputRef.current?.click()}
-            isLoading={isImporting}
-            leftIcon={<i className="fa-solid fa-file-import"></i>}
-          >
-            Nhập Excel
-          </Button>
+          {hasManageCustomerPermission && (
+            <>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                ref={fileInputRef} 
+                className="hidden" 
+                onChange={handleFileChange} 
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => fileInputRef.current?.click()}
+                isLoading={isImporting}
+                leftIcon={<i className="fa-solid fa-file-import"></i>}
+              >
+                Nhập Excel
+              </Button>
+            </>
+          )}
           <Button variant="outline" onClick={handleSearch}>
             Tìm kiếm
           </Button>
-          <Button variant="primary" onClick={() => navigate("/customers/new")} leftIcon={<i className="fa-solid fa-user-plus"></i>}>
-            Thêm mới
-          </Button>
+          {hasManageCustomerPermission && (
+            <Button variant="primary" onClick={() => navigate("/customers/new")} leftIcon={<i className="fa-solid fa-user-plus"></i>}>
+              Thêm mới
+            </Button>
+          )}
         </div>
       </div>
 

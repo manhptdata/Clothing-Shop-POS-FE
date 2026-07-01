@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { useNotifications, NotificationItem } from '@/providers/NotificationProvider';
+import { ROLE_LABEL } from '@/utils/constants';
 
 export default function Header() {
   const user = useAppSelector((state) => state.auth.user);
@@ -213,10 +214,7 @@ export default function Header() {
               <div className="text-right hidden md:block">
                 <p className="font-semibold text-sm text-on-surface leading-tight">{user.fullName}</p>
                 <p className="text-xs text-on-surface-variant/80">
-                  {user.role === 'ROLE_ADMIN' && 'Quản trị viên'}
-                  {user.role === 'ROLE_SALE' && 'Bán hàng'}
-                  {user.role === 'ROLE_CS' && 'Chăm sóc khách hàng'}
-                  {user.role === 'ROLE_WH' && 'Quản lý kho'}
+                  {ROLE_LABEL[user.role] || user.role.replace(/^ROLE_/, '').replace(/_/g, ' ')}
                 </p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-[#18754a] text-on-primary flex items-center justify-center font-bold text-sm shadow-sm">

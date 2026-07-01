@@ -27,9 +27,10 @@ export const RETURN_STATUS_LABEL: Record<string, string> = {
 
 /** Mapping RoleEnum → tiếng Việt */
 export const ROLE_LABEL: Record<string, string> = {
-  ADMIN: 'Quản trị viên',
-  MANAGER: 'Quản lý',
-  STAFF: 'Nhân viên',
+  ROLE_ADMIN: 'Quản lý',
+  ROLE_SALE: 'Bán hàng',
+  ROLE_CS: 'CSKH',
+  ROLE_WH: 'Kho',
 };
 
 /** Mapping CustomerStatus → tiếng Việt */

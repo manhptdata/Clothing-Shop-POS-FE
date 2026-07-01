@@ -1,10 +1,27 @@
 import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 
 import AuthLayout from '@/components/layouts/AuthLayout';
 import MainLayout from '@/components/layouts/MainLayout/MainLayout';
 import PrivateRoute from './PrivateRoute';
-import RoleRoute from './RoleRoute';
+import PermissionRoute, { getDefaultRouteForPermissions } from './PermissionRoute';
+import { useAppSelector } from '@/redux/hooks';
+
+// Helper component to redirect root / to the default page for user's permissions
+function IndexRedirect() {
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  const userRole = user?.role || '';
+  const userPermissions = user?.permissions || [];
+  const defaultRoute = getDefaultRouteForPermissions(userPermissions, userRole);
+  
+  return <Navigate to={defaultRoute} replace />;
+}
 
 // ── Lazy load features ────────────────────────────────────────────────────────
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -52,6 +69,13 @@ const UserListPage = lazy(() => import('@/pages/users/UserListPage'));
 const UserFormPage = lazy(() => import('@/pages/users/UserFormPage'));
 const ShiftHistoryPage = lazy(() => import('@/pages/shifts/ShiftHistoryPage'));
 
+// Settings
+const RoleSettingsPage = lazy(() => import('@/pages/settings/roles/RoleSettingsPage'));
+
+// Error Pages
+const NotFoundPage = lazy(() => import('@/pages/errors/NotFoundPage'));
+const ForbiddenPage = lazy(() => import('@/pages/errors/ForbiddenPage'));
+
 // ── Route Config ──────────────────────────────────────────────────────────────
 export const routes: RouteObject[] = [
   // Public Routes
@@ -59,6 +83,8 @@ export const routes: RouteObject[] = [
     element: <AuthLayout />,
     children: [{ path: "login", element: <LoginPage /> }],
   },
+  // Standalone error pages (accessible without auth)
+  { path: "/403", element: <ForbiddenPage /> },
   // Protected Routes
   {
     element: <PrivateRoute />,
@@ -66,40 +92,52 @@ export const routes: RouteObject[] = [
       {
         element: <MainLayout />,
         children: [
+           // Index redirect
+          { index: true, element: <IndexRedirect /> },
+
           // Dashboard (Admin)
           {
-            element: <RoleRoute allowedRoles={["ROLE_ADMIN"]} />,
+            element: <PermissionRoute allowedPermissions={["VIEW_REPORT"]} />,
             children: [
-              { index: true, element: <DashboardPage /> },
               { path: "dashboard", element: <DashboardPage /> },
             ],
           },
 
           // Products, Suppliers & Warehouse (Admin, Kho)
           {
-            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_WH"]} />,
+            element: <PermissionRoute allowedPermissions={["VIEW_PRODUCT", "VIEW_CATEGORY", "VIEW_RECEIPT", "VIEW_SUPPLIER"]} />,
             children: [
               { path: "products", element: <ProductListPage /> },
-              { path: "products/new", element: <ProductFormPage /> },
               { path: "products/:id", element: <ProductDetailPage /> },
-              { path: "products/:id/edit", element: <ProductFormPage /> },
               { path: "products/categories", element: <CategoryListPage /> },
               { path: "suppliers", element: <SupplierListPage /> },
               // Warehouse / Nhập kho
               { path: "warehouse/receipts", element: <ReceiptListPage /> },
-              { path: "warehouse/receipts/new", element: <ReceiptCreatePage /> },
               { path: "warehouse/receipts/:id", element: <ReceiptDetailPage /> },
-              { path: "warehouse/receipts/:id/edit", element: <ReceiptUpdatePage /> },
               { path: "warehouse/stock-history", element: <StockHistoryPage /> },
             ],
           },
+          // Products management
+          {
+            element: <PermissionRoute allowedPermissions={["MANAGE_PRODUCT"]} />,
+            children: [
+              { path: "products/new", element: <ProductFormPage /> },
+              { path: "products/:id/edit", element: <ProductFormPage /> },
+            ],
+          },
+          // Warehouse receipts management
+          {
+            element: <PermissionRoute allowedPermissions={["MANAGE_RECEIPT"]} />,
+            children: [
+              { path: "warehouse/receipts/new", element: <ReceiptCreatePage /> },
+              { path: "warehouse/receipts/:id/edit", element: <ReceiptUpdatePage /> },
+            ],
+          },
 
-          // Customers (Admin, Sale, CS)
+          // Customers - xem danh sách (Sale, CS, Admin)
           {
             element: (
-              <RoleRoute
-                allowedRoles={["ROLE_ADMIN", "ROLE_SALE", "ROLE_CS"]}
-              />
+              <PermissionRoute allowedPermissions={["VIEW_CUSTOMER"]} />
             ),
             children: [
               {
@@ -107,52 +145,69 @@ export const routes: RouteObject[] = [
                 children: [
                   { index: true, element: <CustomerCenterPage /> },
                   { path: "list", element: <CustomerListPage /> },
-                  { path: "new", element: <CustomerFormPage /> },
                   { path: ":id", element: <CustomerDetailPage /> },
-                  { path: "edit/:id", element: <CustomerEditPage /> },
+                  { path: "care/history", element: <CareLogListPage /> },
+                  { path: "care/history/:id", element: <CareHistoryDetailPage /> },
+                  { path: "care/history/log/:id", element: <CareLogDetailPage /> },
+                  { path: "care/create/:customerId", element: <CareLogCreatePage /> },
+                  { path: "care/history/log/:id/edit", element: <CareLogEditPage /> },
+                ],
+              },
+            ],
+          },
+          // Customers creation (Sale, CS, Admin)
+          {
+            element: <PermissionRoute allowedPermissions={["MANAGE_CUSTOMER", "CREATE_ORDER"]} />,
+            children: [
+              { path: "customers/new", element: <CustomerFormPage /> },
+            ],
+          },
+          // Customers edit (Admin, CS)
+          {
+            element: <PermissionRoute allowedPermissions={["MANAGE_CUSTOMER"]} />,
+            children: [
+              { path: "customers/edit/:id", element: <CustomerEditPage /> },
+            ],
+          },
+
+          // Customer Groups & Campaigns - chỉ MANAGE_CUSTOMER / VIEW_CAMPAIGN (Admin, CS)
+          {
+            element: (
+              <PermissionRoute allowedPermissions={["MANAGE_CUSTOMER", "VIEW_CAMPAIGN"]} />
+            ),
+            children: [
+              {
+                path: "customers",
+                children: [
                   { path: "groups", element: <CustomerGroupListPage /> },
                   { path: "groups/vouchers", element: <VoucherListPage /> },
                   { path: "groups/:id", element: <CustomerGroupDetailPage /> },
-                  {
-                    path: "groups/:id/members",
-                    element: <CustomerGroupMembersPage />,
-                  },
+                  { path: "groups/:id/members", element: <CustomerGroupMembersPage /> },
                   { path: "care/campaigns", element: <CampaignListPage /> },
-                  {
-                    path: "care/history/:id",
-                    element: <CareHistoryDetailPage />,
-                  },
-                  { path: "care/history", element: <CareLogListPage /> },
-                  {
-                    path: "care/history/log/:id",
-                    element: <CareLogDetailPage />,
-                  },
-                  {
-                    path: "care/create/:customerId",
-                    element: <CareLogCreatePage />,
-                  },
-                  {
-                    path: "care/history/log/:id/edit",
-                    element: <CareLogEditPage />,
-                  },
                 ],
               },
             ],
           },
 
-          // Orders (Admin, Sale)
+          // Orders List & Details (Admin, Sale, CS with VIEW_ORDER or CREATE_ORDER)
           {
-            element: <RoleRoute allowedRoles={["ROLE_ADMIN", "ROLE_SALE"]} />,
+            element: <PermissionRoute allowedPermissions={["VIEW_ORDER", "CREATE_ORDER"]} />,
             children: [
               { path: "orders", element: <OrderListPage /> },
-              { path: "orders/new", element: <OrderCreatePage /> },
               { path: "orders/:id", element: <OrderDetailPage /> },
+            ],
+          },
+          // Create Order (Admin, Sale with CREATE_ORDER)
+          {
+            element: <PermissionRoute allowedPermissions={["CREATE_ORDER"]} />,
+            children: [
+              { path: "orders/new", element: <OrderCreatePage /> },
             ],
           },
 
           // Users (Admin ONLY)
           {
-            element: <RoleRoute allowedRoles={["ROLE_ADMIN"]} />,
+            element: <PermissionRoute allowedPermissions={["MANAGE_USER", "VIEW_SHIFT"]} />,
             children: [
               { path: "users", element: <UserListPage /> },
               { path: "users/new", element: <UserFormPage /> },
@@ -160,10 +215,22 @@ export const routes: RouteObject[] = [
               { path: "shifts/history", element: <ShiftHistoryPage /> },
             ],
           },
+
+          // Settings (Admin & Managers)
+          {
+            element: <PermissionRoute allowedPermissions={["MANAGE_ROLE"]} />,
+            children: [
+              { path: "settings/roles", element: <RoleSettingsPage /> },
+            ],
+          },
+          // Error page for Backend 403 (with layout)
+          { path: "restricted", element: <ForbiddenPage /> },
         ],
       },
     ],
   },
-  // Fallback
-  { path: "*", element: <DashboardPage /> },
+  // Fallback: 404 for any unmatched route
+  { path: "*", element: <NotFoundPage /> },
 ];
+
+export { ForbiddenPage };

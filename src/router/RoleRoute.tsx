@@ -1,29 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
-import { RoleEnum } from '@/types/auth.types';
 import { useEffect, useState } from 'react';
 import { useLazyGetAccountQuery } from '@/redux/api/authApi';
+import { getDefaultRouteForPermissions } from './PermissionRoute';
 
-export const getDefaultRouteForRole = (role: RoleEnum): string => {
-  switch (role) {
-    case 'ROLE_ADMIN':
-      return '/dashboard';
-    case 'ROLE_SALE':
-      return '/orders/new';
-    case 'ROLE_CS':
-      return '/customers';
-    case 'ROLE_WH':
-      return '/products';
-    default:
-      return '/login';
-  }
-};
-
-interface RoleRouteProps {
-  allowedRoles: RoleEnum[];
-}
-
-export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
+export default function RoleRoute() {
   const { user, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
   const [isInitializing, setIsInitializing] = useState(!user && isAuthenticated);
   const [triggerGetAccount] = useLazyGetAccountQuery();
@@ -48,10 +29,14 @@ export default function RoleRoute({ allowedRoles }: RoleRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user && !allowedRoles.includes(user.role)) {
-    // Chuyển hướng động về trang chủ tương ứng của vai trò
-    return <Navigate to={getDefaultRouteForRole(user.role)} replace />;
-  }
-
   return <Outlet />;
 }
+
+/**
+ * Trả về route mặc định cho user dựa trên permissions từ JWT token.
+ * Admin (ROLE_ADMIN) luôn về /dashboard.
+ */
+export const getDefaultRouteForRole = (role: string, permissions: string[] = []): string => {
+  if (role === 'ROLE_ADMIN') return '/dashboard';
+  return getDefaultRouteForPermissions(permissions);
+};

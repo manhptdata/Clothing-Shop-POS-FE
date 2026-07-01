@@ -123,7 +123,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
           <select
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
-            className="w-full pl-3 pr-10 py-2.5 bg-white border border-outline/20 rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer hover:border-outline/40 transition-colors"
+            className="w-full pl-3 pr-2 py-2.5 bg-white border border-outline/20 rounded-lg font-body-sm text-body-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer hover:border-outline/40 transition-colors"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -131,9 +131,6 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               </option>
             ))}
           </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[18px] pointer-events-none">
-            filter_list
-          </span>
         </div>
       </div>
 

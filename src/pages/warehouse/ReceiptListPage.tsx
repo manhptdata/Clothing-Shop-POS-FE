@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useGetReceiptsQuery } from '@/redux/api/receiptApi';
+import { useAppSelector } from '@/redux/hooks';
 
 const fmtDate = (val?: string | null) => {
     if (!val) return '—';
@@ -21,6 +22,11 @@ import { Input } from '@/components/ui/Input';
 
 export default function ReceiptListPage() {
     const navigate = useNavigate();
+    const { user } = useAppSelector((state) => state.auth);
+    const userPerms = user?.permissions || [];
+    const isAdmin = user?.role === 'ROLE_ADMIN';
+    const hasManageReceiptPermission = isAdmin || userPerms.includes('MANAGE_RECEIPT');
+
     const [page, setPage] = useState(0);
     const [status, setStatus] = useState<string>('');
     const [search, setSearch] = useState<string>('');
@@ -62,12 +68,14 @@ export default function ReceiptListPage() {
                         Quản lý việc nhập hàng vào kho từ nhà cung cấp.
                     </p>
                 </div>
-                <Button
-                    onClick={() => navigate('/warehouse/receipts/new')}
-                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-                >
-                    Tạo phiếu nhập
-                </Button>
+                {hasManageReceiptPermission && (
+                    <Button
+                        onClick={() => navigate('/warehouse/receipts/new')}
+                        leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                    >
+                        Tạo phiếu nhập
+                    </Button>
+                )}
             </div>
 
             {/* TÌM KIẾM & BỘ LỌC */}
@@ -92,13 +100,12 @@ export default function ReceiptListPage() {
                             setStatus(e.target.value);
                             setPage(0); // Reset page on filter
                         }}
-                        className="w-full pl-4 pr-10 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm appearance-none cursor-pointer transition-all"
+                        className="w-full pl-4 pr-4 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm cursor-pointer transition-all"
                     >
                         {statusOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
-                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">filter_list</span>
                 </div>
             </div>
 
@@ -117,14 +124,16 @@ export default function ReceiptListPage() {
                     <div className="py-24 text-center text-on-surface-variant">
                         <span className="material-symbols-outlined text-4xl mb-2 text-outline/50">inbox</span>
                         <p className="text-body-md">Chưa có phiếu nhập nào.</p>
-                        <Button
-                            className="mt-4"
-                            size="sm"
-                            onClick={() => navigate('/warehouse/receipts/new')}
-                            leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
-                        >
-                            Tạo phiếu nhập đầu tiên
-                        </Button>
+                        {hasManageReceiptPermission && (
+                            <Button
+                                className="mt-4"
+                                size="sm"
+                                onClick={() => navigate('/warehouse/receipts/new')}
+                                leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+                            >
+                                Tạo phiếu nhập đầu tiên
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
