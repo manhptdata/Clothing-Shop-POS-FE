@@ -134,14 +134,14 @@ export default function CustomerListPage() {
       key: "id",
       header: "STT",
       className: "text-center w-12",
-      render: (row) => <span className="text-gray-500 font-mono text-[11px] font-semibold">{row.stt}</span>
+      render: (row) => <span className="text-gray-500 text-[11px] font-semibold">{row.stt}</span>
     },
     {
       key: "fullName",
       header: "Khách hàng",
       render: (row) => (
         <span
-          className="font-bold text-gray-900 hover:text-gray-700 cursor-pointer transition-colors"
+          className="font-bold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors inline-block"
           onClick={() => navigate(`/customers/${row.id}`)}
         >
           {row.fullName}
@@ -151,41 +151,9 @@ export default function CustomerListPage() {
     {
       key: "phone",
       header: "Số điện thoại",
-      render: (row) => <span className="font-mono text-gray-900 font-semibold">{row.phone}</span>
+      render: (row) => <span className="text-gray-900 font-semibold">{row.phone}</span>
     },
-    {
-      key: "email",
-      header: "Email",
-      render: (row) => {
-        const customer = row as CustomerWithEmail;
-        return (
-          <span className="text-gray-600 text-[13px] font-medium">
-            {customer.email ? (
-              <div className="flex items-center gap-1.5">
-                <i className="fa-regular fa-envelope text-gray-400 text-[11px]"></i>
-                {customer.email}
-              </div>
-            ) : (
-              <span className="text-gray-400 italic font-normal">---</span>
-            )}
-          </span>
-        );
-      }
-    },
-    {
-      key: "info",
-      header: "Thông tin",
-      render: (row) => (
-        <div className="font-normal text-gray-500 flex flex-col lg:flex-row lg:items-center gap-1.5">
-          <span className="inline-flex items-center gap-1 whitespace-nowrap">
-            <i className="fa-solid fa-cake-candles text-gray-400 text-[10px]"></i> {row.dateOfBirth}
-          </span>
-          <span className="font-bold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded text-[10px] w-fit">
-            {row.gender}
-          </span>
-        </div>
-      )
-    },
+
     {
       key: "group",
       header: "Hạng",
@@ -198,9 +166,20 @@ export default function CustomerListPage() {
 
         const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
         return (
-          <Badge variant={variant as any}>
-            {code}
-          </Badge>
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (cus.customerGroup?.id) {
+                navigate(`/customers/groups/${cus.customerGroup.id}`);
+              }
+            }}
+            className="cursor-pointer hover:opacity-80 transition-opacity inline-block"
+            title="Xem chi tiết cấu hình hạng thẻ"
+          >
+            <Badge variant={variant as any}>
+              {code === 'BRONZE' ? 'Đồng' : code === 'SILVER' ? 'Bạc' : code === 'GOLD' ? 'Vàng' : code}
+            </Badge>
+          </div>
         );
       }
     },
@@ -208,11 +187,12 @@ export default function CustomerListPage() {
       key: "points",
       header: "Điểm tích lũy",
       render: (row) => (
-        <span className="flex items-center gap-1 text-[11px] font-mono font-semibold text-gray-800">
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-800">
           <i className="fa-solid fa-star text-yellow-400"></i> {row.rewardPoints?.toLocaleString() || 0}
         </span>
       )
     },
+
     {
       key: "vouchers",
       header: "Ưu đãi",
@@ -226,24 +206,13 @@ export default function CustomerListPage() {
       )
     },
     {
-      key: "address",
-      header: "Địa chỉ & Ghi chú",
-      className: "max-w-xs",
+      key: "note",
+      header: "Ghi chú",
+      className: "max-w-[150px]",
       render: (row) => (
-        <div className="text-gray-600 truncate">
-          <div className="text-gray-900 truncate">{row.address}</div>
-          <div className="text-gray-400 italic text-[11px] mt-0.5">{row.note || "Không có ghi chú"}</div>
+        <div className="text-gray-500 italic text-[12px] truncate" title={row.note || ""}>
+          {row.note || "---"}
         </div>
-      )
-    },
-    {
-      key: "status",
-      header: "Trạng thái",
-      className: "text-center w-28",
-      render: (row) => (
-        <Badge variant={row.status === "ACTIVE" ? "success" : "danger"}>
-          {row.status}
-        </Badge>
       )
     },
     {
@@ -360,7 +329,7 @@ export default function CustomerListPage() {
               selectedVoucherData.vouchers.map((v) => (
                 <div key={v.id} className="relative bg-gradient-to-r from-red-50 to-pink-50 border border-red-200/80 rounded-xl p-3 flex justify-between shadow-sm">
                   <div className="pl-2 space-y-0.5">
-                    <span className="font-mono text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">{v.voucherCode}</span>
+                    <span className="text-[10px] font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded">{v.voucherCode}</span>
                     <div className="text-xs font-bold text-gray-900 mt-1">{v.voucherName}</div>
                     <div className="text-sm font-black text-red-600">Giảm: {v.discountAmount.toLocaleString()}đ</div>
                   </div>

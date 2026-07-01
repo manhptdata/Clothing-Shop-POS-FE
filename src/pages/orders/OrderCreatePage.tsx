@@ -69,7 +69,7 @@ export default function OrderCreatePage() {
 
   return (
     <div className="h-screen flex flex-col bg-[#f0f2f5] overflow-hidden font-sans antialiased text-gray-800">
-      
+
       {/* WHITE POS HEADER */}
       <header className="h-[56px] bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0 z-30">
         <div className="flex items-center gap-4">
@@ -105,7 +105,7 @@ export default function OrderCreatePage() {
             <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-amber-100 border border-amber-200 rounded-full text-amber-700 text-[10px] font-bold uppercase tracking-wider select-none">
               <span className="material-symbols-outlined text-[12px]">edit</span>
               Đơn chờ: {state.pendingOrderNumber}
-              <button 
+              <button
                 onClick={actions.clearPOSState}
                 className="text-amber-500 hover:text-amber-800 ml-1 font-black transition-colors"
                 title="Hủy sửa"
@@ -130,10 +130,10 @@ export default function OrderCreatePage() {
 
       {/* POS WORKSPACE BODY */}
       <div className="flex-1 flex overflow-hidden">
-        
+
         {/* LEFT WORKSPACE (Cart items list and bottom control bar) */}
         <main className="flex-1 flex flex-col p-4 gap-3 overflow-hidden h-full">
-          
+
           {/* Grid column header row */}
           <div className="bg-white rounded-xl border border-gray-200/80 p-3.5 flex justify-between items-center text-xs text-gray-400 font-bold flex-shrink-0 shadow-sm">
             <div className="flex-1 min-w-0 flex items-center gap-2">
@@ -519,7 +519,7 @@ export default function OrderCreatePage() {
                 autoFocus
                 className="bg-white border-gray-300 text-gray-900 text-xs"
               />
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <Input
                   label="Giá bán (VND)"

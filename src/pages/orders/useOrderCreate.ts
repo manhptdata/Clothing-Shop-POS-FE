@@ -49,18 +49,18 @@ export function useOrderCreate() {
   // --- Computed Products ---
   const products = productData?.data?.content || [];
   const categories = ['Tất cả', ...new Set(products.map(p => p.category?.name).filter(Boolean) as string[])];
-  
+
   const filteredProducts = products.filter(p => {
     const matchesCategory = activeCategory === 'Tất cả' || p.category?.name === activeCategory;
-    
+
     if (!searchProductQuery.trim()) {
       return matchesCategory;
     }
-    
+
     const query = searchProductQuery.toLowerCase().trim();
     const matchesName = p.name.toLowerCase().includes(query);
     const matchesSku = p.variants?.some(v => v.sku?.toLowerCase().includes(query));
-    
+
     return matchesName || matchesSku;
   });
 
@@ -128,8 +128,8 @@ export function useOrderCreate() {
         note: checkout.note || undefined,
         status: 'PENDING' as any,
         pointsToUse: customer.customerType === 'MEMBER' ? discounts.pointsToUse : 0,
-        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode) 
-          ? discounts.voucherCode.trim() 
+        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode)
+          ? discounts.voucherCode.trim()
           : undefined,
         items: cart.cart.map(item => ({
           variantId: item.variant.id as number,
@@ -210,8 +210,8 @@ export function useOrderCreate() {
         note: checkout.note || undefined,
         status: 'COMPLETED' as any,
         pointsToUse: customer.customerType === 'MEMBER' ? discounts.pointsToUse : 0,
-        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode) 
-          ? discounts.voucherCode.trim() 
+        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode)
+          ? discounts.voucherCode.trim()
           : undefined,
         items: cart.cart.map(item => ({
           variantId: item.variant.id as number,
@@ -229,7 +229,7 @@ export function useOrderCreate() {
       }
       checkout.setIsQRModalOpen(false);
       clearPOSState();
-      
+
       if (checkout.autoPrint) {
         navigate(`/orders/${response.data.id}?print=true`);
       } else {
