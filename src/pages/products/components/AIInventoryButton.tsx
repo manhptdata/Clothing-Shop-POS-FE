@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import toast from 'react-hot-toast';
 
-import { env } from '@/config/env';
+import { ENV } from '@/config/env';
 
 export const AIInventoryButton = () => {
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export const AIInventoryButton = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${env.API_BASE_URL}/api/ai/inventory-report`, {
+      const response = await fetch(`${ENV.API_BASE_URL}/api/ai/inventory-report`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({ prompt: prompt, days: days }),
