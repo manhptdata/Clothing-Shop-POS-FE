@@ -52,7 +52,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             id={selectId}
             disabled={disabled}
             onChange={handleChange}
-            className={`w-full bg-transparent border font-body-md text-body-md p-2 rounded transition-colors focus:outline-none focus:ring-1 appearance-none pr-10
+            className={`w-full bg-transparent border font-body-md text-body-md p-2 rounded transition-colors focus:outline-none focus:ring-1 pr-10
               ${
                 error
                   ? 'border-error focus:border-error focus:ring-error text-error placeholder:text-error/60'
@@ -74,9 +74,6 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-on-surface-variant">
-            <span className="material-symbols-outlined text-[20px]">expand_more</span>
-          </div>
         </div>
         {(error || helperText) && (
           <p className={`font-body-sm text-body-sm ${error ? 'text-error' : 'text-on-surface-variant'}`}>

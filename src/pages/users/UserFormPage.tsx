@@ -7,7 +7,8 @@ import {
   useUpdateUserMutation,
   useToggleUserActiveMutation 
 } from '@/redux/api/userApi';
-import type { RoleEnum } from '@/types/auth.types';
+import { useGetRolesQuery } from '@/redux/api/roleApi';
+import { ROLE_LABEL } from '@/utils/constants';
 
 export default function UserFormPage() {
   const { id } = useParams();
@@ -26,9 +27,12 @@ export default function UserFormPage() {
     fullName: '',
     username: '',
     password: '',
-    role: 'ROLE_SALE' as RoleEnum,
+    roleId: 0,
     phone: '',
   });
+
+  const { data: rolesData, isLoading: isLoadingRoles } = useGetRolesQuery();
+  const roles = rolesData?.data || [];
 
   const [active, setActive] = useState(true);
 
@@ -39,12 +43,18 @@ export default function UserFormPage() {
         fullName: employee.fullName || '',
         username: employee.username || '',
         password: '', // We don't load password
-        role: employee.role || 'ROLE_SALE',
+        roleId: 0, // This needs to be matched by name or returned by API. If API only returns roleName, we have to find it.
         phone: employee.phone || '',
       });
+      if (rolesData?.data) {
+        const foundRole = rolesData.data.find(r => r.name === employee.role);
+        if (foundRole) {
+          setFormData(prev => ({ ...prev, roleId: foundRole.id }));
+        }
+      }
       setActive(employee.active);
     }
-  }, [employee, isEdit]);
+  }, [employee, isEdit, rolesData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -59,7 +69,7 @@ export default function UserFormPage() {
         const payload = {
           fullName: formData.fullName,
           phone: formData.phone,
-          role: formData.role,
+          roleId: Number(formData.roleId),
         };
         await updateUser({ id: userId, data: payload }).unwrap();
         // Cập nhật trạng thái nếu thay đổi
@@ -79,7 +89,7 @@ export default function UserFormPage() {
           username: formData.username,
           password: formData.password,
           phone: formData.phone,
-          role: formData.role,
+          roleId: Number(formData.roleId),
         };
         await createUser(payload).unwrap();
         toast.success('Tạo nhân viên mới thành công!');
@@ -90,7 +100,7 @@ export default function UserFormPage() {
     }
   };
 
-  if (isEdit && isLoading) {
+  if ((isEdit && isLoading) || isLoadingRoles) {
     return <div className="p-10 text-center text-on-surface-variant font-medium">Đang tải thông tin...</div>;
   }
 
@@ -158,17 +168,16 @@ export default function UserFormPage() {
               <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Vai trò</label>
               <div className="relative">
                 <select
-                  name="role"
-                  value={formData.role}
+                  name="roleId"
+                  value={formData.roleId}
                   onChange={handleInputChange}
-                  className="w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded appearance-none cursor-pointer"
+                  className="w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded cursor-pointer"
                 >
-                  <option value="ROLE_SALE">Nhân viên bán hàng (ROLE_SALE)</option>
-                  <option value="ROLE_ADMIN">Quản trị viên (ROLE_ADMIN)</option>
-                  <option value="ROLE_CS">CSKH (ROLE_CS)</option>
-                  <option value="ROLE_WH">Nhân viên kho (ROLE_WH)</option>
+                  <option value={0} disabled>Chọn vai trò</option>
+                  {roles.map(r => (
+                    <option key={r.id} value={r.id}>{ROLE_LABEL[r.name] || r.name} {r.system ? '(Mặc định)' : ''}</option>
+                  ))}
                 </select>
-                <span className="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
               </div>
             </div>
 

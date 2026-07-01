@@ -3,10 +3,16 @@ import { useState } from 'react';
 import { useGetProductByIdQuery } from '@/redux/api/productApi';
 import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import ProductFormModal from './components/ProductFormModal';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -63,12 +69,14 @@ export default function ProductDetailPage() {
           <span className="text-on-surface font-medium">{product.name}</span>
         </nav>
         <div className="flex items-center gap-sm">
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-md py-2 bg-primary-container text-on-primary font-button text-button rounded hover:bg-primary transition-colors flex items-center gap-xs"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span> Chỉnh sửa
-          </button>
+          {hasManageProductPermission && (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="px-md py-2 bg-primary-container text-on-primary font-button text-button rounded hover:bg-primary transition-colors flex items-center gap-xs"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span> Chỉnh sửa
+            </button>
+          )}
           <button
             onClick={() => navigate('/products')}
             className="px-md py-2 border border-primary text-primary font-button text-button rounded hover:bg-surface-container-high transition-colors flex items-center gap-xs"

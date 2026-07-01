@@ -1,4 +1,5 @@
-export type RoleEnum = 'ROLE_ADMIN' | 'ROLE_SALE' | 'ROLE_CS' | 'ROLE_WH';
+// Role là string động từ DB - không hardcode cố định nữa
+export type RoleEnum = string;
 
 export interface LoginRequest {
   username: string;
@@ -9,7 +10,8 @@ export interface UserLogin {
   id: number;
   username: string;
   fullName: string;
-  role: RoleEnum;
+  role: string;
+  permissions?: string[];
 }
 
 export interface LoginResponse {

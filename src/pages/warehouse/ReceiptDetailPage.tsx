@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { useGetReceiptByIdQuery, useConfirmReceiptMutation, useCancelReceiptMutation } from '@/redux/api/receiptApi';
+import { useAppSelector } from '@/redux/hooks';
 
 const fmtDate = (val?: string | null) => {
     if (!val) return '—';
@@ -20,6 +21,11 @@ const fmtCurrency = (val?: number | null) => {
 export default function ReceiptDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAppSelector((state) => state.auth);
+    const userPerms = user?.permissions || [];
+    const isAdmin = user?.role === 'ROLE_ADMIN';
+    const hasManageReceiptPermission = isAdmin || userPerms.includes('MANAGE_RECEIPT');
+
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -108,7 +114,7 @@ export default function ReceiptDetailPage() {
                     </div>
                 </div>
 
-                {!isCancelled && (
+                {!isCancelled && hasManageReceiptPermission && (
                     <div className="flex items-center gap-3">
                         {isDraft && (
                             <>

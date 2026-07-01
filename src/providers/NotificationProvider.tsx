@@ -8,7 +8,7 @@ export interface NotificationItem {
   id: number;
   title: string;
   message: string;
-  type: 'LOW_STOCK' | 'APPROVAL_REQUEST' | 'SHIFT_HANDOVER' | 'SYSTEM';
+  type: 'LOW_STOCK' | 'APPROVAL_REQUEST' | 'SHIFT_HANDOVER' | 'SYSTEM' | 'ORDER_CREATED' | 'ORDER_PAID';
   targetRole?: string;
   targetUserId?: number;
   read: boolean;

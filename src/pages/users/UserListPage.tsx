@@ -59,13 +59,12 @@ export default function UserListPage() {
           <select
             value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value as any)}
-            className="w-full pl-4 pr-10 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm appearance-none cursor-pointer transition-all"
+            className="w-full pl-4 pr-4 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm cursor-pointer transition-all"
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="INACTIVE">Tạm khóa</option>
           </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">filter_list</span>
         </div>
       </div>
 

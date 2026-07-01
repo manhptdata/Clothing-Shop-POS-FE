@@ -1,11 +1,17 @@
 import { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/Button';
 import { useGetCategoriesQuery, useDeleteCategoryMutation, useDeleteHardCategoryMutation, useToggleCategoryActiveMutation } from '@/redux/api/categoryApi';
 import CategoryFormModal from './components/CategoryFormModal';
 import type { Category } from '@/types/category.type';
 
 export default function CategoryListPage() {
+  const { user } = useAppSelector((state) => state.auth);
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'DELETED'>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,12 +104,14 @@ export default function CategoryListPage() {
             Quản lý các danh mục sản phẩm, trạng thái hiển thị.
           </p>
         </div>
-        <Button
-          onClick={handleAddNew}
-          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-        >
-          Thêm danh mục
-        </Button>
+        {hasManageProductPermission && (
+          <Button
+            onClick={handleAddNew}
+            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+          >
+            Thêm danh mục
+          </Button>
+        )}
       </div>
 
       <div className="bg-surface rounded-xl border border-outline/10 p-4 flex flex-col sm:flex-row gap-4 mb-4">
@@ -121,13 +129,12 @@ export default function CategoryListPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="w-full pl-4 pr-10 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm appearance-none cursor-pointer transition-all"
+            className="w-full pl-4 pr-4 py-2 bg-transparent border border-outline/20 rounded-lg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-body-sm text-body-sm cursor-pointer transition-all"
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="DELETED">Đã xóa</option>
           </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">filter_list</span>
         </div>
       </div>
 
@@ -166,10 +173,10 @@ export default function CategoryListPage() {
                   <td className="py-4 px-6 text-center">
                     <button
                       onClick={() => handleToggleActive(c)}
-                      disabled={c.deleted}
+                      disabled={c.deleted || !hasManageProductPermission}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                         c.active ? 'bg-primary' : 'bg-outline-variant/50'
-                      } ${c.deleted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      } ${c.deleted || !hasManageProductPermission ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -185,7 +192,7 @@ export default function CategoryListPage() {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {!c.deleted && (
+                      {hasManageProductPermission && !c.deleted && (
                         <>
                           <button
                             onClick={() => handleEdit(c)}
@@ -203,7 +210,7 @@ export default function CategoryListPage() {
                           </button>
                         </>
                       )}
-                      {c.deleted && (
+                      {hasManageProductPermission && c.deleted && (
                         <button
                           onClick={() => handleHardDelete(c)}
                           className="text-error hover:text-error/80 transition-colors p-1"

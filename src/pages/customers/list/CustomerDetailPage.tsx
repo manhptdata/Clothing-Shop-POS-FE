@@ -6,10 +6,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Table, Column } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
+import { useAppSelector } from "@/redux/hooks";
 
 export default function CustomerDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasManageCustomerPermission = isAdmin || userPerms.includes('MANAGE_CUSTOMER');
 
   // State quản lý việc chuyển đổi giữa 2 tab (Đơn hàng và Chăm sóc)
   const [activeTab, setActiveTab] = useState<"orders" | "care">("orders");
@@ -105,15 +110,17 @@ export default function CustomerDetailPage() {
           >
             Quay lại
           </Button>
-          <Button
-            variant="outline"
-            leftIcon={<i className="fa-solid fa-pen-to-square"></i>}
-            onClick={() => {
-              navigate(`/customers/edit/${id}`);
-            }}
-          >
-            Sửa thông tin
-          </Button>
+          {hasManageCustomerPermission && (
+            <Button
+              variant="outline"
+              leftIcon={<i className="fa-solid fa-pen-to-square"></i>}
+              onClick={() => {
+                navigate(`/customers/edit/${id}`);
+              }}
+            >
+              Sửa thông tin
+            </Button>
+          )}
         </div>
       </header>
 

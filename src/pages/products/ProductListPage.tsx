@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGetProductsQuery, useDeleteProductMutation } from '@/redux/api/productApi';
 import { useState, useEffect } from 'react';
+import { useAppSelector } from '@/redux/hooks';
 import { Product, ProductVariant } from '@/types/product.types';
 import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import ProductFilterSidebar from './ProductFilterSidebar';
@@ -11,6 +12,11 @@ import ProductFormModal from './components/ProductFormModal';
 import { AIInventoryButton } from './components/AIInventoryButton';
 
 export default function ProductListPage() {
+  const { user } = useAppSelector((state) => state.auth);
+  const userPerms = user?.permissions || [];
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
+
   // ===== STATE =====
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -262,13 +268,15 @@ export default function ProductListPage() {
               Lọc
             </Button>
 
-            <Button
-              variant="primary"
-              onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
-              leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
-            >
-              Thêm sản phẩm
-            </Button>
+            {hasManageProductPermission && (
+              <Button
+                variant="primary"
+                onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
+                leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+              >
+                Thêm sản phẩm
+              </Button>
+            )}
             <AIInventoryButton />
           </div>
         </div>

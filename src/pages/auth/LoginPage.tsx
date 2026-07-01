@@ -4,7 +4,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useLoginMutation } from '@/redux/api/authApi';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { getDefaultRouteForRole } from '@/router/RoleRoute';
+import { getDefaultRouteForPermissions } from '@/router/PermissionRoute';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,8 +21,9 @@ export default function LoginPage() {
     try {
       const res = await login({ username: email, password }).unwrap();
       const userRole = res?.data?.user?.role;
-      if (userRole) {
-        navigate(getDefaultRouteForRole(userRole));
+      const userPermissions = res?.data?.user?.permissions || [];
+      if (userRole || userPermissions.length > 0) {
+        navigate(getDefaultRouteForPermissions(userPermissions, userRole));
       } else {
         navigate('/dashboard');
       }
