@@ -10,6 +10,9 @@ import {
 import { useGetCustomerByIdQuery } from '@/redux/api/customerApi';
 import { useGetProductsQuery } from '@/redux/api/productApi';
 import { Badge } from '@/components/ui/Badge';
+import { useNotifications } from '@/providers/NotificationProvider';
+import { useAppSelector } from '@/redux/hooks';
+import { printReceipt } from '@/utils/printReceipt';
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -17,18 +20,29 @@ export default function OrderDetailPage() {
   const [searchParams] = useSearchParams();
   const shouldPrint = searchParams.get('print') === 'true';
 
+  // --- Fetch all products to resolve variant details (Names, SKUs, option values) ---
+  const { data: productData } = useGetProductsQuery();
+  const products = productData?.data?.content || [];
+
   // --- Fetch Order details ---
   const { data: orderResponse, isLoading: isOrderLoading, error } = useGetOrderByIdQuery(orderId);
   const order = orderResponse?.data;
 
+  // --- Fetch Customer details (if available) ---
+  const { data: customerResponse } = useGetCustomerByIdQuery(
+    order?.customerId || 0,
+    { skip: !order?.customerId }
+  );
+  const customer = customerResponse?.data;
+
   useEffect(() => {
     if (shouldPrint && order && !isOrderLoading) {
       const timer = setTimeout(() => {
-        window.print();
-      }, 500);
+        printReceipt(order, products);
+      }, 400);
       return () => clearTimeout(timer);
     }
-  }, [shouldPrint, order, isOrderLoading]);
+  }, [shouldPrint, order, isOrderLoading, products]);
 
   // --- Return Order State & Hooks ---
   const { data: returnOrdersResponse } = useGetReturnOrdersByOriginalOrderIdQuery(orderId, { skip: !orderId });
@@ -38,16 +52,29 @@ export default function OrderDetailPage() {
   const [returnQuantities, setReturnQuantities] = useState<Record<number, number>>({});
   const [reason, setReason] = useState('');
 
-  // --- Fetch Customer details (if available) ---
-  const { data: customerResponse } = useGetCustomerByIdQuery(
-    order?.customerId || 0,
-    { skip: !order?.customerId }
-  );
-  const customer = customerResponse?.data;
+  // --- Cancellation request state ---
+  const user = useAppSelector((state) => state.auth.user);
+  const { sendApprovalRequest } = useNotifications();
+  const [isCancelRequestModalOpen, setIsCancelRequestModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isSubmittingCancelRequest, setIsSubmittingCancelRequest] = useState(false);
 
-  // --- Fetch all products to resolve variant details (Names, SKUs, option values) ---
-  const { data: productData } = useGetProductsQuery();
-  const products = productData?.data?.content || [];
+  const handleSubmitCancelRequest = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('Vui lòng nhập lý do hủy hóa đơn');
+      return;
+    }
+    setIsSubmittingCancelRequest(true);
+    try {
+      await sendApprovalRequest(order?.orderNumber || order?.code || '', cancelReason.trim());
+      setIsCancelRequestModalOpen(false);
+      setCancelReason('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingCancelRequest(false);
+    }
+  };
 
   // --- Cancel Order mutation ---
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
@@ -85,7 +112,9 @@ export default function OrderDetailPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (order) {
+      printReceipt(order, products);
+    }
   };
 
   if (isOrderLoading) {
@@ -182,7 +211,7 @@ export default function OrderDetailPage() {
 
   // --- Compute Totals ---
   const subtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
-  const tax = Math.round(subtotal * 0.08); // 8% VAT
+  const tax = 0;
   const total = order.totalAmount;
 
   // Status mapping
@@ -206,7 +235,7 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto w-full print:max-w-none print:p-0">
+    <div className="max-w-[1440px] mx-auto w-full">
       
       {/* Back button */}
       <div className="mb-md print:hidden">
@@ -248,6 +277,27 @@ export default function OrderDetailPage() {
             >
               <span className="material-symbols-outlined text-[18px]">undo</span>
               {isCancelling ? 'Đang hủy...' : 'Hủy đơn hàng'}
+            </button>
+          )}
+
+          {order.status === 'COMPLETED' && user?.role === 'ROLE_ADMIN' && (
+            <button 
+              disabled={isCancelling}
+              onClick={handleCancelOrder}
+              className="px-md py-sm border border-error text-error rounded font-button text-button hover:bg-error-container/10 flex items-center gap-xs transition-colors disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[18px]">undo</span>
+              {isCancelling ? 'Đang hủy...' : 'Hủy đơn hàng'}
+            </button>
+          )}
+
+          {order.status === 'COMPLETED' && user?.role === 'ROLE_SALE' && (
+            <button 
+              onClick={() => setIsCancelRequestModalOpen(true)}
+              className="px-md py-sm border border-rose-500 text-rose-500 rounded font-button text-button hover:bg-rose-500/10 flex items-center gap-xs transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">report</span>
+              Yêu cầu hủy đơn
             </button>
           )}
 
@@ -430,10 +480,12 @@ export default function OrderDetailPage() {
                 <span>Tạm tính</span>
                 <span className="text-on-surface font-semibold">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</span>
               </div>
-              <div className="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
-                <span>Thuế (VAT 8%)</span>
-                <span className="text-on-surface font-semibold">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}</span>
-              </div>
+              {tax > 0 && (
+                <div className="flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+                  <span>Thuế (VAT 8%)</span>
+                  <span className="text-on-surface font-semibold">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}</span>
+                </div>
+              )}
 
               {/* Vouchers discount display */}
               {order.discountFromVoucher !== undefined && Number(order.discountFromVoucher) > 0 && (
@@ -635,6 +687,63 @@ export default function OrderDetailPage() {
                   {isSubmittingReturn ? 'Đang xử lý...' : 'Xác nhận trả'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Request Dialog (Modal) */}
+      {isCancelRequestModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface rounded-2xl border border-outline/10 max-w-md w-full flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-md border-b border-outline/10 bg-surface-container-low flex justify-between items-center">
+              <h3 className="font-title-lg text-title-lg text-on-surface font-bold flex items-center gap-xs">
+                <span className="material-symbols-outlined text-rose-500 text-[28px]">report</span>
+                Yêu cầu hủy hóa đơn
+              </h3>
+              <button 
+                onClick={() => setIsCancelRequestModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-md space-y-md">
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Yêu cầu hủy hóa đơn này sẽ được gửi tới Admin/Quản lý để phê duyệt theo thời gian thực.
+              </p>
+              <div className="flex flex-col gap-xs">
+                <label className="text-xs font-semibold text-on-surface-variant">Lý do hủy đơn hàng</label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Nhập lý do hủy hóa đơn (ví dụ: Khách muốn đổi sản phẩm khác, thối nhầm tiền...)"
+                  rows={3}
+                  className="w-full p-3 border border-outline/30 rounded-xl bg-transparent text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 text-on-surface resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-md border-t border-outline/10 bg-surface-container-lowest flex justify-end gap-sm">
+              <button
+                type="button"
+                onClick={() => setIsCancelRequestModalOpen(false)}
+                className="px-md py-sm border border-outline/30 rounded font-button text-button hover:bg-surface-container text-on-surface transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={isSubmittingCancelRequest}
+                onClick={handleSubmitCancelRequest}
+                className="px-md py-sm bg-rose-500 text-white rounded font-button text-button hover:bg-rose-600 transition-colors disabled:opacity-50"
+              >
+                {isSubmittingCancelRequest ? 'Đang gửi...' : 'Gửi yêu cầu'}
+              </button>
             </div>
           </div>
         </div>

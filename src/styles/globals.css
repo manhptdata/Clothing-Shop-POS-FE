@@ -122,43 +122,24 @@ button {
 }
 
 /* ─── Print Styles ──────────────────────────────────────────────────────────
-   Khi user nhấn "In hóa đơn", ẩn toàn bộ chrome của app (sidebar, header,
-   nút bấm, navigation) và chỉ giữ lại phần nội dung hóa đơn.
+   CSS cơ bản cho trường hợp Ctrl+P trực tiếp trên trang.
+   In hóa đơn chính thức dùng iframe riêng (xem utils/printReceipt.ts).
 ─────────────────────────────────────────────────────────────────────────── */
 @media print {
-
-  /* Ẩn sidebar và header được đánh dấu bằng data attribute */
   [data-sidebar],
-  [data-header] {
-    display: none !important;
-  }
-
-  /* Ẩn các element được đánh dấu no-print */
+  [data-header],
   .no-print,
   .print\:hidden {
     display: none !important;
   }
 
-  /* Reset margin-left do sidebar chiếm (sidebar width = 256px = ml-64) */
   .ml-64 {
     margin-left: 0 !important;
   }
 
-  /* Đảm bảo nội dung in trắng, không có gradient nền */
-  body,
-  html {
+  body, html {
     background: white !important;
     background-image: none !important;
   }
-
-  main {
-    padding: 16px !important;
-  }
-
-  /* Tránh ngắt trang bên trong các block quan trọng */
-  table,
-  tr,
-  .print-block {
-    page-break-inside: avoid;
-  }
 }
+

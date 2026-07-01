@@ -1,7 +1,7 @@
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import { Toaster } from 'react-hot-toast';
-// TODO: Nếu có react-query hoặc ErrorBoundary thì bọc ở đây
+import NotificationProvider from './NotificationProvider';
 
 interface AppProviderProps {
   children: React.ReactNode;
@@ -12,6 +12,7 @@ export default function AppProvider({ children }: AppProviderProps) {
     <Provider store={store}>
       <Toaster 
         position="top-center"
+        containerClassName="no-print"
         toastOptions={{
           duration: 3000,
           style: {
@@ -20,7 +21,9 @@ export default function AppProvider({ children }: AppProviderProps) {
           },
         }} 
       />
-      {children}
+      <NotificationProvider>
+        {children}
+      </NotificationProvider>
     </Provider>
   );
 }

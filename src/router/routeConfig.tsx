@@ -49,6 +49,7 @@ const OrderDetailPage = lazy(() => import('@/pages/orders/OrderDetailPage'));
 // Users
 const UserListPage = lazy(() => import('@/pages/users/UserListPage'));
 const UserFormPage = lazy(() => import('@/pages/users/UserFormPage'));
+const ShiftHistoryPage = lazy(() => import('@/pages/shifts/ShiftHistoryPage'));
 
 // ── Route Config ──────────────────────────────────────────────────────────────
 export const routes: RouteObject[] = [
@@ -154,6 +155,7 @@ export const routes: RouteObject[] = [
               { path: "users", element: <UserListPage /> },
               { path: "users/new", element: <UserFormPage /> },
               { path: "users/:id/edit", element: <UserFormPage /> },
+              { path: "shifts/history", element: <ShiftHistoryPage /> },
             ],
           },
         ],

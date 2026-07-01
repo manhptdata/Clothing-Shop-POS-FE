@@ -97,12 +97,14 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
             </span>
           </div>
 
-          <div className="flex justify-between items-center text-gray-500 text-xs font-semibold">
-            <span>Thuế (VAT 8%)</span>
-            <span className="text-gray-900 font-bold">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}
-            </span>
-          </div>
+          {tax > 0 && (
+            <div className="flex justify-between items-center text-gray-500 text-xs font-semibold">
+              <span>Thuế (VAT 8%)</span>
+              <span className="text-gray-900 font-bold">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tax)}
+              </span>
+            </div>
+          )}
 
           {/* Point discount rendering */}
           {customerType === 'MEMBER' && pointsDiscount > 0 && (

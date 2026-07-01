@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { RoleEnum } from '@/types/auth.types';
 import { useLogoutMutation } from '@/redux/api/authApi';
+import ShiftHandoverModal from '@/components/ui/ShiftHandoverModal';
 
 interface MenuItem {
   path: string;
@@ -60,6 +62,12 @@ const menuItems: MenuItem[] = [
     roles: ['ROLE_ADMIN', 'ROLE_SALE', 'ROLE_CS'],
   },
   {
+    path: '/shifts/history',
+    label: 'Lịch sử giao ca',
+    icon: 'history_toggle_off',
+    roles: ['ROLE_ADMIN'],
+  },
+  {
     path: '/users',
     label: 'Nhân viên',
     icon: 'badge',
@@ -71,6 +79,7 @@ export default function Sidebar() {
   const location = useLocation();
   const [logout] = useLogoutMutation();
   const user = useAppSelector((state) => state.auth.user);
+  const [isHandoverOpen, setIsHandoverOpen] = useState(false);
 
   if (!user) return null;
 
@@ -113,6 +122,17 @@ export default function Sidebar() {
         })}
       </div>
       <div className="px-4 mt-auto">
+        {(user.role === 'ROLE_SALE' || user.role === 'ROLE_ADMIN') && (
+          <button
+            onClick={() => setIsHandoverOpen(true)}
+            className="flex w-full items-center gap-3 px-4 py-3 mb-2 text-on-surface hover:bg-outline/5 rounded-lg hover-lift transition-all duration-300 group"
+          >
+            <span className="material-symbols-outlined text-[22px] transition-transform duration-300 group-hover:scale-110 text-on-surface-variant group-hover:text-primary">
+              account_balance_wallet
+            </span>
+            <span className="font-medium">Bàn giao ca</span>
+          </button>
+        )}
         <div className="h-px w-full bg-outline/10 my-4"></div>
         <button
           onClick={() => logout()}
@@ -122,6 +142,8 @@ export default function Sidebar() {
           <span className="font-medium">Đăng xuất</span>
         </button>
       </div>
+
+      <ShiftHandoverModal isOpen={isHandoverOpen} onClose={() => setIsHandoverOpen(false)} />
     </nav>
   );
 }

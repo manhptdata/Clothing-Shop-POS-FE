@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAppSelector } from '@/redux/hooks';
+import { printReceipt } from '@/utils/printReceipt';
 
 export default function OrderCreatePage() {
   const { state, actions } = useOrderCreate();
@@ -32,6 +33,14 @@ export default function OrderCreatePage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Khi có đơn hàng vừa tạo (autoPrint=true), in qua popup window riêng biệt
+  useEffect(() => {
+    if (!state.lastCreatedOrder) return;
+    const allProducts = state.filteredProducts.length > 0 ? state.filteredProducts : [];
+    printReceipt(state.lastCreatedOrder, allProducts);
+    actions.setLastCreatedOrder(null);
+  }, [state.lastCreatedOrder]);
 
   const handleAddCustomProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();

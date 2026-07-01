@@ -12,8 +12,8 @@ export function useCart() {
   const [variantSelectorProduct, setVariantSelectorProduct] = useState<Product | null>(null);
 
   const subtotal = cart.reduce((sum, item) => sum + item.variant.salePrice * item.quantity, 0);
-  const tax = Math.round(subtotal * 0.08); // 8% VAT
-  const rawTotal = subtotal + tax;
+  const tax = 0;
+  const rawTotal = subtotal;
 
   const handleAddToCart = (product: Product, variant: ProductVariant) => {
     if (variant.quantity <= 0) return; // Hết hàng
