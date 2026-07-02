@@ -144,6 +144,14 @@ export default function VoucherListPage() {
             Quay lại
           </Button>
           <Button
+            variant="outline"
+            onClick={() => navigate("/customers/groups/vouchers/history")}
+            leftIcon={<i className="fa-solid fa-clock-rotate-left"></i>}
+            className="shadow-sm font-bold text-xs"
+          >
+            Lịch sử phát
+          </Button>
+          <Button
             variant="primary"
             onClick={() => setIsVoucherModalOpen(true)}
             leftIcon={<i className="fa-solid fa-plus"></i>}

@@ -379,6 +379,22 @@ export const customerApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 0,
     }),
 
+    getVoucherHistory: builder.query<
+      RestResponse<PageResponse<import('@/types/customer.types').CustomerVoucherHistoryResponse>>,
+      { keyword?: string; page?: number; size?: number }
+    >({
+      query: (params) => ({
+        url: '/crm/customer-groups/vouchers/history',
+        method: 'GET',
+        params: {
+          keyword: params.keyword || '',
+          page: params.page || 0,
+          size: params.size || 10,
+        },
+      }),
+      providesTags: ['Customer'],
+    }),
+
   }),
 
   overrideExisting: false,
@@ -415,5 +431,6 @@ export const {
   useUpdateCareLogMutation,
   useDeleteCareLogMutation,
   useImportCustomersMutation,
-  useLazyGetAiSuggestScriptQuery
+  useLazyGetAiSuggestScriptQuery,
+  useGetVoucherHistoryQuery
 } = customerApi;

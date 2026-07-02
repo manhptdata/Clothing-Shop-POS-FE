@@ -146,6 +146,19 @@ export interface VoucherOption {
 // Bổ sung thêm các type cho Campaign
 export type CampaignType = "AFTER_7_DAYS" | "LONG_TIME_NO_BUY" | "RECALL_SCHEDULE" | "HAPPY_BIRTHDAY";
 
+export interface CustomerVoucherHistoryResponse {
+  id: number;
+  customerId: number;
+  customerName: string;
+  customerPhone: string;
+  voucherName: string;
+  voucherCode: string;
+  receivedAt: string;
+  expiredAt: string;
+  usedAt: string | null;
+  status: string;
+}
+
 export interface Campaign {
   id: number;
   isActive: boolean;

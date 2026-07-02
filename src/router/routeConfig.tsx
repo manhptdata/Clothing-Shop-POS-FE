@@ -51,6 +51,7 @@ const CustomerGroupListPage = lazy(() => import("@/pages/customers/groups/Custom
 const CustomerGroupDetailPage = lazy(() => import("@/pages/customers/groups/CustomerGroupDetailPage"));
 const CustomerGroupMembersPage = lazy(() => import("@/pages/customers/groups/CustomerGroupMembersPage"));
 const VoucherListPage = lazy(() => import("@/pages/customers/vouchers/VoucherListPage"));
+const VoucherHistoryPage = lazy(() => import("@/pages/customers/vouchers/VoucherHistoryPage"));
 const CampaignListPage = lazy(() => import("@/pages/customers/care/CampaignListPage"));
 const CareHistoryDetailPage = lazy(() => import("@/pages/customers/care/CareHistoryDetailPage"));
 const CareLogListPage = lazy(() => import("@/pages/customers/care/CareLogListPage"));
@@ -181,6 +182,7 @@ export const routes: RouteObject[] = [
                 children: [
                   { path: "groups", element: <CustomerGroupListPage /> },
                   { path: "groups/vouchers", element: <VoucherListPage /> },
+                  { path: "groups/vouchers/history", element: <VoucherHistoryPage /> },
                   { path: "groups/:id", element: <CustomerGroupDetailPage /> },
                   { path: "groups/:id/members", element: <CustomerGroupMembersPage /> },
                   { path: "care/campaigns", element: <CampaignListPage /> },
