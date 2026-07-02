@@ -46,16 +46,16 @@ export default function CareHistoryDetailPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto w-full text-gray-800 antialiased">
       {/* Header */}
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm gap-4">
-        <div>
-
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+      <header className="mb-6 flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm gap-4">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             Lịch sử chăm sóc khách hàng
           </h1>
         </div>
         <Button
           variant="outline"
           onClick={() => navigate(-1)}
+          className="w-full sm:w-auto justify-center"
           leftIcon={<i className="fa-solid fa-arrow-left"></i>}
         >
           Quay lại

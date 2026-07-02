@@ -99,9 +99,8 @@ export default function CareLogEditPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto w-full text-gray-800 antialiased">
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
+      <header className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full text-center sm:text-left flex justify-center sm:justify-start">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-file-pen text-amber-500"></i> Cập nhật
             nhật ký chăm sóc
@@ -110,7 +109,7 @@ export default function CareLogEditPage() {
         <Button
           variant="outline"
           onClick={() => navigate(-1)}
-          className="shadow-sm bg-white"
+          className="shadow-sm bg-white w-full sm:w-auto justify-center"
           leftIcon={<i className="fa-solid fa-arrow-left"></i>}
         >
           Quay lại
@@ -224,10 +223,11 @@ export default function CareLogEditPage() {
             ></textarea>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end space-x-3">
+          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
+              className="flex-1 sm:flex-none justify-center"
               onClick={() => navigate(-1)}
             >
               Hủy thay đổi
@@ -235,6 +235,7 @@ export default function CareLogEditPage() {
             <Button
               type="submit"
               variant="primary"
+              className="flex-1 sm:flex-none justify-center"
               disabled={isUpdating}
               isLoading={isUpdating}
               leftIcon={<i className="fa-solid fa-floppy-disk"></i>}

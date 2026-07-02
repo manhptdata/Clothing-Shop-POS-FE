@@ -116,14 +116,13 @@ export default function CustomerFormPage() {
 
   return (
     <div className="flex-1 p-6 max-w-4xl mx-auto w-full">
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+      <header className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <i className="fa-solid fa-user-plus text-blue-600"></i> Thêm mới khách hàng tại quầy
           </h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant="ghost"
             leftIcon={<i className="fa-solid fa-arrow-left"></i>}
@@ -239,11 +238,11 @@ export default function CustomerFormPage() {
           </div>
 
           <div className="pt-4 border-t border-gray-100 flex justify-end items-center text-xs">
-            <div className="flex space-x-3 w-full sm:w-auto">
-              <Button type="button" variant="outline" onClick={() => navigate("/customers/list")}>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button type="button" variant="outline" className="flex-1 sm:flex-none justify-center" onClick={() => navigate("/customers/list")}>
                 Hủy / Quay lại
               </Button>
-              <Button type="submit" variant="primary" isLoading={isLoading} leftIcon={<i className="fa-solid fa-floppy-disk"></i>}>
+              <Button type="submit" variant="primary" className="flex-1 sm:flex-none justify-center" isLoading={isLoading} leftIcon={<i className="fa-solid fa-floppy-disk"></i>}>
                 Lưu khách hàng
               </Button>
             </div>

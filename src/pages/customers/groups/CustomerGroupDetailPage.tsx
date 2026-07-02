@@ -102,9 +102,8 @@ export default function CustomerGroupDetailPage() {
   return (
     <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
       {/* HEADER */}
-      <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
+      <header className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full text-center sm:text-left flex justify-center sm:justify-start">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
             <span
               className={`${getGroupColorClass(
@@ -116,7 +115,7 @@ export default function CustomerGroupDetailPage() {
             Nhóm: {group.name.replace(/\s*\([A-Za-z]+\)/g, '')}
           </h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
           <Button
             variant="outline"
             leftIcon={<i className="fa-solid fa-arrow-left"></i>}

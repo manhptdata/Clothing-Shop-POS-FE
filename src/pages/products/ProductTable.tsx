@@ -28,7 +28,7 @@ export default function ProductTable({ products, getVariantStatus, onDelete }: P
     return (
         <div className="bg-surface-container-lowest rounded-lg border border-outline/20 overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[800px]">
                     <thead className="bg-surface-container">
                         <tr>
                             <th className="text-left px-4 py-3 text-label-caps text-on-surface-variant/80 uppercase font-semibold text-xs tracking-wider">Sản phẩm</th>

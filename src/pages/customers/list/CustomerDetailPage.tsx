@@ -92,16 +92,15 @@ export default function CustomerDetailPage() {
   return (
     <div className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
       {/* HEADER */}
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+      <header className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <i className="fa-solid fa-user-check text-blue-600"></i> Hồ sơ khách
             hàng: {customer.fullName}
           </h1>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant="ghost"
             leftIcon={<i className="fa-solid fa-arrow-left"></i>}

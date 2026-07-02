@@ -107,6 +107,7 @@ export default function CategoryListPage() {
         {hasManageProductPermission && (
           <Button
             onClick={handleAddNew}
+            className="w-full sm:w-auto justify-center"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
           >
             Thêm danh mục
@@ -155,76 +156,78 @@ export default function CategoryListPage() {
             <p className="text-body-md">Không tìm thấy danh mục nào.</p>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-surface border-b border-outline/10">
-              <tr>
-                <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold w-16">ID</th>
-                <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Tên danh mục</th>
-                <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-center w-32">Hoạt động</th>
-                <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-center w-32">Trạng thái</th>
-                <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right w-32">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline/10">
-              {filteredCategories.map((c) => (
-                <tr key={c.id} className={`hover:bg-surface-variant/20 transition-colors ${c.deleted ? 'opacity-60 bg-surface-container/30' : ''}`}>
-                  <td className="py-4 px-6 font-body-sm text-body-sm text-on-surface-variant">{c.id}</td>
-                  <td className="py-4 px-6 font-body-md text-body-md font-medium text-on-surface">{c.name}</td>
-                  <td className="py-4 px-6 text-center">
-                    <button
-                      onClick={() => handleToggleActive(c)}
-                      disabled={c.deleted || !hasManageProductPermission}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                        c.active ? 'bg-primary' : 'bg-outline-variant/50'
-                      } ${c.deleted || !hasManageProductPermission ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          c.active ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${c.deleted ? 'bg-error-container text-on-error-container' : 'bg-success-container text-on-success-container'}`}>
-                      {c.deleted ? 'Đã xóa' : 'Bình thường'}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {hasManageProductPermission && !c.deleted && (
-                        <>
-                          <button
-                            onClick={() => handleEdit(c)}
-                            className="text-on-surface-variant hover:text-primary transition-colors p-1"
-                            title="Sửa danh mục"
-                          >
-                            <span className="material-symbols-outlined text-xl">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(c)}
-                            className="text-on-surface-variant hover:text-error transition-colors p-1"
-                            title="Xóa danh mục"
-                          >
-                            <span className="material-symbols-outlined text-xl">delete</span>
-                          </button>
-                        </>
-                      )}
-                      {hasManageProductPermission && c.deleted && (
-                        <button
-                          onClick={() => handleHardDelete(c)}
-                          className="text-error hover:text-error/80 transition-colors p-1"
-                          title="Xóa cứng (không thể hoàn tác)"
-                        >
-                          <span className="material-symbols-outlined text-xl">delete_forever</span>
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead className="bg-surface border-b border-outline/10">
+                <tr>
+                  <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold w-16">ID</th>
+                  <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Tên danh mục</th>
+                  <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-center w-32">Hoạt động</th>
+                  <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-center w-32">Trạng thái</th>
+                  <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right w-32">Hành động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-outline/10">
+                {filteredCategories.map((c) => (
+                  <tr key={c.id} className={`hover:bg-surface-variant/20 transition-colors ${c.deleted ? 'opacity-60 bg-surface-container/30' : ''}`}>
+                    <td className="py-4 px-6 font-body-sm text-body-sm text-on-surface-variant">{c.id}</td>
+                    <td className="py-4 px-6 font-body-md text-body-md font-medium text-on-surface">{c.name}</td>
+                    <td className="py-4 px-6 text-center">
+                      <button
+                        onClick={() => handleToggleActive(c)}
+                        disabled={c.deleted || !hasManageProductPermission}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                          c.active ? 'bg-primary' : 'bg-outline-variant/50'
+                        } ${c.deleted || !hasManageProductPermission ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            c.active ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${c.deleted ? 'bg-error-container text-on-error-container' : 'bg-success-container text-on-success-container'}`}>
+                        {c.deleted ? 'Đã xóa' : 'Bình thường'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {hasManageProductPermission && !c.deleted && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(c)}
+                              className="text-on-surface-variant hover:text-primary transition-colors p-1"
+                              title="Sửa danh mục"
+                            >
+                              <span className="material-symbols-outlined text-xl">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(c)}
+                              className="text-on-surface-variant hover:text-error transition-colors p-1"
+                              title="Xóa danh mục"
+                            >
+                              <span className="material-symbols-outlined text-xl">delete</span>
+                            </button>
+                          </>
+                        )}
+                        {hasManageProductPermission && c.deleted && (
+                          <button
+                            onClick={() => handleHardDelete(c)}
+                            className="text-error hover:text-error/80 transition-colors p-1"
+                            title="Xóa cứng (không thể hoàn tác)"
+                          >
+                            <span className="material-symbols-outlined text-xl">delete_forever</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

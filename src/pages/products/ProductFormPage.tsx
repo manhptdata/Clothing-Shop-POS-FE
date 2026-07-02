@@ -21,14 +21,14 @@ export default function ProductFormPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto w-full">
-      <div className="flex justify-between items-end mb-lg">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-end mb-lg">
         <div>
           <h2 className="font-headline-md text-headline-md text-on-background">Thêm Sản phẩm Mới</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Thiết lập chi tiết sản phẩm và các biến thể kho hàng.</p>
         </div>
-        <div className="flex gap-sm">
-          <Button variant="outline">Lưu Nháp</Button>
-          <Button>Đăng Sản phẩm</Button>
+        <div className="flex flex-wrap gap-sm w-full sm:w-auto">
+          <Button variant="outline" className="flex-1 sm:flex-none justify-center">Lưu Nháp</Button>
+          <Button className="flex-1 sm:flex-none justify-center">Đăng Sản phẩm</Button>
         </div>
       </div>
 

@@ -86,9 +86,8 @@ export default function CareLogCreatePage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto w-full text-gray-800 antialiased">
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
+      <header className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full text-center sm:text-left flex justify-center sm:justify-start">
           <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <i className="fa-solid fa-file-medical text-blue-600"></i> Tạo nhật ký cuộc gọi mới
           </h1>
@@ -99,7 +98,7 @@ export default function CareLogCreatePage() {
           type="button"
           variant="outline"
           onClick={handleGoBack}
-          className="shadow-sm bg-white"
+          className="shadow-sm bg-white w-full sm:w-auto justify-center"
           leftIcon={<i className="fa-solid fa-arrow-left-long"></i>}
         >
           Quay lại
@@ -292,10 +291,11 @@ export default function CareLogCreatePage() {
             ></textarea>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end space-x-3">
+          <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 w-full sm:w-auto">
             <Button
               type="button"
               variant="outline"
+              className="flex-1 sm:flex-none justify-center"
               onClick={handleGoBack}
             >
               Hủy bỏ
@@ -303,6 +303,7 @@ export default function CareLogCreatePage() {
             <Button
               type="submit"
               variant="primary"
+              className="flex-1 sm:flex-none justify-center"
               disabled={isLoading}
               isLoading={isLoading}
               leftIcon={<i className="fa-solid fa-floppy-disk"></i>}

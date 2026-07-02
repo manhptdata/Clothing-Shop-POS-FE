@@ -179,10 +179,9 @@ export default function CustomerGroupMembersPage() {
   return (
     <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
       {/* HEADER */}
-      <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+      <header className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full text-center sm:text-left">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <i className="fa-solid fa-users text-slate-700"></i> Thành viên
             nhóm:
             <span className="text-slate-700 ml-1">{groupName.replace(/\s*\([A-Za-z]+\)/g, '')}</span>

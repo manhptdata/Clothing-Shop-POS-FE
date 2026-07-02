@@ -57,7 +57,7 @@ export default function ShiftHistoryPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-outline/5 border-b border-outline/10 text-xs font-semibold text-on-surface-variant">
                   <th className="p-4">Thời gian</th>

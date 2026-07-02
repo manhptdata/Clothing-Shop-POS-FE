@@ -287,7 +287,7 @@ export default function CustomerListPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-start sm:justify-end">
           {hasManageCustomerPermission && (
             <>
               <input 

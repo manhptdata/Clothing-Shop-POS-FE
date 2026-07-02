@@ -83,8 +83,8 @@ export default function OrderCreatePage() {
     <div className="h-screen flex flex-col bg-[#f0f2f5] overflow-hidden font-sans antialiased text-gray-800">
 
       {/* WHITE POS HEADER */}
-      <header className="h-[56px] bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0 z-30">
-        <div className="flex items-center gap-4">
+      <header className="h-[56px] bg-white border-b border-gray-200 flex items-center justify-between px-2 sm:px-4 flex-shrink-0 z-30 gap-2">
+        <div className="flex-1 min-w-0 flex items-center">
           {/* Autocomplete Product Search */}
           <ProductSearchAutocomplete
             products={state.filteredProducts}
@@ -97,7 +97,7 @@ export default function OrderCreatePage() {
         </div>
 
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {/* Pending Orders Button */}
           <button
             onClick={() => actions.setIsPendingOrdersModalOpen(true)}
@@ -128,8 +128,8 @@ export default function OrderCreatePage() {
           )}
 
           {/* User profile */}
-          <div className="flex items-center gap-2 pl-4 border-l border-gray-200 select-none">
-            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-xs text-primary uppercase">
+          <div className="flex items-center gap-2 pl-2 sm:pl-4 border-l border-gray-200 select-none">
+            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-xs text-primary uppercase flex-shrink-0">
               {user?.fullName?.substring(0, 2) || 'NV'}
             </div>
             <div className="hidden xl:block text-left">
@@ -141,10 +141,10 @@ export default function OrderCreatePage() {
       </header>
 
       {/* POS WORKSPACE BODY */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
 
         {/* LEFT WORKSPACE (Cart items list and bottom control bar) */}
-        <main className="flex-1 flex flex-col p-4 gap-3 overflow-hidden h-full">
+        <main className="flex-1 flex flex-col p-4 gap-3 lg:overflow-hidden h-auto min-h-[500px] lg:min-h-0 lg:h-full">
 
           {/* Grid column header row */}
           <div className="bg-white rounded-xl border border-gray-200/80 p-3.5 flex justify-between items-center text-xs text-gray-400 font-bold flex-shrink-0 shadow-sm">
@@ -159,7 +159,7 @@ export default function OrderCreatePage() {
           </div>
 
           {/* Cart Scrolling Container */}
-          <div className="bg-white rounded-xl border border-gray-200/80 overflow-y-auto flex-1 shadow-sm flex flex-col relative">
+          <div className="bg-white rounded-xl border border-gray-200/80 overflow-y-auto flex-1 shadow-sm flex flex-col relative min-h-[250px]">
             <CartItemsList
               cart={state.cart}
               handleUpdateQuantity={actions.handleUpdateQuantity}
@@ -238,12 +238,12 @@ export default function OrderCreatePage() {
           )}
 
           {/* BOTTOM CONTROLS BAR */}
-          <div className="bg-white p-3 rounded-xl border border-gray-200/80 flex items-center justify-between text-xs flex-shrink-0 shadow-sm">
+          <div className="bg-white p-3 rounded-xl border border-gray-200/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between text-xs flex-shrink-0 shadow-sm gap-3">
             <div className="flex gap-2">
               <Button
                 onClick={() => setIsCustomProductOpen(true)}
                 variant="outline"
-                className="!bg-blue-50 !text-blue-600 !border-blue-200 hover:!bg-blue-100 text-xs px-3 font-semibold rounded-lg h-[30px] flex items-center justify-center gap-1"
+                className="!bg-blue-50 !text-blue-600 !border-blue-200 hover:!bg-blue-100 text-xs px-3 font-semibold rounded-lg h-[30px] flex items-center justify-center gap-1 w-full sm:w-auto"
               >
                 <span className="material-symbols-outlined text-[16px]">add_box</span>
                 Sản phẩm tùy chỉnh [F2]
@@ -251,9 +251,9 @@ export default function OrderCreatePage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 font-bold select-none cursor-default">
+              <div className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 bg-gray-50 px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 font-bold select-none cursor-default truncate">
                 <span className="material-symbols-outlined text-[16px] text-gray-400">badge</span>
-                <span>Nhân viên: {user?.fullName || 'Nhân viên'}</span>
+                <span className="truncate">Nhân viên: {user?.fullName || 'Nhân viên'}</span>
               </div>
             </div>
           </div>

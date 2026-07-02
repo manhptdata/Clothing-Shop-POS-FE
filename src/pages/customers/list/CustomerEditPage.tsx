@@ -129,15 +129,14 @@ export default function CustomerEditPage() {
   return (
     <div className="flex-1 p-6 max-w-4xl mx-auto w-full">
       {/* HEADER */}
-      <header className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+      <header className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full sm:w-auto text-center sm:text-left">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center justify-center sm:justify-start gap-2">
             <i className="fa-solid fa-user-gear text-amber-600"></i> Chỉnh sửa
             khách hàng: {formData.fullName}
           </h1>
         </div>
-        <div>
+        <div className="w-full sm:w-auto flex justify-center">
           <Button
             variant="outline"
             onClick={() => navigate(-1)}
@@ -332,10 +331,11 @@ export default function CustomerEditPage() {
           </div>
 
           <div className="pt-4 border-t border-gray-100 flex justify-end items-center text-xs">
-            <div className="flex space-x-3 w-full sm:w-auto">
+            <div className="flex gap-3 w-full sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
+                className="flex-1 sm:flex-none justify-center"
                 onClick={() => navigate(-1)}
               >
                 Hủy thay đổi
@@ -343,7 +343,7 @@ export default function CustomerEditPage() {
               <Button
                 type="submit"
                 isLoading={isUpdating}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="bg-amber-500 hover:bg-amber-600 text-white flex-1 sm:flex-none justify-center"
                 leftIcon={<i className="fa-solid fa-floppy-disk"></i>}
               >
                 Cập nhật thông tin

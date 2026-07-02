@@ -26,7 +26,12 @@ const menuItems: MenuItem[] = [
   { path: '/settings/roles', label: 'Vai trò', icon: 'security', permissions: ['MANAGE_ROLE'] },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation();
   const [logout] = useLogoutMutation();
   const user = useAppSelector((state) => state.auth.user);
@@ -42,7 +47,15 @@ export default function Sidebar() {
   );
 
   return (
-    <nav className="fixed left-0 top-0 h-full flex flex-col py-8 w-64 border-r border-outline/5 glass-panel z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity"
+          onClick={onClose}
+        />
+      )}
+      <nav className={`fixed top-0 h-full flex flex-col py-8 w-64 border-r border-outline/5 glass-panel z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:left-0`}>
       <div className="px-6 mb-12 flex flex-col items-start">
         <h1 className="font-sans text-[42px] font-bold text-primary tracking-tight leading-none mb-1">Sapo</h1>
         <p className="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest opacity-80">
@@ -98,5 +111,6 @@ export default function Sidebar() {
 
       <ShiftHandoverModal isOpen={isHandoverOpen} onClose={() => setIsHandoverOpen(false)} />
     </nav>
+    </>
   );
 }

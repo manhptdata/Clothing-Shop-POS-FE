@@ -82,9 +82,9 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <section className="w-full lg:w-[350px] xl:w-[380px] flex-shrink-0 bg-white border-l border-gray-200 flex flex-col h-full shadow-sm">
+    <section className="w-full lg:w-[350px] xl:w-[380px] flex-shrink-0 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col h-auto lg:h-full shadow-sm">
       {/* Body Content */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+      <div className="flex-1 overflow-visible lg:overflow-y-auto p-4 flex flex-col gap-4">
         {/* Customer CRM section */}
         {customerSelectionNode}
 

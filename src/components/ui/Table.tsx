@@ -28,13 +28,13 @@ export function Table<T>({
 }: TableProps<T>) {
   return (
     <div className={`overflow-x-auto w-full ${className}`}>
-      <table className="w-full text-left border-collapse">
+      <table className="w-full text-left border-collapse min-w-max">
         <thead className="bg-surface-container-low border-b border-outline-variant/15">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`py-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider ${col.className || ''}`}
+                className={`py-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider whitespace-nowrap ${col.className || ''}`}
               >
                 {col.header}
               </th>

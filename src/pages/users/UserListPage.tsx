@@ -85,7 +85,7 @@ export default function UserListPage() {
             <p className="text-body-md">Không tìm thấy nhân viên nào.</p>
           </div>
         ) : (
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead className="bg-surface border-b border-outline/10">
               <tr>
                 <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold w-1/3">Họ tên</th>

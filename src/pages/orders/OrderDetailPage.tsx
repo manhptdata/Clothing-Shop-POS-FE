@@ -320,11 +320,11 @@ export default function OrderDetailPage() {
         
         {/* Left: Items list (8 columns) */}
         <div className="lg:col-span-8 flex flex-col gap-gutter print:w-full">
-          <div className="bg-surface rounded-xl border border-outline/10 overflow-hidden">
-            <div className="p-md border-b border-outline/10 bg-surface-container-low">
+          <div className="bg-surface rounded-xl border border-outline/10 overflow-x-auto">
+            <div className="p-md border-b border-outline/10 bg-surface-container-low min-w-[600px]">
               <h3 className="font-title-sm text-title-sm text-on-surface">Sản phẩm trong đơn</h3>
             </div>
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-surface-container-lowest border-b border-outline/10">
                   <th className="py-sm px-md font-label-caps text-label-caps text-on-surface-variant uppercase text-xs">Chi tiết sản phẩm</th>
@@ -575,8 +575,8 @@ export default function OrderDetailPage() {
 
               <div className="space-y-sm">
                 <h4 className="font-title-sm text-title-sm text-on-surface font-semibold">Chọn sản phẩm trả lại</h4>
-                <div className="border border-outline/10 rounded-xl overflow-hidden">
-                  <table className="w-full text-left border-collapse text-sm">
+                <div className="border border-outline/10 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-sm min-w-[600px]">
                     <thead>
                       <tr className="bg-surface-container border-b border-outline/10">
                         <th className="py-sm px-md font-semibold text-on-surface-variant">Sản phẩm</th>

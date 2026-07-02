@@ -4,7 +4,11 @@ import { useAppSelector } from '@/redux/hooks';
 import { useNotifications, NotificationItem } from '@/providers/NotificationProvider';
 import { ROLE_LABEL } from '@/utils/constants';
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const user = useAppSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const {
@@ -69,8 +73,16 @@ export default function Header() {
   };
 
   return (
-    <header className="flex justify-end items-center h-20 px-8 bg-surface/80 backdrop-blur-md border-b border-outline/5 sticky top-0 z-30">
-      <div className="flex items-center gap-4">
+    <header className="flex justify-between lg:justify-end items-center h-20 px-4 md:px-8 bg-surface/80 backdrop-blur-md border-b border-outline/5 sticky top-0 z-30">
+      {/* Hamburger Menu for Mobile */}
+      <button 
+        onClick={onMenuClick} 
+        className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-primary transition-colors hover:bg-outline/5 rounded-full flex items-center justify-center"
+      >
+        <span className="material-symbols-outlined">menu</span>
+      </button>
+
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Notification Bell with Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
@@ -209,8 +221,8 @@ export default function Header() {
 
         {user && (
           <>
-            <div className="h-6 w-px bg-outline/20 mx-2"></div>
-            <div className="flex items-center gap-3">
+            <div className="h-6 w-px bg-outline/20 mx-1 md:mx-2"></div>
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="text-right hidden md:block">
                 <p className="font-semibold text-sm text-on-surface leading-tight">{user.fullName}</p>
                 <p className="text-xs text-on-surface-variant/80">

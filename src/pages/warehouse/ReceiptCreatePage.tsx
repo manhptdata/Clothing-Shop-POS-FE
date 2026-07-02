@@ -273,7 +273,7 @@ export default function ReceiptCreatePage() {
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
+                                <table className="w-full text-left border-collapse min-w-[700px]">
                                     <thead>
                                         <tr className="border-b border-outline/10">
                                             <th className="pb-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wide">Sản phẩm</th>

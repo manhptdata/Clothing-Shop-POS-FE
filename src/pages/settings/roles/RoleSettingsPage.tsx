@@ -133,7 +133,7 @@ export default function RoleSettingsPage() {
       </div>
 
       <div className="bg-surface glass-panel rounded-xl shadow-sm border border-outline/10 overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto"><table className="w-full text-left min-w-[600px]">
           <thead className="bg-surface-container-low border-b border-outline/10">
             <tr>
               <th className="px-6 py-4 font-semibold text-on-surface">Tên vai trò</th>
@@ -179,7 +179,7 @@ export default function RoleSettingsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       {isModalOpen && (

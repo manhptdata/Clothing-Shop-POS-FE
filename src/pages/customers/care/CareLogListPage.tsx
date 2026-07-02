@@ -199,9 +199,9 @@ export default function CareLogListPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto w-full text-gray-800 antialiased">
       {/* Header */}
-      <header className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
+      <header className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm">
+        <div className="w-full text-center sm:text-left">
+          <div className="flex justify-center sm:justify-start items-center gap-2 text-xs text-gray-500 font-medium mb-1">
             <Link to="/customers" className="hover:text-blue-600 transition">
               CRM
             </Link>
@@ -210,15 +210,15 @@ export default function CareLogListPage() {
               Nhật ký chăm sóc toàn cửa hàng
             </span>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex justify-center sm:justify-start items-center gap-2">
             <i className="fa-solid fa-clock-rotate-left text-blue-600"></i> Toàn
             bộ nhật ký chăm sóc khách hàng
           </h1>
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex w-full sm:w-auto justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             <i className="fa-solid fa-arrow-left"></i> Quay lại
           </button>

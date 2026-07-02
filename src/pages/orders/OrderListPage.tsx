@@ -215,15 +215,16 @@ export default function OrderListPage() {
   return (
     <div className="max-w-[1440px] mx-auto">
       {/* Page Header */}
-      <div className="flex justify-between items-end mb-lg">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-end mb-lg">
         <div>
           <h2 className="font-display-lg text-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>Đơn hàng</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-2">Quản lý giao dịch, hóa đơn bán hàng và phiếu trả hàng của cửa hàng.</p>
         </div>
-        <div className="flex gap-sm">
+        <div className="flex gap-sm w-full sm:w-auto">
           {hasCreateOrderPermission && (
-            <Link to="/orders/new">
+            <Link to="/orders/new" className="w-full sm:w-auto">
               <Button
+                className="w-full sm:w-auto justify-center whitespace-nowrap"
                 leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
               >
                 Tạo đơn mới (POS)
@@ -404,8 +405,8 @@ export default function OrderListPage() {
 
               <div className="space-y-xs">
                 <span className="text-xs text-on-surface-variant font-bold block">Sản phẩm hoàn trả:</span>
-                <div className="border border-outline/10 rounded-xl overflow-hidden text-xs">
-                  <table className="w-full text-left border-collapse">
+                <div className="border border-outline/10 rounded-xl overflow-x-auto text-xs">
+                  <table className="w-full text-left border-collapse min-w-[500px]">
                     <thead>
                       <tr className="bg-surface-container-low border-b border-outline/10 font-bold">
                         <th className="py-2 px-3">Sản phẩm</th>
