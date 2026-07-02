@@ -4,9 +4,9 @@ import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareL
 import type { CustomerOrderHistory, CustomerWithEmail } from "@/types/customer.types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Table, Column } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { Input } from "@/components/ui/Input";
+import { useAppSelector } from "@/redux/hooks";
 
 export default function CustomerDetailPage() {
   const { id } = useParams();

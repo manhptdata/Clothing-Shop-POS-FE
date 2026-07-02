@@ -18,13 +18,28 @@ export default function VoucherListPage() {
   const { data: responseData, isLoading, isFetching } = useGetVoucherOptionsQuery();
   const [toggleStatus] = useToggleVoucherStatusMutation();
 
+  const [keyword, setKeyword] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("ALL");
+
   const vouchers = responseData?.data || [];
+
+  const filteredVouchers = React.useMemo(() => {
+    return vouchers.filter((v: any) => {
+      const matchKeyword = (v.name?.toLowerCase() || "").includes(keyword.toLowerCase()) || 
+                           (v.code?.toLowerCase() || "").includes(keyword.toLowerCase());
+      const matchStatus = statusFilter === "ALL" || v.status === statusFilter;
+      return matchKeyword && matchStatus;
+    });
+  }, [vouchers, keyword, statusFilter]);
 
   const columns: Column<any>[] = [
     {
       key: "id",
-      header: "ID",
-      render: (row) => <span className="text-gray-500 font-medium">#{row.id}</span>,
+      header: "STT",
+      render: (row) => {
+        const index = filteredVouchers.findIndex((v: any) => v.id === row.id);
+        return <span className="text-gray-700 font-semibold">{index + 1}</span>;
+      },
       width: "80px",
     },
     {
@@ -76,18 +91,16 @@ export default function VoucherListPage() {
                   toast.error(error?.data?.message || "Lỗi khi đổi trạng thái!");
                 }
               }}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${
-                isActive ? "bg-blue-600" : "bg-gray-200"
-              }`}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${isActive ? "bg-blue-600" : "bg-gray-200"
+                }`}
               role="switch"
               aria-checked={isActive}
             >
               <span className="sr-only">Toggle status</span>
               <span
                 aria-hidden="true"
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  isActive ? "translate-x-4" : "translate-x-0"
-                }`}
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? "translate-x-4" : "translate-x-0"
+                  }`}
               />
             </button>
             <span className={`text-xs font-semibold ${isActive ? "text-blue-600" : "text-gray-500"}`}>
@@ -141,11 +154,37 @@ export default function VoucherListPage() {
         </div>
       </header>
 
+      {/* TOOLBAR TÌM KIẾM & LỌC */}
+      <div className="bg-white p-4 rounded-xl border border-gray-200/60 shadow-sm mb-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="w-full md:w-96 relative">
+          <input
+            type="text"
+            placeholder="Tìm theo tên hoặc mã voucher..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-shadow"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <div className="w-full md:w-auto flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Trạng thái:</span>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[150px] cursor-pointer"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="ALL">Tất cả</option>
+            <option value="ACTIVE">Đang bật</option>
+            <option value="INACTIVE">Đã tắt</option>
+          </select>
+        </div>
+      </div>
+
       {/* TABLE DATA */}
       <div className="bg-white rounded-xl border border-gray-200/60 shadow-sm overflow-hidden relative">
         <Table
           columns={columns}
-          data={vouchers}
+          data={filteredVouchers}
           isLoading={isLoading || isFetching}
           emptyText="Chưa có voucher nào trong hệ thống."
         />
