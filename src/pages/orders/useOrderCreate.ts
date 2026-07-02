@@ -5,7 +5,7 @@ import { useGetProductsQuery, useLazyGetProductByIdQuery } from '@/redux/api/pro
 import { useGetRecommendationsQuery } from '@/redux/api/recommendationApi';
 import { useCreateOrderMutation, useUpdateOrderMutation } from '@/redux/api/orderApi';
 import type { CartItem } from './hooks/useCart';
-import type { Order } from '@/types/order.types';
+import type { Order, OrderRequest } from '@/types/order.types';
 
 import { useCart } from './hooks/useCart';
 import { useCustomerSelection } from './hooks/useCustomerSelection';
@@ -123,9 +123,12 @@ export function useOrderCreate() {
       toast.error('Vui lòng thêm sản phẩm vào giỏ hàng trước khi lưu tạm.');
       return;
     }
-
+    if (discounts.voucherError) {
+      toast.error(discounts.voucherError);
+      return;
+    }
     try {
-      const orderPayload = {
+      const orderPayload: OrderRequest = {
         customerId: customer.customerType === 'GUEST' ? 1 : (customer.selectedCustomer?.id || 1),
         paidAmount: 0,
         note: checkout.note || undefined,
@@ -140,12 +143,13 @@ export function useOrderCreate() {
         })),
       };
 
-      let response;
+      const response = pendingOrders.pendingOrderId
+        ? await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap()
+        : await createOrder(orderPayload).unwrap();
+
       if (pendingOrders.pendingOrderId) {
-        response = await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap();
         toast.success(`Cập nhật đơn hàng chờ thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       } else {
-        response = await createOrder(orderPayload).unwrap();
         toast.success(`Lưu tạm đơn hàng thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       }
       clearPOSState();
@@ -206,8 +210,12 @@ export function useOrderCreate() {
   };
 
   const confirmCheckout = async () => {
+    if (discounts.voucherError) {
+      toast.error(discounts.voucherError);
+      return;
+    }
     try {
-      const orderPayload = {
+      const orderPayload: OrderRequest = {
         customerId: customer.customerType === 'GUEST' ? 1 : (customer.selectedCustomer?.id || 1),
         paidAmount: checkout.paymentMethod === 'QR_SEPAY' ? discounts.total : Number(checkout.customerPaid),
         note: checkout.note || undefined,
@@ -222,12 +230,13 @@ export function useOrderCreate() {
         })),
       };
 
-      let response;
+      const response = pendingOrders.pendingOrderId
+        ? await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap()
+        : await createOrder(orderPayload).unwrap();
+
       if (pendingOrders.pendingOrderId) {
-        response = await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap();
         toast.success(`Thanh toán thành công đơn hàng chờ! Mã hóa đơn: ${response.data.orderNumber}`);
       } else {
-        response = await createOrder(orderPayload).unwrap();
         toast.success(`Thanh toán thành công! Mã hóa đơn: ${response.data.orderNumber}`);
       }
       checkout.setIsQRModalOpen(false);
@@ -255,6 +264,10 @@ export function useOrderCreate() {
       toast.error('Vui lòng chọn khách hàng thành viên để thanh toán.');
       return;
     }
+    if (discounts.voucherError) {
+      toast.error(discounts.voucherError);
+      return;
+    }
 
     if (checkout.paymentMethod === 'CASH') {
       if (checkout.customerPaid === '' || checkout.customerPaid < discounts.total) {
@@ -264,7 +277,7 @@ export function useOrderCreate() {
       await confirmCheckout();
     } else {
       try {
-        const orderPayload = {
+        const orderPayload: OrderRequest = {
           customerId: customer.customerType === 'GUEST' ? 1 : (customer.selectedCustomer?.id || 1),
           paidAmount: 0,
           note: checkout.note || undefined,
@@ -280,12 +293,9 @@ export function useOrderCreate() {
           })),
         };
         
-        let response;
-        if (pendingOrders.pendingOrderId) {
-          response = await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap();
-        } else {
-          response = await createOrder(orderPayload).unwrap();
-        }
+        const response = pendingOrders.pendingOrderId
+          ? await updateOrder({ id: pendingOrders.pendingOrderId, data: orderPayload }).unwrap()
+          : await createOrder(orderPayload).unwrap();
         
         setPendingOrderForQR(response.data);
         checkout.setIsQRModalOpen(true);
