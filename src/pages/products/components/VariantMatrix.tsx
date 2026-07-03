@@ -67,6 +67,12 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  // useRef để luôn giữ giá trị variants mới nhất, tránh stale closure trong useEffect
+  const variantsRef = useRef<VariantFormData[]>(variants);
+  useEffect(() => {
+    variantsRef.current = variants;
+  }); // Không deps → chạy mỗi render, luôn sync với prop mới nhất
+
   const handleVariantImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
@@ -123,8 +129,9 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
       };
 
       // Tìm variant đã tồn tại để giữ lại data đã nhập
+      // Dùng variantsRef.current thay vì variants để tránh stale closure
       const existingKey = comboKey(combo);
-      const existing = variants.find(v => {
+      const existing = variantsRef.current.find(v => {
         const vCombo = [v.option1Value, v.option2Value, v.option3Value]
           .filter((x): x is ProductOptionValue => !!x);
         return comboKey(vCombo) === existingKey;
@@ -269,12 +276,19 @@ export function VariantMatrix({ productName, options, variants, onChange, isEdit
                   className={`transition-colors ${isSelected ? 'hover:bg-surface-container-low/50' : 'bg-surface-container-low/30 opacity-60'}`}
                 >
                   <td className="px-3 py-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) => updateVariant(index, '_selected', e.target.checked)}
-                      className="rounded border-outline/20 text-primary focus:ring-primary"
-                    />
+                    <div className="flex flex-col items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => updateVariant(index, '_selected', e.target.checked)}
+                        className="rounded border-outline/20 text-primary focus:ring-primary"
+                      />
+                      {isEditing && !isSelected && variant.id && (
+                        <span className="text-[10px] text-error font-medium px-1.5 py-0.5 bg-error/10 rounded whitespace-nowrap" title={variant.isActive === false ? "Biến thể này đã bị vô hiệu hóa. Tick để kích hoạt lại." : "Biến thể này đã tồn tại, nếu bỏ chọn sẽ bị vô hiệu hóa"}>
+                          {variant.isActive === false ? 'Đã vô hiệu hóa' : 'Sẽ bị vô hiệu hóa'}
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Ảnh */}

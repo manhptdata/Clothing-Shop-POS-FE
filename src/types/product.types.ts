@@ -35,6 +35,7 @@ export interface ProductVariant {
   importPrice?: number;
   lowStockThreshold: number;
   quantity: number;
+  isActive?: boolean;
 }
 
 export interface Product {
