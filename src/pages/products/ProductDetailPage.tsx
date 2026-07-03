@@ -51,8 +51,9 @@ export default function ProductDetailPage() {
   }
 
   const mainImage = selectedImage || product.imageUrls?.[0];
-  const lowestPrice = Math.min(...product.variants.map(v => v.salePrice || 0));
-  const highestPrice = Math.max(...product.variants.map(v => v.salePrice || 0));
+  const activeVariants = product.variants.filter(v => v.isActive !== false);
+  const lowestPrice = Math.min(...activeVariants.map(v => v.salePrice || 0));
+  const highestPrice = Math.max(...activeVariants.map(v => v.salePrice || 0));
   const priceDisplay = lowestPrice === highestPrice
     ? `${lowestPrice.toLocaleString()} ₫`
     : `${lowestPrice.toLocaleString()} ₫ - ${highestPrice.toLocaleString()} ₫`;
@@ -146,7 +147,7 @@ export default function ProductDetailPage() {
           <div className="bg-surface-container-lowest border border-on-surface/10 p-md rounded-lg">
             <div className="flex justify-between items-start mb-sm">
               <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
-                SKU: {product.variants[0]?.sku || 'N/A'} {product.variants.length > 1 ? `(+${product.variants.length - 1} biến thể)` : ''}
+                SKU: {activeVariants[0]?.sku || 'N/A'} {activeVariants.length > 1 ? `(+${activeVariants.length - 1} biến thể)` : ''}
               </p>
             </div>
             <h2 className="font-headline-md text-headline-md font-medium text-on-surface mb-2">{product.name}</h2>
@@ -161,10 +162,10 @@ export default function ProductDetailPage() {
           <div className="bg-surface-container-lowest border border-on-surface/10 p-md rounded-lg flex-1">
             <h3 className="font-title-sm text-title-sm font-semibold text-on-surface mb-md flex items-center gap-xs">
               <span className="material-symbols-outlined text-primary">inventory_2</span>
-              Biến thể & Tồn kho ({product.variants.length})
+              Biến thể & Tồn kho ({activeVariants.length})
             </h3>
             <div className="space-y-sm max-h-[400px] overflow-y-auto pr-2">
-              {product.variants.map((v) => {
+              {activeVariants.map((v) => {
                 const optionNames = [v.option1Value, v.option2Value, v.option3Value].filter(Boolean).join(' - ');
                 const isOutOfStock = v.quantity === 0;
                 const isLowStock = v.quantity > 0 && v.quantity <= v.lowStockThreshold;

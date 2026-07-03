@@ -70,7 +70,7 @@ export default function ProductFormModal({
                     option1Value: typeof v.option1Value === 'string' ? { value: v.option1Value } : v.option1Value,
                     option2Value: typeof v.option2Value === 'string' ? { value: v.option2Value } : v.option2Value,
                     option3Value: typeof v.option3Value === 'string' ? { value: v.option3Value } : v.option3Value,
-                    _selected: true
+                    _selected: v.isActive !== false
                 })),
                 attributes: product.attributes || [],
             };
@@ -105,7 +105,7 @@ export default function ProductFormModal({
                     option1Value: typeof v.option1Value === 'string' ? { value: v.option1Value } : v.option1Value,
                     option2Value: typeof v.option2Value === 'string' ? { value: v.option2Value } : v.option2Value,
                     option3Value: typeof v.option3Value === 'string' ? { value: v.option3Value } : v.option3Value,
-                    _selected: true
+                    _selected: v.isActive !== false
                 })),
                 attributes: product.attributes || [],
             });
