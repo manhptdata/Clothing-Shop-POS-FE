@@ -65,8 +65,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className={`flex flex-col sm:flex-row justify-between items-center py-4 px-6 bg-surface-container-low/50 border-t border-outline/10 gap-4 ${className}`}>
-      <div className="flex items-center gap-4 text-on-surface-variant font-body-sm text-body-sm">
+    <div className={`flex flex-col lg:flex-row justify-between items-center py-4 px-6 bg-surface-container-low/50 border-t border-outline/10 gap-4 ${className}`}>
+      <div className="flex flex-wrap items-center gap-4 text-on-surface-variant font-body-sm text-body-sm whitespace-nowrap">
         {totalElements !== undefined && endItem !== null && (
           <span>
             Hiển thị {startItem} đến {endItem} trong {totalElements} kết quả
