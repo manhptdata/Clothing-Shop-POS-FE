@@ -87,7 +87,9 @@ export default function CustomerDetailPage() {
       ? "warning"
       : rankCode === "SILVER"
         ? "default"
-        : "info";
+        : rankCode === "MEMBER"
+          ? "secondary"
+          : "info";
 
   return (
     <div className="flex-1 p-6 max-w-[1600px] mx-auto w-full">
@@ -180,9 +182,7 @@ export default function CustomerDetailPage() {
               </label>
               <div className="mt-1 flex items-center gap-2">
                 {!rankCode ? (
-                  <Badge variant="secondary">
-                    Chưa xếp hạng
-                  </Badge>
+                  <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>
                 ) : (
                   <div 
                     onClick={() => {

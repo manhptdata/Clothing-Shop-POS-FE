@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useGetCustomerGroupByIdQuery, useDeleteCustomerGroupMutation } from "@/redux/api/customerApi";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import CustomerGroupEditModal from "./components/CustomerGroupEditModal";
 import toast from "react-hot-toast";
 
@@ -10,6 +11,7 @@ export default function CustomerGroupDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [deleteCustomerGroup, { isLoading: isDeleting }] = useDeleteCustomerGroupMutation();
 
@@ -21,14 +23,13 @@ export default function CustomerGroupDetailPage() {
   const group = responseData?.data;
 
   const handleDelete = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa hạng thẻ này không? Hệ thống sẽ không thể khôi phục lại dữ liệu!")) {
-      try {
-        await deleteCustomerGroup(id as string).unwrap();
-        toast.success("Xóa hạng thẻ thành công!");
-        navigate("/customers/groups", { replace: true });
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Lỗi khi xóa hạng thẻ!");
-      }
+    try {
+      await deleteCustomerGroup(id as string).unwrap();
+      toast.success("Xóa hạng thẻ thành công!");
+      setIsDeleteModalOpen(false);
+      navigate("/customers/groups", { replace: true });
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Lỗi khi xóa hạng thẻ!");
     }
   };
 
@@ -133,7 +134,7 @@ export default function CustomerGroupDetailPage() {
           <Button
             variant="danger"
             leftIcon={<i className="fa-solid fa-trash"></i>}
-            onClick={handleDelete}
+            onClick={() => setIsDeleteModalOpen(true)}
             isLoading={isDeleting}
             disabled={isDeleting}
           >
@@ -268,6 +269,39 @@ export default function CustomerGroupDetailPage() {
         onClose={() => setIsEditModalOpen(false)} 
         group={group}
       />
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <i className="fa-solid fa-triangle-exclamation"></i>
+            Xác nhận xóa hạng thẻ
+          </div>
+        }
+        footer={
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeleting}>
+              Hủy
+            </Button>
+            <Button variant="danger" onClick={handleDelete} isLoading={isDeleting}>
+              Xóa hạng thẻ
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-4">
+          <p className="text-gray-700">
+            Bạn có chắc chắn muốn xóa hạng thẻ <strong className="text-red-600 font-bold">{group.name}</strong> không?
+          </p>
+          <div className="text-red-500 text-sm mt-3 flex items-start gap-2 bg-red-50 p-3 rounded-lg border border-red-100">
+            <i className="fa-solid fa-circle-exclamation mt-0.5"></i>
+            <span>
+              Lưu ý: Hành động này không thể hoàn tác. Dữ liệu xếp hạng của khách hàng thuộc hạng thẻ này sẽ bị ảnh hưởng.
+            </span>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

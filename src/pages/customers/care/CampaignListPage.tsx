@@ -65,7 +65,7 @@ export default function CampaignListPage() {
     }
 
     const code = group.code;
-    const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : "info";
+    const variant = code === "GOLD" ? "warning" : code === "SILVER" ? "default" : code === "MEMBER" ? "secondary" : "info";
     return (
       <div 
         onClick={(e) => {

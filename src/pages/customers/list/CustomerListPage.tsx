@@ -167,9 +167,7 @@ export default function CustomerListPage() {
         const code = cus.customerGroup?.code;
         if (!code) {
           return (
-            <Badge variant="secondary">
-              Chưa xếp hạng
-            </Badge>
+            <span className="text-gray-400 text-[11px] font-medium whitespace-nowrap">Chưa xếp hạng</span>
           );
         }
 
