@@ -27,20 +27,21 @@ export function QRTransferModal({
   useEffect(() => {
     if (!isOpen || !pendingOrder || !onPaymentSuccess) return;
 
-    const latestNotification = notifications[0]; // Thông báo mới nhất luôn ở đầu mảng
-    if (
-      latestNotification &&
-      latestNotification.type === 'ORDER_PAID' &&
-      latestNotification.metadata
-    ) {
-      try {
-        const metadata = JSON.parse(latestNotification.metadata);
-        if (metadata.orderNumber === pendingOrder.orderNumber) {
-          onPaymentSuccess(pendingOrder);
+    // Tìm kiếm trong mảng thông báo để tìm đúng thông báo thanh toán của đơn hàng này
+    const matchedNotification = notifications.find((n) => {
+      if (n.type === 'ORDER_PAID' && n.metadata) {
+        try {
+          const metadata = JSON.parse(n.metadata);
+          return metadata.orderNumber === pendingOrder.orderNumber;
+        } catch (e) {
+          return false;
         }
-      } catch (e) {
-        console.error('Lỗi parse metadata thông báo thanh toán', e);
       }
+      return false;
+    });
+
+    if (matchedNotification) {
+      onPaymentSuccess(pendingOrder);
     }
   }, [notifications, isOpen, pendingOrder, onPaymentSuccess]);
 
@@ -49,11 +50,11 @@ export function QRTransferModal({
   const bankAccount = import.meta.env.VITE_SEPAY_BANK_ACCOUNT || 'SBSEPAY';
   const bankName = import.meta.env.VITE_SEPAY_BANK_NAME || 'MBBank';
   const accountName = import.meta.env.VITE_SEPAY_ACCOUNT_NAME || 'SHOP QUAN AO';
-  
+
   // Format description
   const description = pendingOrder?.orderNumber || 'THANH TOAN DON HANG';
 
-  // Dùng api qr.sepay.vn hoặc img.vietqr.io đều được
+  //api qr.sepay.vn or img.vietqr.io 
   const qrUrl = `https://qr.sepay.vn/img?acc=${bankAccount}&bank=${bankName}&amount=${total}&des=${description}`;
 
   return (
