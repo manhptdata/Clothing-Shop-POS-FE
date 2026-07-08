@@ -38,7 +38,7 @@ export default function VariantAutocomplete({
         const products = pageData?.data?.content ?? [];
         const result: VariantOption[] = [];
         for (const product of products) {
-            for (const variant of product.variants) {
+            for (const variant of product.variants.filter(v => v.isActive !== false)) {
                 result.push({
                     variantId: variant.id as number,
                     productName: product.name,
