@@ -164,6 +164,11 @@ export default function ReceiptListPage() {
                                                     <span className="material-symbols-outlined text-[14px]">edit_note</span>
                                                     Nháp
                                                 </span>
+                                            ) : r.status === 'CANCELLED' ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container opacity-80">
+                                                    <span className="material-symbols-outlined text-[14px]">cancel</span>
+                                                    Đã hủy
+                                                </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-success-container text-on-success-container">
                                                     <span className="material-symbols-outlined text-[14px]">check_circle</span>
