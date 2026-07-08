@@ -195,7 +195,7 @@ export default function ReceiptCreatePage() {
                                 <option value="">-- Chọn nhà cung cấp --</option>
                                 {suppliers.map((s) => (
                                     <option key={s.id} value={s.id}>
-                                        {s.name}
+                                        {s.name} {s.phone ? `- ${s.phone}` : ''}
                                     </option>
                                 ))}
                             </select>

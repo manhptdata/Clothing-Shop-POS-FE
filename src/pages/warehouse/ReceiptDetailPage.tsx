@@ -154,7 +154,7 @@ export default function ReceiptDetailPage() {
             {/* Info grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[
-                    { label: 'Nhà cung cấp', value: isSupplierLoading ? 'Đang tải...' : (supplier?.name ?? (receipt.supplierId ? `ID: ${receipt.supplierId}` : '—')), icon: 'local_shipping' },
+                    { label: 'Nhà cung cấp', value: isSupplierLoading ? 'Đang tải...' : (supplier?.name ? `${supplier.name} ${supplier.phone ? `- ${supplier.phone}` : ''}` : (receipt.supplierId ? `ID: ${receipt.supplierId}` : '—')), icon: 'local_shipping' },
                     { label: 'Tổng số lượng', value: receipt.totalQuantity ?? 0, icon: 'inventory_2' },
                     { label: 'Tổng tiền', value: fmtCurrency(receipt.totalAmount), icon: 'payments' },
                     { label: 'Ngày duyệt', value: fmtDate(receipt.confirmedAt), icon: 'event_available' },
