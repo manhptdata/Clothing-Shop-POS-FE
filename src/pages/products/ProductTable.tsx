@@ -90,13 +90,16 @@ export default function ProductTable({ products, getVariantStatus, onDelete }: P
 
                                                     return (
                                                         <tr key={idx} className={`text-xs transition-colors hover:brightness-95`}>
-                                                            <td className={`px-2 py-1 rounded-l ${bgClass} ${variantStatus.class !== 'ok' ? `border-l-2 ${variantStatus.class === 'critical' ? 'border-error' : 'border-warning'}` : ''}`}>
-                                                                <span className="font-medium text-on-surface whitespace-nowrap">
+                                                            <td className={`px-2 py-1 rounded-l whitespace-nowrap ${bgClass} ${variantStatus.class !== 'ok' ? `border-l-2 ${variantStatus.class === 'critical' ? 'border-error' : 'border-warning'}` : ''}`}>
+                                                                <span className="font-medium text-on-surface">
                                                                     {optionValues || `Biến thể ${idx + 1}`}
                                                                 </span>
                                                             </td>
-                                                            <td className={`px-2 py-1 font-semibold text-right whitespace-nowrap ${bgClass} ${textColorClass}`}>
-                                                                : {quantity}
+                                                            <td className={`px-2 py-1 font-semibold whitespace-nowrap ${bgClass} ${textColorClass}`}>
+                                                                <div className="flex items-center gap-1 justify-end">
+                                                                    <span className="text-on-surface-variant/50">:</span>
+                                                                    <span className="inline-block min-w-[20px] text-right">{quantity}</span>
+                                                                </div>
                                                             </td>
                                                             <td className={`px-2 py-1 rounded-r whitespace-nowrap ${bgClass}`}>
                                                                 <div className="flex items-center gap-1.5 justify-start">
