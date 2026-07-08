@@ -13,7 +13,7 @@ export default function CategoryListPage() {
   const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'DELETED'>('ALL');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -83,8 +83,8 @@ export default function CategoryListPage() {
   const filteredCategories = useMemo(() => {
     return categories.filter((c) => {
       // Filter by status
-      if (filterStatus === 'ACTIVE' && (c.deleted || !c.active)) return false;
-      if (filterStatus === 'DELETED' && !c.deleted) return false;
+      if (filterStatus === 'ACTIVE' && !c.active) return false;
+      if (filterStatus === 'INACTIVE' && c.active) return false;
       
       // Filter by search term
       if (searchTerm && !c.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -134,7 +134,7 @@ export default function CategoryListPage() {
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
-            <option value="DELETED">Đã xóa</option>
+            <option value="INACTIVE">Ngừng hoạt động</option>
           </select>
         </div>
       </div>

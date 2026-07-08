@@ -117,7 +117,7 @@ export default function StockHistoryPage() {
                                             <span className="font-mono font-semibold text-primary">{r.code}</span>
                                         </td>
                                         <td className="py-4 px-6 text-sm text-on-surface-variant">
-                                            {r.supplierId ?? '—'}
+                                            {r.supplierName ?? '—'}
                                         </td>
                                         <td className="py-4 px-6 text-right">
                                             <span className="inline-flex items-center gap-1 font-semibold text-on-surface">
