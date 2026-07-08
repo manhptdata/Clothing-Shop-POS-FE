@@ -276,7 +276,6 @@ export default function OrderCreatePage() {
         onSubmit={actions.handleCreateCustomerSubmit}
         newCustomerForm={state.newCustomerForm}
         setNewCustomerForm={actions.setNewCustomerForm}
-        groups={state.groups}
       />
 
       {/* MODAL 3 & 4: PENDING ORDERS LIST & CANCEL CONFIRMATION */}

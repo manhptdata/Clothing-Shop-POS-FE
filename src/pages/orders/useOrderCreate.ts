@@ -28,14 +28,14 @@ export function useOrderCreate() {
   const [lastCreatedOrder, setLastCreatedOrder] = useState<Order | null>(null);
   const [pendingOrderForQR, setPendingOrderForQR] = useState<Order | null>(null);
 
-  // --- Initialize Hooks ---
+  // Initialize Hooks
   const cart = useCart();
   const customer = useCustomerSelection();
   const discounts = useDiscounts(customer.selectedCustomer, customer.customerType, cart.rawTotal);
   const checkout = useCheckout(discounts.total);
   const pendingOrders = usePendingOrders();
 
-  // --- Fetch Recommendations ---
+  // Fetch Recommendations
   const cartProductIds = cart.cart.map(item => item.product.id).filter(id => id > 0);
   const { data: recommendationsData, isLoading: isRecommendationsLoading } = useGetRecommendationsQuery(
     { productIds: cartProductIds, limit: 5 },
@@ -43,13 +43,13 @@ export function useOrderCreate() {
   );
   const recommendations = cartProductIds.length > 0 ? (recommendationsData?.data || []) : [];
 
-  // --- Reset discounts and checkout when customer changes ---
+  // Reset discounts and checkout when customer changes
   useEffect(() => {
     discounts.clearDiscountsState();
     checkout.setIsPaidModified(false);
   }, [customer.selectedCustomer, customer.customerType]);
 
-  // --- Computed Products ---
+  // Computed Products
   const products = productData?.data?.content || [];
   const categories = ['Tất cả', ...new Set(products.map(p => p.category?.name).filter(Boolean) as string[])];
 
@@ -108,7 +108,7 @@ export function useOrderCreate() {
     }
   };
 
-  // --- Cross-Cutting Orchestration Actions ---
+  // Cross-Cutting Orchestration Actions
   const clearPOSState = () => {
     cart.clearCart();
     customer.clearCustomerState();
@@ -336,7 +336,6 @@ export function useOrderCreate() {
       isSearchFocused: customer.isSearchFocused,
       debouncedSearch: customer.debouncedSearch,
       customerSearchData: customer.customerSearchData,
-      groups: customer.groups,
       vouchersList: discounts.vouchersList,
       voucherCode: discounts.voucherCode,
       voucherError: discounts.voucherError,
