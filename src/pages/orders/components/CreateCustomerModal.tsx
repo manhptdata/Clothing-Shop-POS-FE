@@ -11,15 +11,12 @@ interface CreateCustomerModalProps {
     fullName: string;
     phone: string;
     gender: 'MALE' | 'FEMALE' | 'OTHER';
-    groupId: number;
   };
   setNewCustomerForm: React.Dispatch<React.SetStateAction<{
     fullName: string;
     phone: string;
     gender: 'MALE' | 'FEMALE' | 'OTHER';
-    groupId: number;
   }>>;
-  groups: any[];
 }
 
 export const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
@@ -28,7 +25,6 @@ export const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   onSubmit,
   newCustomerForm,
   setNewCustomerForm,
-  groups,
 }) => {
   if (!isOpen) return null;
 
@@ -91,15 +87,7 @@ export const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
             </div>
           </div>
 
-          {groups.length > 1 && (
-            <Select
-              id="modal-groupId"
-              label="Nhóm khách hàng"
-              value={newCustomerForm.groupId.toString()}
-              onChange={(val) => setNewCustomerForm(prev => ({ ...prev, groupId: Number(val) }))}
-              options={groups.map((group) => ({ label: group.name, value: group.id.toString() }))}
-            />
-          )}
+
         </div>
 
         <div className="p-md border-t border-outline/10 bg-surface-container-low flex justify-end gap-sm">

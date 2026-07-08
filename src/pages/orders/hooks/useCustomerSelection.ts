@@ -4,7 +4,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import {
   useGetCustomersQuery,
   useCreateCustomerMutation,
-  useGetCustomerGroupsQuery,
 } from '@/redux/api/customerApi';
 import type { Customer } from '@/types/customer.types';
 
@@ -19,12 +18,9 @@ export function useCustomerSelection() {
     fullName: '',
     phone: '',
     gender: 'MALE' as 'MALE' | 'FEMALE' | 'OTHER',
-    groupId: 0,
   });
 
   const [createCustomer] = useCreateCustomerMutation();
-  const { data: groupData } = useGetCustomerGroupsQuery();
-  const groups = groupData?.data?.content || [];
 
   const debouncedSearch = useDebounce(searchCustomerQuery, 300);
   const { data: customerSearchData } = useGetCustomersQuery(
@@ -37,11 +33,7 @@ export function useCustomerSelection() {
   );
   const defaultCustomer = defaultCustomerSearch?.data?.content?.[0] || null;
 
-  useEffect(() => {
-    if (groups.length > 0 && newCustomerForm.groupId === 0) {
-      setNewCustomerForm(prev => ({ ...prev, groupId: groups[0].id }));
-    }
-  }, [groups]);
+
 
   useEffect(() => {
     if (customerType === 'GUEST' && defaultCustomer) {
@@ -73,7 +65,6 @@ export function useCustomerSelection() {
           fullName: '',
           phone: '',
           gender: 'MALE',
-          groupId: groups[0]?.id || 1,
         });
       }
     } catch (err) {
@@ -102,7 +93,6 @@ export function useCustomerSelection() {
     setIsCustomerModalOpen,
     newCustomerForm,
     setNewCustomerForm,
-    groups,
     debouncedSearch,
     customerSearchData,
     defaultCustomer,
