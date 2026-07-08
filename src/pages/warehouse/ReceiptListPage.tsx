@@ -142,6 +142,7 @@ export default function ReceiptListPage() {
                                 <tr>
                                     <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Mã phiếu</th>
                                     <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-center">Trạng thái</th>
+                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Nhà cung cấp</th>
                                     <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right">Tổng SL</th>
                                     <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right">Tổng tiền</th>
                                     <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Ngày tạo</th>
@@ -175,6 +176,9 @@ export default function ReceiptListPage() {
                                                     Đã duyệt
                                                 </span>
                                             )}
+                                        </td>
+                                        <td className="py-4 px-6 text-on-surface">
+                                            {r.supplierName ?? '—'}
                                         </td>
                                         <td className="py-4 px-6 text-right font-medium text-on-surface">{r.totalQuantity ?? 0}</td>
                                         <td className="py-4 px-6 text-right font-semibold text-on-surface">{fmtCurrency(r.totalAmount)}</td>

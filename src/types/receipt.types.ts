@@ -11,7 +11,8 @@ export interface StockReceiptItem {
 export interface StockReceipt {
     id: number;
     code: string;
-    supplierId: number | null;
+    supplierId?: number;
+    supplierName?: string;
     status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
     note: string | null;
     totalQuantity: number;
