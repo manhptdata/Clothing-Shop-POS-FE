@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select';
 import { ProductOptionBuilder } from './ProductOptionBuilder';
 import { VariantMatrix, VariantFormData } from './VariantMatrix';
 import { ImageUploader } from './ImageUploader';
+import { deleteImageFromCloudinary } from '@/utils/cloudinary';
 import { useCreateProductMutation, useUpdateProductMutation } from '@/redux/api/productApi';
 import type {
     Product,
@@ -85,10 +86,11 @@ export default function ProductFormModal({
     const isEditing = !!product;
     const isSaving = isCreating || isUpdating;
 
+    const newlyUploadedImagesRef = useRef<string[]>([]);
+
     // Reset/populate form khi modal mở
     useEffect(() => {
         if (isOpen && product) {
-            // Sync in case product changes while open
             setFormData({
                 name: product.name,
                 description: product.description || '',
@@ -113,7 +115,20 @@ export default function ProductFormModal({
             setFormData(INITIAL_FORM);
         }
         setErrors({});
+        newlyUploadedImagesRef.current = [];
     }, [isOpen, product]);
+
+    const handleClose = () => {
+        if (newlyUploadedImagesRef.current.length > 0) {
+            newlyUploadedImagesRef.current.forEach(url => {
+                if (url.includes('res.cloudinary.com')) {
+                    deleteImageFromCloudinary(url).catch(console.error);
+                }
+            });
+            newlyUploadedImagesRef.current = [];
+        }
+        onClose();
+    };
 
     // Handlers
     const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
@@ -219,7 +234,8 @@ export default function ProductFormModal({
                 const res = await createProduct(requestData).unwrap();
                 if (res.data) onSuccess?.(res.data);
             }
-            onClose();
+            newlyUploadedImagesRef.current = [];
+            handleClose();
         } catch (err: any) {
             console.error('Lỗi lưu sản phẩm:', err);
             const errorMsg = err?.data?.message || err?.message || 'Đã xảy ra lỗi không xác định';
@@ -238,12 +254,12 @@ export default function ProductFormModal({
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={handleClose}
             title={isEditing ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
             size="2xl"
             footer={
                 <>
-                    <Button variant="outline" onClick={onClose} disabled={isSaving}>
+                    <Button variant="outline" onClick={handleClose} disabled={isSaving}>
                         Hủy bỏ
                     </Button>
                     <Button
@@ -379,7 +395,23 @@ export default function ProductFormModal({
                     <div>
                         <ImageUploader
                             images={formData.imageUrls}
-                            onChange={(urls) => updateField('imageUrls', urls)}
+                            onUpload={(newUrls) => {
+                                newlyUploadedImagesRef.current = [...newlyUploadedImagesRef.current, ...newUrls];
+                            }}
+                            onChange={(urls) => {
+                                const removedImages = formData.imageUrls.filter(url => !urls.includes(url));
+                                updateField('imageUrls', urls);
+                                
+                                if (removedImages.length > 0) {
+                                    const newVariants = formData.variants.map(v => {
+                                        if (v.imageUrl && removedImages.includes(v.imageUrl)) {
+                                            return { ...v, imageUrl: undefined };
+                                        }
+                                        return v;
+                                    });
+                                    updateField('variants', newVariants);
+                                }
+                            }}
                         />
                     </div>
                 </div>

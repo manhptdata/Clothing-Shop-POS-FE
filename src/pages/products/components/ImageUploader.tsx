@@ -5,9 +5,10 @@ import { uploadMultipleImagesToCloudinary, deleteImageFromCloudinary } from '@/u
 interface ImageUploaderProps {
     images: string[];
     onChange: (images: string[]) => void;
+    onUpload?: (newUrls: string[]) => void;
 }
 
-export function ImageUploader({ images, onChange }: ImageUploaderProps) {
+export function ImageUploader({ images, onChange, onUpload }: ImageUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -20,6 +21,9 @@ export function ImageUploader({ images, onChange }: ImageUploaderProps) {
             setIsUploading(true);
             const uploadedUrls = await uploadMultipleImagesToCloudinary(files);
             onChange([...images, ...uploadedUrls]);
+            if (onUpload) {
+                onUpload(uploadedUrls);
+            }
         } catch (error) {
             console.error('Lỗi khi tải ảnh lên:', error);
             toast.error('Có lỗi xảy ra khi tải ảnh lên. Vui lòng kiểm tra lại cấu hình.');

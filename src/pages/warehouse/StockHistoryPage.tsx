@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { useGetReceiptsQuery } from '@/redux/api/receiptApi';
+import { useGetStockLogsQuery, SOURCE_LABELS, SOURCE_COLORS } from '@/redux/api/stockLogApi';
+import type { StockLogSource } from '@/redux/api/stockLogApi';
 
 const fmtDate = (val?: string | null) => {
     if (!val) return '—';
@@ -11,66 +10,77 @@ const fmtDate = (val?: string | null) => {
     }).format(new Date(val));
 };
 
-const fmtCurrency = (val?: number | null) => {
-    if (val == null) return '—';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
-};
+// Tab filter theo nguồn biến động
+type SourceTab = 'ALL' | StockLogSource;
+
+const TABS: { key: SourceTab; label: string; icon: string }[] = [
+    { key: 'ALL', label: 'Tất cả', icon: 'inventory_2' },
+    { key: 'NHAP_HANG', label: 'Nhập hàng', icon: 'add_circle' },
+    { key: 'BAN_HANG', label: 'Bán hàng', icon: 'shopping_cart' },
+    { key: 'TRA_HANG', label: 'Trả hàng', icon: 'assignment_return' },
+    { key: 'HUY_DON', label: 'Hủy đơn', icon: 'cancel' },
+    { key: 'DIEU_CHINH', label: 'Điều chỉnh', icon: 'tune' },
+];
 
 export default function StockHistoryPage() {
-    const navigate = useNavigate();
-    const [page, setPage] = useState(0);
-    const size = 15;
+    const [page, setPage] = useState(1);
+    const [activeTab, setActiveTab] = useState<SourceTab>('ALL');
+    const size = 20;
 
-    // Lấy tất cả phiếu, sort mới nhất trước
-    const { data: pageData, isLoading, isFetching } = useGetReceiptsQuery({
+    const queryParams = {
         page,
         size,
         sort: 'createdAt,desc',
-    });
+        ...(activeTab !== 'ALL' ? { source: activeTab } : {}),
+    };
 
-    // Chỉ hiển thị những phiếu CONFIRMED = đã thực sự thay đổi tồn kho
-    const allReceipts = pageData?.content ?? [];
-    const confirmedReceipts = allReceipts.filter((r) => r.status === 'CONFIRMED');
-    const totalPages = pageData?.totalPages ?? 0;
-    const totalElements = pageData?.totalElements ?? 0;
+    const { data, isLoading, isFetching } = useGetStockLogsQuery(queryParams);
+
+    const logs = data?.result ?? [];
+    const meta = data?.meta;
+    const totalPages = meta?.pages ?? 0;
+
+    const handleTabChange = (tab: SourceTab) => {
+        setActiveTab(tab);
+        setPage(1); // reset về trang 1 khi đổi tab
+    };
 
     return (
         <div className="flex-1 px-6 pb-6 pt-2 max-w-7xl mx-auto w-full">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-md">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
                 <div>
                     <h2 className="font-display-lg text-display-lg text-on-surface tracking-tighter" style={{ fontSize: '32px', lineHeight: '40px' }}>
-                        Lịch sử thay đổi kho
+                        Lịch sử biến động kho
                     </h2>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">
-                        Lịch sử các phiếu nhập kho đã được duyệt và làm thay đổi số lượng tồn kho thực tế.
+                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                        Toàn bộ thay đổi tồn kho: nhập hàng, bán hàng, trả hàng, hủy đơn.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-xs font-semibold text-blue-600">
-                    <span className="material-symbols-outlined text-[16px]">info</span>
-                    <span>Chỉ hiển thị phiếu đã duyệt (CONFIRMED)</span>
-                </div>
+                {meta && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-lg text-xs font-semibold text-primary shrink-0">
+                        <span className="material-symbols-outlined text-[16px]">database</span>
+                        <span>{meta.total.toLocaleString('vi-VN')} bản ghi</span>
+                    </div>
+                )}
             </div>
 
-            {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-surface rounded-xl border border-outline/10 p-4">
-                    <div className="text-xs text-on-surface-variant uppercase font-semibold tracking-wide mb-1">Tổng phiếu đã duyệt</div>
-                    <div className="text-2xl font-bold text-primary">{confirmedReceipts.length}</div>
-                    <div className="text-xs text-on-surface-variant">trong {totalElements} phiếu tổng cộng</div>
-                </div>
-                <div className="bg-surface rounded-xl border border-outline/10 p-4">
-                    <div className="text-xs text-on-surface-variant uppercase font-semibold tracking-wide mb-1">Tổng SL đã nhập</div>
-                    <div className="text-2xl font-bold text-on-surface">
-                        {confirmedReceipts.reduce((s, r) => s + (r.totalQuantity ?? 0), 0).toLocaleString('vi-VN')}
-                    </div>
-                    <div className="text-xs text-on-surface-variant">sản phẩm</div>
-                </div>
-                <div className="bg-surface rounded-xl border border-outline/10 p-4 col-span-2 md:col-span-1">
-                    <div className="text-xs text-on-surface-variant uppercase font-semibold tracking-wide mb-1">Tổng tiền đã nhập</div>
-                    <div className="text-2xl font-bold text-on-surface">
-                        {fmtCurrency(confirmedReceipts.reduce((s, r) => s + (r.totalAmount ?? 0), 0))}
-                    </div>
-                </div>
+            {/* Source Tabs */}
+            <div className="flex gap-1 p-1 bg-surface-container rounded-xl mb-6 overflow-x-auto">
+                {TABS.map((tab) => (
+                    <button
+                        key={tab.key}
+                        onClick={() => handleTabChange(tab.key)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all
+                            ${activeTab === tab.key
+                                ? 'bg-surface text-on-surface shadow-sm'
+                                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface/50'
+                            }`}
+                    >
+                        <span className="material-symbols-outlined text-[16px]">{tab.icon}</span>
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* Table */}
@@ -82,85 +92,106 @@ export default function StockHistoryPage() {
                 )}
 
                 {isLoading ? (
-                    <div className="py-24 text-center text-on-surface-variant">
-                        <span className="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
-                        <p className="text-body-md">Đang tải lịch sử...</p>
+                    <div className="flex items-center justify-center py-20 text-on-surface-variant gap-2">
+                        <span className="material-symbols-outlined animate-spin text-2xl">progress_activity</span>
+                        <span className="text-sm">Đang tải dữ liệu...</span>
                     </div>
-                ) : confirmedReceipts.length === 0 ? (
-                    <div className="py-24 text-center text-on-surface-variant">
-                        <span className="material-symbols-outlined text-4xl mb-2 text-outline/50">history</span>
-                        <p className="text-body-md">Chưa có phiếu nào được duyệt.</p>
-                        <p className="text-sm mt-1">Hãy tạo và duyệt phiếu nhập kho để xem lịch sử.</p>
+                ) : logs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant gap-3">
+                        <span className="material-symbols-outlined text-5xl opacity-30">inventory_2</span>
+                        <p className="text-sm">Chưa có biến động kho nào được ghi nhận.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[750px]">
-                            <thead className="bg-surface border-b border-outline/10">
-                                <tr>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Mã phiếu</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">NCC ID</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right">Tổng SL nhập</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right">Tổng tiền</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Ngày tạo</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold">Ngày duyệt</th>
-                                    <th className="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 font-semibold text-right w-24">Chi tiết</th>
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-outline/10 bg-surface-container text-on-surface-variant">
+                                <th className="text-left px-4 py-3 font-semibold">Thời gian</th>
+                                <th className="text-left px-4 py-3 font-semibold">Sản phẩm / SKU</th>
+                                <th className="text-center px-4 py-3 font-semibold">Nguồn</th>
+                                <th className="text-center px-4 py-3 font-semibold">Trước</th>
+                                <th className="text-center px-4 py-3 font-semibold">Thay đổi</th>
+                                <th className="text-center px-4 py-3 font-semibold">Sau</th>
+                                <th className="text-left px-4 py-3 font-semibold">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-outline/10">
+                            {logs.map((log) => (
+                                <tr key={log.id} className="hover:bg-surface-container/50 transition-colors">
+                                    <td className="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">
+                                        {fmtDate(log.createdAt)}
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="font-medium text-on-surface text-sm truncate max-w-[200px]">
+                                            {log.productName ?? '—'}
+                                        </div>
+                                        <div className="text-xs text-on-surface-variant font-mono">{log.variantSku}</div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${SOURCE_COLORS[log.source]}`}>
+                                            {SOURCE_LABELS[log.source]}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center text-on-surface-variant font-mono text-sm">
+                                        {log.quantityBefore}
+                                    </td>
+                                    <td className="px-4 py-3 text-center font-bold font-mono text-base">
+                                        <span className={log.quantityChange > 0 ? 'text-emerald-600' : 'text-red-500'}>
+                                            {log.quantityChange > 0 ? '+' : ''}{log.quantityChange}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center font-semibold text-on-surface font-mono text-sm">
+                                        {log.quantityAfter}
+                                    </td>
+                                    <td className="px-4 py-3 text-on-surface-variant text-xs max-w-[220px] truncate" title={log.note}>
+                                        {log.note ?? '—'}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-outline/10">
-                                {confirmedReceipts.map((r) => (
-                                    <tr 
-                                        key={r.id} 
-                                        onClick={() => navigate(`/warehouse/receipts/${r.id}`)}
-                                        className="hover:bg-surface-variant/20 transition-colors cursor-pointer"
-                                    >
-                                        <td className="py-4 px-6">
-                                            <span className="font-mono font-semibold text-primary">{r.code}</span>
-                                        </td>
-                                        <td className="py-4 px-6 text-sm text-on-surface-variant">
-                                            {r.supplierName ?? '—'}
-                                        </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <span className="inline-flex items-center gap-1 font-semibold text-on-surface">
-                                                <span className="material-symbols-outlined text-success text-[16px]">arrow_upward</span>
-                                                +{r.totalQuantity ?? 0}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6 text-right font-semibold text-on-surface">
-                                            {fmtCurrency(r.totalAmount)}
-                                        </td>
-                                        <td className="py-4 px-6 text-sm text-on-surface-variant">{fmtDate(r.createdAt)}</td>
-                                        <td className="py-4 px-6 text-sm text-on-surface-variant">{fmtDate(r.confirmedAt)}</td>
-                                        <td className="py-4 px-6 text-right">
-                                            <button
-                                                onClick={() => navigate(`/warehouse/receipts/${r.id}`)}
-                                                className="text-on-surface-variant hover:text-primary transition-colors p-1"
-                                                title="Xem chi tiết"
-                                            >
-                                                <span className="material-symbols-outlined text-xl">open_in_new</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="p-4 border-t border-outline/10 flex items-center justify-between bg-surface">
-                        <span className="text-sm text-on-surface-variant">
-                            Trang {page + 1}/{totalPages} · {totalElements} phiếu tổng
-                        </span>
-                        <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 0}
-                                leftIcon={<span className="material-symbols-outlined">chevron_left</span>}>Trước</Button>
-                            <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}
-                                rightIcon={<span className="material-symbols-outlined">chevron_right</span>}>Sau</Button>
-                        </div>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-on-surface-variant">
+                        Trang {meta?.page ?? 1} / {totalPages} &nbsp;·&nbsp; Tổng {(meta?.total ?? 0).toLocaleString('vi-VN')} bản ghi
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page <= 1}
+                            className="p-2 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-sm">chevron_left</span>
+                        </button>
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const pageNum = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setPage(pageNum)}
+                                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors
+                                        ${page === pageNum
+                                            ? 'bg-primary text-on-primary'
+                                            : 'hover:bg-surface-container text-on-surface-variant'
+                                        }`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                        <button
+                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={page >= totalPages}
+                            className="p-2 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-sm">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

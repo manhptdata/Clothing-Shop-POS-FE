@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useGetProductByIdQuery } from '@/redux/api/productApi';
 import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import ProductFormModal from './components/ProductFormModal';
+import ProductStockHistoryModal from './components/ProductStockHistoryModal';
 import { useAppSelector } from '@/redux/hooks';
 
 export default function ProductDetailPage() {
@@ -15,6 +16,7 @@ export default function ProductDetailPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [historyVariant, setHistoryVariant] = useState<any>(null);
 
   const { data: categoriesData } = useGetCategoriesQuery();
   const categories = categoriesData || [];
@@ -156,6 +158,19 @@ export default function ProductDetailPage() {
             <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed whitespace-pre-wrap">
               {product.description || 'Chưa có mô tả chi tiết.'}
             </p>
+
+            <div className="mt-md pt-sm border-t border-on-surface/5 flex flex-col gap-1">
+              {product.createdByUsername && (
+                <p className="text-body-sm text-on-surface/50 italic">
+                  Tạo bởi: {product.createdByUsername} lúc {new Date(product.createdAt).toLocaleString('vi-VN')}
+                </p>
+              )}
+              {product.updatedByUsername && (
+                <p className="text-body-sm text-on-surface/50 italic">
+                  Sửa lần cuối bởi: {product.updatedByUsername} lúc {new Date(product.updatedAt).toLocaleString('vi-VN')}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Inventory Status */}
@@ -199,6 +214,13 @@ export default function ProductDetailPage() {
                         <span className={`font-body-sm text-body-sm font-medium ${isOutOfStock ? 'text-on-surface-variant/50' : 'text-on-surface'}`}>
                           {v.quantity} có sẵn
                         </span>
+                        <button
+                          onClick={() => setHistoryVariant(v)}
+                          className="ml-2 px-2 py-1 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant text-xs rounded transition-colors flex items-center gap-1"
+                          title="Xem lịch sử biến động"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">history</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -217,6 +239,13 @@ export default function ProductDetailPage() {
           categories={categories}
         />
       )}
+      
+      {/* Stock History Modal */}
+      <ProductStockHistoryModal
+        isOpen={!!historyVariant}
+        onClose={() => setHistoryVariant(null)}
+        variant={historyVariant}
+      />
     </div>
   );
 }

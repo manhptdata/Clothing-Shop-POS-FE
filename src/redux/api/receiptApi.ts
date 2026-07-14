@@ -77,7 +77,8 @@ export const receiptApi = baseApi.injectEndpoints({
             invalidatesTags: (result, error, id) => [
                 { type: "Receipt", id },
                 { type: "Receipt", id: "LIST" },
-                { type: "Product", id: "LIST" },
+                { type: "Product" },
+                { type: "StockLog" }
             ],
         }),
 
@@ -91,7 +92,8 @@ export const receiptApi = baseApi.injectEndpoints({
             invalidatesTags: (result, error, id) => [
                 { type: "Receipt", id },
                 { type: "Receipt", id: "LIST" },
-                { type: "Product", id: "LIST" },
+                { type: "Product" },
+                { type: "StockLog" }
             ],
         }),
     }),
