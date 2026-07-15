@@ -287,6 +287,7 @@ export default function ProductListPage() {
           <>
             <ProductTable
               products={products.length === 0 && (isFetching || isLoading) ? cachedProducts : products}
+              searchQuery={search || tempSearch}
               getVariantStatus={getVariantStatus}
               onDelete={handleDeleteProduct}
             />
