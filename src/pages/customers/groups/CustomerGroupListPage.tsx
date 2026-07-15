@@ -145,21 +145,7 @@ export default function CustomerGroupListPage() {
         </span>
       ),
     },
-    {
-      key: "maxSpending",
-      header: "Chi tiêu tối đa",
-      className: "text-right",
-      render: (row) => {
-        const isInfinite = !row.maxSpending || row.maxSpending >= 999999999;
-        return isInfinite ? (
-          <span className="text-gray-400 italic text-[11px]">Vô cực</span>
-        ) : (
-          <span className="font-bold text-gray-900">
-            {(row.maxSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span>
-          </span>
-        );
-      },
-    },
+
     {
       key: "totalCustomers",
       header: "Thành viên",

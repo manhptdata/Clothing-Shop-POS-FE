@@ -202,7 +202,7 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: ['Customer'],
     }),
 
-    createVoucher: builder.mutation<RestResponse<void>, { name: string; code: string; discountAmount: number; minOrderValue?: number }>({
+    createVoucher: builder.mutation<RestResponse<void>, { name: string; code: string; discountAmount: number; discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE'; maxDiscountAmount?: number | null; minOrderValue?: number }>({
       query: (data) => ({
         url: '/crm/customer-groups/vouchers',
         method: 'POST',
@@ -211,7 +211,7 @@ export const customerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Customer'],
     }),
 
-    updateVoucher: builder.mutation<RestResponse<void>, { id: number; data: { name: string; code: string; discountAmount: number; minOrderValue?: number } }>({
+    updateVoucher: builder.mutation<RestResponse<void>, { id: number; data: { name: string; code: string; discountAmount: number; discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE'; maxDiscountAmount?: number | null; minOrderValue?: number } }>({
       query: ({ id, data }) => ({
         url: `/crm/customer-groups/vouchers/${id}`,
         method: 'PUT',

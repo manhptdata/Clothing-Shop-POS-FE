@@ -35,6 +35,8 @@ export interface VoucherInfo {
   voucherCode: string;
   voucherName: string;
   discountAmount: number;
+  discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
+  maxDiscountAmount?: number | null;
   minOrderValue: number;
   status: 'UNUSED' | 'USED' | 'EXPIRED';
   expiredAt: string;
@@ -127,7 +129,6 @@ export interface CustomerGroups extends CustomerGroup {
   totalCustomers: number;
   note?: string;
   minSpending: number;
-  maxSpending: number | null;
   createdAt: string;
   birthdayVoucherId?: number | null;
   birthdayVoucherName?: string | null;
@@ -138,6 +139,8 @@ export interface VoucherOption {
   name: string;
   code: string;
   discountAmount?: number;
+  discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
+  maxDiscountAmount?: number | null;
   minOrderValue?: number;
   status: 'ACTIVE' | 'INACTIVE';
 }

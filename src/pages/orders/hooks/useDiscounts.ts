@@ -22,7 +22,18 @@ export function useDiscounts(
     : null;
 
   const isVoucherValid = Boolean(activeVoucher && (rawTotal >= activeVoucher.minOrderValue));
-  const voucherDiscount = isVoucherValid && activeVoucher ? Math.min(rawTotal, activeVoucher.discountAmount) : 0;
+  let calculatedVoucherDiscount = 0;
+  if (isVoucherValid && activeVoucher) {
+    if (activeVoucher.discountType === 'PERCENTAGE') {
+      calculatedVoucherDiscount = Math.round((rawTotal * activeVoucher.discountAmount) / 100);
+      if (activeVoucher.maxDiscountAmount && activeVoucher.maxDiscountAmount > 0) {
+        calculatedVoucherDiscount = Math.min(calculatedVoucherDiscount, activeVoucher.maxDiscountAmount);
+      }
+    } else {
+      calculatedVoucherDiscount = activeVoucher.discountAmount;
+    }
+  }
+  const voucherDiscount = isVoucherValid && activeVoucher ? Math.min(rawTotal, calculatedVoucherDiscount) : 0;
   const remainingAfterVoucher = Math.max(0, rawTotal - voucherDiscount);
 
   const availablePoints = customerType === 'MEMBER' ? (activeCustomer?.rewardPoints || 0) : 0;
@@ -34,7 +45,9 @@ export function useDiscounts(
   const total = Math.max(0, remainingAfterVoucher - pointsDiscount);
 
   const voucherError = customerType === 'MEMBER' && voucherCode && !activeVoucher
-    ? 'Mã không hợp lệ hoặc đã sử dụng'
+    ? vouchersList.find((v: any) => v.voucherCode.toLowerCase() === voucherCode.trim().toLowerCase() && v.status === 'RESERVED')
+      ? 'Mã đang được giữ cho đơn hàng khác đang chờ thanh toán'
+      : 'Mã không hợp lệ hoặc đã sử dụng'
     : activeVoucher && rawTotal < activeVoucher.minOrderValue
       ? `Chưa đạt đơn tối thiểu: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(activeVoucher.minOrderValue)}`
       : null;

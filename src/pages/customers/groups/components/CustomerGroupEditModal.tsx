@@ -20,7 +20,7 @@ export default function CustomerGroupEditModal({
 
   const [name, setName] = useState("");
   const [minSpending, setMinSpending] = useState<number | "">("");
-  const [maxSpending, setMaxSpending] = useState<number | "">("");
+
   const [description, setDescription] = useState("");
   const [note, setNote] = useState("");
   const [birthdayVoucherId, setBirthdayVoucherId] = useState<number | null>(null);
@@ -31,7 +31,7 @@ export default function CustomerGroupEditModal({
     if (isOpen && group) {
       setName(group.name || "");
       setMinSpending(group.minSpending ?? "");
-      setMaxSpending(group.maxSpending ?? "");
+
       setDescription(group.description || "");
       setNote(group.note || "");
       setBirthdayVoucherId(group.birthdayVoucherId ?? null);
@@ -52,10 +52,7 @@ export default function CustomerGroupEditModal({
       return;
     }
 
-    if (maxSpending !== "" && Number(maxSpending) <= Number(minSpending)) {
-      toast.error("Chi tiêu tối đa phải lớn hơn chi tiêu tối thiểu!");
-      return;
-    }
+
 
     try {
       await updateCustomerGroup({
@@ -64,7 +61,7 @@ export default function CustomerGroupEditModal({
           code: group.code,
           name,
           minSpending: Number(minSpending),
-          maxSpending: maxSpending !== "" ? Number(maxSpending) : null,
+
           description,
           note,
           birthdayVoucherId: birthdayVoucherId,
@@ -128,14 +125,7 @@ export default function CustomerGroupEditModal({
               />
             </div>
 
-            <Input
-              label="Chi tiêu tối đa (Không bắt buộc)"
-              labelClassName="text-gray-700"
-              type="number"
-              value={maxSpending}
-              onChange={(e) => setMaxSpending(e.target.value ? Number(e.target.value) : "")}
-              placeholder="Để trống nếu không giới hạn"
-            />
+
 
             <Input
               label="Mô tả đặc điểm"
