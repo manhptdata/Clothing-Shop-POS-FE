@@ -33,14 +33,14 @@ export const orderApi = baseApi.injectEndpoints({
         method: 'POST',
         data,
       }),
-      invalidatesTags: [{ type: 'Order', id: 'LIST' }, { type: 'Statistic', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }],
+      invalidatesTags: [{ type: 'Order', id: 'LIST' }, { type: 'Statistic', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Customer' }],
     }),
     cancelOrder: builder.mutation<RestResponse<Order>, number>({
       query: (id) => ({
         url: `/orders/${id}/cancel`,
         method: 'PUT',
       }),
-      invalidatesTags: (_result, _error, id) => [{ type: 'Order', id }, { type: 'Order', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Statistic', id: 'LIST' }],
+      invalidatesTags: (_result, _error, id) => [{ type: 'Order', id }, { type: 'Order', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Statistic', id: 'LIST' }, { type: 'Customer' }],
     }),
     updateOrder: builder.mutation<RestResponse<Order>, { id: number; data: OrderRequest }>({
       query: ({ id, data }) => ({
@@ -90,7 +90,8 @@ export const orderApi = baseApi.injectEndpoints({
         { type: 'ReturnOrder', id: `ORDER_${data.originalOrderId}` },
         { type: 'Statistic', id: 'LIST' },
         { type: 'Product' },
-        { type: 'StockLog' }
+        { type: 'StockLog' },
+        { type: 'Customer' }
       ],
     }),
   }),
