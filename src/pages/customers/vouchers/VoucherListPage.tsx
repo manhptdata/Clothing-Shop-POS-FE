@@ -61,7 +61,14 @@ export default function VoucherListPage() {
       header: "Giảm giá",
       render: (row) => (
         <span className="text-gray-900 font-bold">
-          {row.discountAmount ? <>{row.discountAmount.toLocaleString("vi-VN")} <u>đ</u></> : "-"}
+          {row.discountType === 'PERCENTAGE' ? (
+            <>
+              {row.discountAmount}% 
+              {row.maxDiscountAmount && <span className="text-xs text-gray-500 block font-normal">(Tối đa {row.maxDiscountAmount.toLocaleString("vi-VN")}đ)</span>}
+            </>
+          ) : (
+            <>{row.discountAmount ? <>{row.discountAmount.toLocaleString("vi-VN")} <u>đ</u></> : "-"}</>
+          )}
         </span>
       ),
     },

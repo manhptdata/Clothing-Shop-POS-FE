@@ -173,6 +173,32 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
+          {/* Attributes (Phân loại hàng) */}
+          {product.options && product.options.length > 0 && (
+            <div className="bg-surface-container-lowest border border-on-surface/10 p-md rounded-lg">
+              <h3 className="font-title-sm text-title-sm font-semibold text-on-surface mb-sm flex items-center gap-xs">
+                Phân loại hàng
+              </h3>
+              <div className="flex flex-col gap-3 mt-4">
+                {product.options.map((opt: any) => (
+                  <div key={opt.id || opt.name} className="flex flex-col sm:flex-row sm:items-start gap-2">
+                    <span className="text-on-surface-variant font-medium min-w-[80px] pt-1">{opt.name}:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {opt.values.map((val: any, idx: number) => {
+                        const displayVal = typeof val === 'object' ? val.value : val;
+                        return (
+                          <span key={idx} className="px-3 py-1.5 bg-surface-container-high rounded-md text-sm font-semibold text-on-surface border border-outline/10 shadow-sm">
+                            {displayVal}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Inventory Status */}
           <div className="bg-surface-container-lowest border border-on-surface/10 p-md rounded-lg flex-1">
             <h3 className="font-title-sm text-title-sm font-semibold text-on-surface mb-md flex items-center gap-xs">
@@ -181,7 +207,10 @@ export default function ProductDetailPage() {
             </h3>
             <div className="space-y-sm max-h-[400px] overflow-y-auto pr-2">
               {activeVariants.map((v) => {
-                const optionNames = [v.option1Value, v.option2Value, v.option3Value].filter(Boolean).join(' - ');
+                const opt1 = typeof v.option1Value === 'object' ? v.option1Value?.value : v.option1Value;
+                const opt2 = typeof v.option2Value === 'object' ? v.option2Value?.value : v.option2Value;
+                const opt3 = typeof v.option3Value === 'object' ? v.option3Value?.value : v.option3Value;
+                const optionNames = [opt1, opt2, opt3].filter(Boolean).join(' - ');
                 const isOutOfStock = v.quantity === 0;
                 const isLowStock = v.quantity > 0 && v.quantity <= v.lowStockThreshold;
 

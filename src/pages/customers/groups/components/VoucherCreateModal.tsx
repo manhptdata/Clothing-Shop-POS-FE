@@ -14,7 +14,9 @@ export default function VoucherCreateModal({ isOpen, onClose }: VoucherCreateMod
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [discountType, setDiscountType] = useState<'FIXED_AMOUNT' | 'PERCENTAGE'>('FIXED_AMOUNT');
   const [discountAmount, setDiscountAmount] = useState<number | "">("");
+  const [maxDiscountAmount, setMaxDiscountAmount] = useState<number | "">("");
   const [minOrderValue, setMinOrderValue] = useState<number | "">("");
 
   // Reset form khi mở modal
@@ -22,7 +24,9 @@ export default function VoucherCreateModal({ isOpen, onClose }: VoucherCreateMod
     if (isOpen) {
       setName("");
       setCode("");
+      setDiscountType('FIXED_AMOUNT');
       setDiscountAmount("");
+      setMaxDiscountAmount("");
       setMinOrderValue("");
     }
   }, [isOpen]);
@@ -42,16 +46,26 @@ export default function VoucherCreateModal({ isOpen, onClose }: VoucherCreateMod
       toast.error("Vui lòng nhập giá trị giảm giá hợp lệ!");
       return;
     }
+    if (discountType === 'PERCENTAGE' && Number(discountAmount) > 100) {
+      toast.error("Phần trăm giảm giá không được vượt quá 100%!");
+      return;
+    }
     if (minOrderValue === "" || Number(minOrderValue) < 0) {
       toast.error("Vui lòng nhập giá trị đơn hàng tối thiểu hợp lệ!");
       return;
+    }
+    if (discountType === 'FIXED_AMOUNT' && Number(discountAmount) >= Number(minOrderValue) && Number(minOrderValue) > 0) {
+      // Chỉ cảnh báo, không block
+      toast("Lưu ý: Mức giảm giá đang lớn hơn hoặc bằng giá trị đơn hàng tối thiểu", { icon: "⚠️" });
     }
 
     try {
       await createVoucher({
         name,
         code,
+        discountType,
         discountAmount: Number(discountAmount),
+        maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : null,
         minOrderValue: Number(minOrderValue),
       }).unwrap();
 
@@ -100,14 +114,37 @@ export default function VoucherCreateModal({ isOpen, onClose }: VoucherCreateMod
             placeholder="VD: SN_T8"
           />
 
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-700 font-medium after:content-['*'] after:text-rose-500 after:ml-1">Loại giảm giá</label>
+            <select
+              className="w-full h-10 px-3 rounded-xl border border-gray-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-colors outline-none bg-white"
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value as 'FIXED_AMOUNT' | 'PERCENTAGE')}
+            >
+              <option value="FIXED_AMOUNT">Giảm số tiền cố định (VNĐ)</option>
+              <option value="PERCENTAGE">Giảm theo phần trăm (%)</option>
+            </select>
+          </div>
+
           <Input
-            label="Giá trị giảm giá (VNĐ hoặc %)"
+            label={discountType === 'FIXED_AMOUNT' ? "Số tiền giảm giá (VNĐ)" : "Phần trăm giảm giá (%)"}
             labelClassName="text-gray-700 after:content-['*'] after:text-rose-500 after:ml-1"
             type="number"
             value={discountAmount}
             onChange={(e) => setDiscountAmount(e.target.value ? Number(e.target.value) : "")}
-            placeholder="VD: 50000"
+            placeholder={discountType === 'FIXED_AMOUNT' ? "VD: 50000" : "VD: 10"}
           />
+
+          {discountType === 'PERCENTAGE' && (
+            <Input
+              label="Mức giảm tối đa (VNĐ)"
+              labelClassName="text-gray-700"
+              type="number"
+              value={maxDiscountAmount}
+              onChange={(e) => setMaxDiscountAmount(e.target.value ? Number(e.target.value) : "")}
+              placeholder="VD: 100000 (Để trống nếu không giới hạn)"
+            />
+          )}
 
           <Input
             label="Giá trị đơn hàng tối thiểu"

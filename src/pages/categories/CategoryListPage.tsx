@@ -10,7 +10,7 @@ export default function CategoryListPage() {
   const { user } = useAppSelector((state) => state.auth);
   const userPerms = user?.permissions || [];
   const isAdmin = user?.role === 'ROLE_ADMIN';
-  const hasManageProductPermission = isAdmin || userPerms.includes('MANAGE_PRODUCT');
+  const hasManageCategoryPermission = isAdmin || userPerms.includes('MANAGE_CATEGORY');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
@@ -104,7 +104,7 @@ export default function CategoryListPage() {
             Quản lý các danh mục sản phẩm, trạng thái hiển thị.
           </p>
         </div>
-        {hasManageProductPermission && (
+        {hasManageCategoryPermission && (
           <Button
             onClick={handleAddNew}
             className="w-full sm:w-auto justify-center"
@@ -175,10 +175,10 @@ export default function CategoryListPage() {
                     <td className="py-4 px-6 text-center">
                       <button
                         onClick={() => handleToggleActive(c)}
-                        disabled={c.deleted || !hasManageProductPermission}
+                        disabled={c.deleted || !hasManageCategoryPermission}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                           c.active ? 'bg-primary' : 'bg-outline-variant/50'
-                        } ${c.deleted || !hasManageProductPermission ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        } ${c.deleted || !hasManageCategoryPermission ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -194,7 +194,7 @@ export default function CategoryListPage() {
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {hasManageProductPermission && !c.deleted && (
+                        {hasManageCategoryPermission && !c.deleted && (
                           <>
                             <button
                               onClick={() => handleEdit(c)}
@@ -212,7 +212,7 @@ export default function CategoryListPage() {
                             </button>
                           </>
                         )}
-                        {hasManageProductPermission && c.deleted && (
+                        {hasManageCategoryPermission && c.deleted && (
                           <button
                             onClick={() => handleHardDelete(c)}
                             className="text-error hover:text-error/80 transition-colors p-1"

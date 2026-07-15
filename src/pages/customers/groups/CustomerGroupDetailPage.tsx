@@ -214,7 +214,7 @@ export default function CustomerGroupDetailPage() {
             </h3>
           </div>
           <div className="p-6 space-y-5 text-xs font-semibold">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
                   Chi tiêu tối thiểu
@@ -223,16 +223,7 @@ export default function CustomerGroupDetailPage() {
                   {(group.minSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span>
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1.5">
-                  Chi tiêu tối đa
-                </label>
-                <div className="text-sm font-bold text-gray-900 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-100 ">
-                  {!group.maxSpending || group.maxSpending >= 999999999
-                    ? "Không giới hạn (Vô cực)"
-                    : <>{(group.maxSpending || 0).toLocaleString("vi-VN")} <span className="underline">₫</span></>}
-                </div>
-              </div>
+
             </div>
 
             <div>
