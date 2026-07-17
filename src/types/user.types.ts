@@ -5,6 +5,7 @@ export interface User {
   username: string;
   fullName: string;
   phone?: string;
+  email?: string;
   role: string;
   active: boolean;
   createdAt: string;
@@ -15,5 +16,6 @@ export interface UserRequest {
   password?: string; // Bắt buộc khi tạo mới
   fullName: string;
   phone?: string;
+  email?: string;
   roleId: number;
 }

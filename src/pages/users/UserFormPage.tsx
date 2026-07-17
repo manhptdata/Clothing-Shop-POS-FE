@@ -29,6 +29,7 @@ export default function UserFormPage() {
     password: '',
     roleId: 0,
     phone: '',
+    email: '',
   });
 
   const { data: rolesData, isLoading: isLoadingRoles } = useGetRolesQuery();
@@ -45,6 +46,7 @@ export default function UserFormPage() {
         password: '', // We don't load password
         roleId: 0, // This needs to be matched by name or returned by API. If API only returns roleName, we have to find it.
         phone: employee.phone || '',
+        email: employee.email || '',
       });
       if (rolesData?.data) {
         const foundRole = rolesData.data.find(r => r.name === employee.role);
@@ -69,6 +71,7 @@ export default function UserFormPage() {
         const payload = {
           fullName: formData.fullName,
           phone: formData.phone,
+          email: formData.email,
           roleId: Number(formData.roleId),
         };
         await updateUser({ id: userId, data: payload }).unwrap();
@@ -89,6 +92,7 @@ export default function UserFormPage() {
           username: formData.username,
           password: formData.password,
           phone: formData.phone,
+          email: formData.email,
           roleId: Number(formData.roleId),
         };
         await createUser(payload).unwrap();
@@ -139,14 +143,14 @@ export default function UserFormPage() {
             </div>
 
             <div className="flex flex-col gap-xs">
-              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Email / Tài khoản</label>
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tên đăng nhập (Tài khoản)</label>
               <input
                 name="username"
                 required
                 disabled={isEdit}
                 value={formData.username}
                 onChange={handleInputChange}
-                placeholder="VD: nva@sapo.vn"
+                placeholder="VD: nguyenva"
                 className={`w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded ${isEdit ? 'opacity-50 cursor-not-allowed text-on-surface-variant' : ''}`}
                 type="text"
               />
@@ -161,6 +165,18 @@ export default function UserFormPage() {
                 placeholder="VD: 0987654321"
                 className="w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded"
                 type="text"
+              />
+            </div>
+
+            <div className="flex flex-col gap-xs">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Email</label>
+              <input
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="VD: nva@sapo.vn"
+                className="w-full h-12 px-sm bg-transparent border border-outline/30 focus:border-primary focus:border-2 focus:ring-0 font-body-md text-body-md text-on-surface transition-all outline-none rounded"
+                type="email"
               />
             </div>
 
