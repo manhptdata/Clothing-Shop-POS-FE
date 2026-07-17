@@ -38,6 +38,7 @@ export interface StockLogItem {
   referenceId: number;
   note: string;
   createdAt: string;
+  createdByUsername?: string;
 }
 
 export interface StockLogQueryParams {

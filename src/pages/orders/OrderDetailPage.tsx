@@ -7,6 +7,7 @@ import {
   useGetReturnOrdersByOriginalOrderIdQuery,
   useCreateReturnOrderMutation
 } from '@/redux/api/orderApi';
+import { useGetSettingsQuery } from '@/redux/api/settingApi';
 import { useGetCustomerByIdQuery } from '@/redux/api/customerApi';
 import { useGetProductsQuery } from '@/redux/api/productApi';
 import { Badge } from '@/components/ui/Badge';
@@ -47,10 +48,13 @@ export default function OrderDetailPage() {
   // --- Return Order State & Hooks ---
   const { data: returnOrdersResponse } = useGetReturnOrdersByOriginalOrderIdQuery(orderId, { skip: !orderId });
   const [createReturnOrder, { isLoading: isSubmittingReturn }] = useCreateReturnOrderMutation();
+  const { data: settingsRes } = useGetSettingsQuery();
+  const settings = settingsRes?.data || [];
   
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnQuantities, setReturnQuantities] = useState<Record<number, number>>({});
   const [reason, setReason] = useState('');
+  const [approvalPin, setApprovalPin] = useState('');
 
   // --- Cancellation request state ---
   const user = useAppSelector((state) => state.auth.user);
@@ -175,20 +179,29 @@ export default function OrderDetailPage() {
       .filter(item => item.quantity > 0);
 
     if (items.length === 0) {
-      toast.error('Vui lòng chọn ít nhất 1 sản phẩm để trả hàng.');
+      toast.error('Vui lòng chọn ít nhất 1 sản phẩm để trả lại');
+      return;
+    }
+
+    const requireApprovalSetting = settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL');
+    const requireApproval = requireApprovalSetting ? requireApprovalSetting.settingValue === 'true' : true;
+    if (requireApproval && !approvalPin) {
+      toast.error('Vui lòng nhập mã PIN phê duyệt từ Quản lý / Admin');
       return;
     }
 
     try {
       await createReturnOrder({
-        originalOrderId: orderId,
+        originalOrderId: Number(orderId),
         reason,
+        approvalPin,
         items
       }).unwrap();
       toast.success('Tạo phiếu trả hàng thành công!');
       setIsReturnModalOpen(false);
       setReturnQuantities({});
       setReason('');
+      setApprovalPin('');
     } catch (err: any) {
       toast.error(err?.data?.message || 'Không thể tạo phiếu trả hàng này.');
     }
@@ -660,6 +673,26 @@ export default function OrderDetailPage() {
                   className="w-full px-sm py-xs border border-outline/30 rounded-xl bg-transparent text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 text-on-surface"
                 />
               </div>
+
+              {/* PIN input if required */}
+              {(!settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL') || settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL')?.settingValue === 'true') && (
+                <div className="flex flex-col gap-xs mt-2 bg-rose-50 p-3 rounded-xl border border-rose-200">
+                  <label className="text-sm font-semibold text-rose-600 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[18px]">lock</span>
+                    Mã PIN Phê Duyệt Trả Hàng (Quản lý)
+                  </label>
+                  <input
+                    type="password"
+                    value={approvalPin}
+                    onChange={(e) => setApprovalPin(e.target.value)}
+                    placeholder="Yêu cầu Quản lý/Admin nhập mã PIN..."
+                    className="w-full px-sm py-xs border border-rose-300 rounded-lg bg-white text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500/20 text-on-surface"
+                  />
+                  <p className="text-[11px] text-rose-500 mt-1 mb-0 italic">
+                    * Bắt buộc: Quản lý hoặc Admin có thể tạo mã PIN này trong menu tài khoản.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}

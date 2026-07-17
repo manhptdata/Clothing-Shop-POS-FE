@@ -10,6 +10,7 @@ export interface UserLogin {
   id: number;
   username: string;
   fullName: string;
+  phone?: string;
   role: string;
   permissions?: string[];
 }

@@ -47,6 +47,8 @@ export interface Product {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  createdByUsername?: string;
+  updatedByUsername?: string;
   options: ProductOption[];
   variants: ProductVariant[];
   attributes: ProductAttribute[];

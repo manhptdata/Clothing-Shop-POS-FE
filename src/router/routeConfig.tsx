@@ -69,9 +69,11 @@ const OrderDetailPage = lazy(() => import('@/pages/orders/OrderDetailPage'));
 const UserListPage = lazy(() => import('@/pages/users/UserListPage'));
 const UserFormPage = lazy(() => import('@/pages/users/UserFormPage'));
 const ShiftHistoryPage = lazy(() => import('@/pages/shifts/ShiftHistoryPage'));
+const UserProfilePage = lazy(() => import('@/pages/profile/UserProfilePage'));
 
 // Settings
 const RoleSettingsPage = lazy(() => import('@/pages/settings/roles/RoleSettingsPage'));
+const SystemSettingsPage = lazy(() => import('@/pages/settings/SystemSettingsPage'));
 
 // Error Pages
 const NotFoundPage = lazy(() => import('@/pages/errors/NotFoundPage'));
@@ -95,6 +97,9 @@ export const routes: RouteObject[] = [
         children: [
            // Index redirect
           { index: true, element: <IndexRedirect /> },
+
+          // User Profile (accessible by all authenticated users)
+          { path: "profile", element: <UserProfilePage /> },
 
           // Dashboard (Admin)
           {
@@ -223,6 +228,12 @@ export const routes: RouteObject[] = [
             element: <PermissionRoute allowedPermissions={["MANAGE_ROLE"]} />,
             children: [
               { path: "settings/roles", element: <RoleSettingsPage /> },
+            ],
+          },
+          {
+            element: <PermissionRoute allowedPermissions={[]} />, // We check ROLE_ADMIN in the component
+            children: [
+              { path: "settings/general", element: <SystemSettingsPage /> },
             ],
           },
           // Error page for Backend 403 (with layout)

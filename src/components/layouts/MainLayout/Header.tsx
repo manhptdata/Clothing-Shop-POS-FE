@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { useNotifications, NotificationItem } from '@/providers/NotificationProvider';
+import toast from 'react-hot-toast';
+import { useGenerateSecurityPinMutation } from '@/redux/api/userApi';
+import { useLogoutMutation } from '@/redux/api/authApi';
 import { ROLE_LABEL } from '@/utils/constants';
 
 interface HeaderProps {
@@ -23,12 +27,34 @@ export default function Header({ onMenuClick }: HeaderProps) {
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const [generatePin, { isLoading: isGenerating }] = useGenerateSecurityPinMutation();
+  const [logout] = useLogoutMutation();
+  const [isPinModalVisible, setIsPinModalVisible] = useState(false);
+  const [generatedPin, setGeneratedPin] = useState<string | null>(null);
+  
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleGeneratePin = async () => {
+    try {
+      const res = await generatePin().unwrap();
+      setGeneratedPin(res.data?.pin || null);
+      setIsPinModalVisible(true);
+      setIsUserMenuOpen(false);
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Có lỗi xảy ra khi tạo PIN');
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -220,9 +246,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         {user && (
-          <>
+          <div className="relative flex items-center" ref={userMenuRef}>
             <div className="h-6 w-px bg-outline/20 mx-1 md:mx-2"></div>
-            <div className="flex items-center gap-2 md:gap-3">
+            
+            <div 
+              className="flex items-center gap-2 md:gap-3 cursor-pointer hover:bg-outline/5 p-1 rounded-xl transition-colors"
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            >
               <div className="text-right hidden md:block">
                 <p className="font-semibold text-sm text-on-surface leading-tight">{user.fullName}</p>
                 <p className="text-xs text-on-surface-variant/80">
@@ -233,9 +263,78 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 {user.fullName.split(' ').pop()?.charAt(0).toUpperCase() || user.username.charAt(0).toUpperCase()}
               </div>
             </div>
-          </>
+
+            {/* User Dropdown Menu */}
+            {isUserMenuOpen && (
+              <div className="absolute top-full right-0 mt-2 w-56 bg-surface rounded-2xl shadow-xl border border-outline/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      navigate('/profile');
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2.5 text-sm text-on-surface hover:bg-primary/5 hover:text-primary rounded-xl flex items-center gap-3 transition-colors group font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:text-primary transition-colors">person</span>
+                    Tài khoản của tôi
+                  </button>
+
+                  {(user?.role === 'ROLE_ADMIN' || user?.role === 'ROLE_MANAGER') && (
+                    <button
+                      onClick={handleGeneratePin}
+                      disabled={isGenerating}
+                      className="w-full text-left px-3 py-2.5 text-sm text-on-surface hover:bg-primary/5 hover:text-primary rounded-xl flex items-center gap-3 transition-colors group font-medium"
+                    >
+                      <span className="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:text-primary transition-colors">key</span>
+                      {isGenerating ? 'Đang tạo...' : 'Tạo mã PIN duyệt'}
+                    </button>
+                  )}
+                  
+                  <div className="h-px bg-outline/10 my-1 mx-2"></div>
+
+                  <button
+                    onClick={() => logout()}
+                    className="w-full text-left px-3 py-2.5 text-sm text-error hover:bg-error/5 hover:text-error rounded-xl flex items-center gap-3 transition-colors group font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[20px] text-error group-hover:text-error transition-colors">logout</span>
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {isPinModalVisible && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface rounded-2xl border border-outline/10 max-w-sm w-full flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-md border-b border-outline/10 bg-surface-container-low flex justify-between items-center">
+              <h3 className="font-title-lg text-title-lg text-on-surface font-bold">Mã PIN duyệt trả hàng</h3>
+              <button 
+                onClick={() => {
+                  setIsPinModalVisible(false);
+                  setGeneratedPin(null);
+                }}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            
+            <div className="p-md text-center">
+              <p className="mb-4 text-sm text-on-surface-variant">Mã PIN bảo mật mới của bạn là:</p>
+              <div className="text-4xl font-bold text-primary tracking-[0.2em] mb-4 bg-primary/10 py-4 rounded-xl">
+                {generatedPin}
+              </div>
+              <p className="text-xs text-rose-500 mb-0 font-medium bg-rose-50 p-3 rounded-lg text-left">
+                * Lưu ý: Mã này chỉ hiển thị một lần. Vui lòng ghi nhớ để dùng khi phê duyệt các yêu cầu trả hàng của nhân viên.
+              </p>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }

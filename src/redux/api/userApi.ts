@@ -57,6 +57,35 @@ export const userApi = baseApi.injectEndpoints({
         { type: 'User', id: 'LIST' },
       ],
     }),
+    changePassword: builder.mutation<RestResponse<void>, { oldPassword: string; newPassword: string }>({
+      query: (data) => ({
+        url: `/users/me/password`,
+        method: 'POST',
+        data,
+      }),
+    }),
+    generateSecurityPin: builder.mutation<RestResponse<{ pin: string }>, void>({
+      query: () => ({
+        url: `/users/me/security-pin`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['User'],
+    }),
+    getSecurityPin: builder.query<RestResponse<{ pin: string | null }>, void>({
+      query: () => ({
+        url: `/users/me/security-pin`,
+        method: 'GET'
+      }),
+      providesTags: ['User'],
+    }),
+    changeSecurityPin: builder.mutation<void, { pin: string }>({
+      query: (data) => ({
+        url: `/users/me/security-pin/change`,
+        method: 'POST',
+        data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
   overrideExisting: true,
 });
@@ -67,4 +96,8 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useToggleUserActiveMutation,
+  useChangePasswordMutation,
+  useGenerateSecurityPinMutation,
+  useGetSecurityPinQuery,
+  useChangeSecurityPinMutation,
 } = userApi;

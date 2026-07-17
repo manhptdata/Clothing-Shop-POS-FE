@@ -66,6 +66,7 @@ export interface ReturnOrder {
   customerName: string;
   createdById: number;
   createdByUsername: string;
+  approvedByUsername?: string;
   totalRefundAmount: number;
   reason: string;
   createdAt: string;
@@ -76,6 +77,7 @@ export interface ReturnOrder {
 export interface ReturnOrderRequest {
   originalOrderId: number;
   reason: string;
+  approvalPin?: string;
   items: {
     variantId: number;
     quantity: number;
