@@ -21,7 +21,7 @@ export function usePendingOrders() {
 
   const handleCancelPendingOrder = async (id: number) => {
     try {
-      await cancelOrder(id).unwrap();
+      await cancelOrder({ id, data: { reason: 'Hủy đơn hàng lưu tạm' } }).unwrap();
     } catch (error: any) {
       toast.error(error?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng.');
     }

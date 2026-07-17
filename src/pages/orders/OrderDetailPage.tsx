@@ -51,34 +51,20 @@ export default function OrderDetailPage() {
   const { data: settingsRes } = useGetSettingsQuery();
   const settings = settingsRes?.data || [];
   
+  const isCancelApprovalRequired = settings?.find(s => s.settingKey === 'REQUIRE_CANCEL_APPROVAL')?.settingValue !== 'false';
+  const isReturnApprovalRequired = settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL')?.settingValue !== 'false';
+  
+  const user = useAppSelector((state) => state.auth.user);
+
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnQuantities, setReturnQuantities] = useState<Record<number, number>>({});
   const [reason, setReason] = useState('');
   const [approvalPin, setApprovalPin] = useState('');
 
-  // --- Cancellation request state ---
-  const user = useAppSelector((state) => state.auth.user);
-  const { sendApprovalRequest } = useNotifications();
-  const [isCancelRequestModalOpen, setIsCancelRequestModalOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
-  const [isSubmittingCancelRequest, setIsSubmittingCancelRequest] = useState(false);
-
-  const handleSubmitCancelRequest = async () => {
-    if (!cancelReason.trim()) {
-      toast.error('Vui lòng nhập lý do hủy hóa đơn');
-      return;
-    }
-    setIsSubmittingCancelRequest(true);
-    try {
-      await sendApprovalRequest(order?.orderNumber || order?.code || '', cancelReason.trim());
-      setIsCancelRequestModalOpen(false);
-      setCancelReason('');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmittingCancelRequest(false);
-    }
-  };
+  // --- Direct Cancellation state ---
+  const [isDirectCancelModalOpen, setIsDirectCancelModalOpen] = useState(false);
+  const [directCancelReason, setDirectCancelReason] = useState('');
+  const [directCancelApprovalPin, setDirectCancelApprovalPin] = useState('');
 
   // --- Cancel Order mutation ---
   const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
@@ -104,15 +90,39 @@ export default function OrderDetailPage() {
     return { name: `Phân loại sản phẩm #${variantId}`, sku: 'N/A', options: '' };
   };
 
-  const handleCancelOrder = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn hủy / hoàn trả hóa đơn này không?')) {
-      try {
-        await cancelOrder(orderId).unwrap();
-        toast.success('Hủy đơn hàng thành công!');
-      } catch (err: any) {
-        toast.error(err?.data?.message || 'Không thể hủy đơn hàng này.');
-      }
+  const handleSubmitDirectCancel = async () => {
+    if (!directCancelReason.trim()) {
+      toast.error('Vui lòng nhập lý do hủy đơn hàng');
+      return;
     }
+
+    const requireApprovalSetting = settings?.find(s => s.settingKey === 'REQUIRE_CANCEL_APPROVAL');
+    const requireApproval = requireApprovalSetting ? requireApprovalSetting.settingValue === 'true' : true;
+    
+    if (requireApproval && !directCancelApprovalPin) {
+      toast.error('Vui lòng nhập mã PIN phê duyệt từ Quản lý / Admin');
+      return;
+    }
+
+    try {
+      await cancelOrder({ 
+        id: orderId, 
+        data: { 
+          reason: directCancelReason, 
+          approvalPin: directCancelApprovalPin 
+        } 
+      }).unwrap();
+      toast.success('Hủy đơn hàng thành công!');
+      setIsDirectCancelModalOpen(false);
+      setDirectCancelReason('');
+      setDirectCancelApprovalPin('');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Không thể hủy đơn hàng này.');
+    }
+  };
+
+  const handleCancelOrder = () => {
+    setIsDirectCancelModalOpen(true);
   };
 
   const handlePrint = () => {
@@ -185,6 +195,7 @@ export default function OrderDetailPage() {
 
     const requireApprovalSetting = settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL');
     const requireApproval = requireApprovalSetting ? requireApprovalSetting.settingValue === 'true' : true;
+
     if (requireApproval && !approvalPin) {
       toast.error('Vui lòng nhập mã PIN phê duyệt từ Quản lý / Admin');
       return;
@@ -293,7 +304,7 @@ export default function OrderDetailPage() {
             </button>
           )}
 
-          {order.status === 'COMPLETED' && (user?.role === 'ROLE_ADMIN' || (user?.permissions || []).includes('CANCEL_ORDER')) && (
+          {order.status === 'COMPLETED' && (
             <button 
               disabled={isCancelling}
               onClick={handleCancelOrder}
@@ -301,16 +312,6 @@ export default function OrderDetailPage() {
             >
               <span className="material-symbols-outlined text-[18px]">undo</span>
               {isCancelling ? 'Đang hủy...' : 'Hủy đơn hàng'}
-            </button>
-          )}
-
-          {order.status === 'COMPLETED' && !((user?.permissions || []).includes('CANCEL_ORDER')) && user?.role !== 'ROLE_ADMIN' && (user?.permissions || []).includes('CREATE_ORDER') && (
-            <button 
-              onClick={() => setIsCancelRequestModalOpen(true)}
-              className="px-md py-sm border border-rose-500 text-rose-500 rounded font-button text-button hover:bg-rose-500/10 flex items-center gap-xs transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">report</span>
-              Yêu cầu hủy đơn
             </button>
           )}
 
@@ -675,7 +676,7 @@ export default function OrderDetailPage() {
               </div>
 
               {/* PIN input if required */}
-              {(!settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL') || settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL')?.settingValue === 'true') && (
+              {(settings?.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL')?.settingValue !== 'false') && (
                 <div className="flex flex-col gap-xs mt-2 bg-rose-50 p-3 rounded-xl border border-rose-200">
                   <label className="text-sm font-semibold text-rose-600 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[18px]">lock</span>
@@ -725,57 +726,69 @@ export default function OrderDetailPage() {
         </div>
       )}
 
-      {/* Cancel Request Dialog (Modal) */}
-      {isCancelRequestModalOpen && (
+      {/* Direct Cancel Dialog (Modal) */}
+      {isDirectCancelModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-surface rounded-2xl border border-outline/10 max-w-md w-full flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Modal Header */}
             <div className="p-md border-b border-outline/10 bg-surface-container-low flex justify-between items-center">
               <h3 className="font-title-lg text-title-lg text-on-surface font-bold flex items-center gap-xs">
-                <span className="material-symbols-outlined text-rose-500 text-[28px]">report</span>
-                Yêu cầu hủy hóa đơn
+                <span className="material-symbols-outlined text-rose-500 text-[28px]">delete_forever</span>
+                Hủy Hóa Đơn
               </h3>
               <button 
-                onClick={() => setIsCancelRequestModalOpen(false)}
+                onClick={() => setIsDirectCancelModalOpen(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
-
-            {/* Modal Body */}
+            
             <div className="p-md space-y-md">
-              <p className="text-xs text-on-surface-variant leading-relaxed">
-                Yêu cầu hủy hóa đơn này sẽ được gửi tới Admin/Quản lý để phê duyệt theo thời gian thực.
-              </p>
               <div className="flex flex-col gap-xs">
-                <label className="text-xs font-semibold text-on-surface-variant">Lý do hủy đơn hàng</label>
+                <label className="text-xs font-semibold text-on-surface-variant">Lý do hủy đơn hàng <span className="text-error">*</span></label>
                 <textarea
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Nhập lý do hủy hóa đơn (ví dụ: Khách muốn đổi sản phẩm khác, thối nhầm tiền...)"
-                  rows={3}
+                  value={directCancelReason}
+                  onChange={(e) => setDirectCancelReason(e.target.value)}
+                  placeholder="Nhập lý do hủy hóa đơn..."
+                  rows={2}
                   className="w-full p-3 border border-outline/30 rounded-xl bg-transparent text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 text-on-surface resize-none"
                 />
               </div>
+
+              {/* PIN input if required */}
+              {(settings?.find(s => s.settingKey === 'REQUIRE_CANCEL_APPROVAL')?.settingValue !== 'false') && (
+                <div className="flex flex-col gap-xs mt-2 bg-rose-50 p-3 rounded-xl border border-rose-200">
+                  <label className="text-xs font-semibold text-rose-800 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px]">lock</span>
+                    Mã PIN của Quản lý / Admin <span className="text-error">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={directCancelApprovalPin}
+                    onChange={(e) => setDirectCancelApprovalPin(e.target.value)}
+                    placeholder="Nhập mã PIN để xác nhận..."
+                    className="w-full p-3 border border-rose-200 rounded-lg bg-white text-sm focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400/20 text-on-surface"
+                  />
+                  <p className="text-[11px] text-rose-600">Thao tác này cần sự phê duyệt trực tiếp của người quản lý.</p>
+                </div>
+              )}
             </div>
 
-            {/* Modal Footer */}
             <div className="p-md border-t border-outline/10 bg-surface-container-lowest flex justify-end gap-sm">
               <button
                 type="button"
-                onClick={() => setIsCancelRequestModalOpen(false)}
+                onClick={() => setIsDirectCancelModalOpen(false)}
                 className="px-md py-sm border border-outline/30 rounded font-button text-button hover:bg-surface-container text-on-surface transition-colors"
               >
-                Hủy
+                Đóng
               </button>
               <button
                 type="button"
-                disabled={isSubmittingCancelRequest}
-                onClick={handleSubmitCancelRequest}
-                className="px-md py-sm bg-rose-500 text-white rounded font-button text-button hover:bg-rose-600 transition-colors disabled:opacity-50"
+                disabled={isCancelling}
+                onClick={handleSubmitDirectCancel}
+                className="px-md py-sm bg-rose-500 text-white rounded font-button text-button hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {isSubmittingCancelRequest ? 'Đang gửi...' : 'Gửi yêu cầu'}
+                {isCancelling ? 'Đang xử lý...' : 'Xác nhận hủy'}
               </button>
             </div>
           </div>
