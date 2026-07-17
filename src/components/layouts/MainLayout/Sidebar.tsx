@@ -54,6 +54,12 @@ const menuItems: MenuItem[] = [
       { path: '/shifts/history', label: 'Lịch sử giao ca', icon: 'history_toggle_off', permissions: ['VIEW_SHIFT'] },
     ]
   },
+  {
+    path: '#settings', label: 'Thiết lập', icon: 'settings', permissions: ['MANAGE_ROLE'], // MANAGE_ROLE is typically admin-level
+    children: [
+      { path: '/settings/general', label: 'Cấu hình chung', icon: 'settings_applications', permissions: ['MANAGE_ROLE'] },
+    ]
+  },
 ];
 
 interface SidebarProps {

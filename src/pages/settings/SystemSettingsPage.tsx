@@ -10,12 +10,17 @@ export default function SystemSettingsPage() {
   const { user } = useAppSelector(state => state.auth);
 
   const [requireReturnApproval, setRequireReturnApproval] = useState(true);
+  const [requireCancelApproval, setRequireCancelApproval] = useState(true);
 
   useEffect(() => {
     if (settings) {
       const returnSetting = settings.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL');
       if (returnSetting) {
         setRequireReturnApproval(returnSetting.settingValue === 'true');
+      }
+      const cancelSetting = settings.find(s => s.settingKey === 'REQUIRE_CANCEL_APPROVAL');
+      if (cancelSetting) {
+        setRequireCancelApproval(cancelSetting.settingValue === 'true');
       }
     }
   }, [settings]);
@@ -28,7 +33,21 @@ export default function SystemSettingsPage() {
         value: newChecked.toString(),
       }).unwrap();
       setRequireReturnApproval(newChecked);
-      toast.success('Cập nhật cấu hình thành công!');
+      toast.success('Cập nhật cấu hình trả hàng thành công!');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Có lỗi xảy ra khi cập nhật cấu hình');
+    }
+  };
+
+  const handleToggleCancelApproval = async () => {
+    const newChecked = !requireCancelApproval;
+    try {
+      await updateSetting({
+        key: 'REQUIRE_CANCEL_APPROVAL',
+        value: newChecked.toString(),
+      }).unwrap();
+      setRequireCancelApproval(newChecked);
+      toast.success('Cập nhật cấu hình hủy đơn thành công!');
     } catch (error: any) {
       toast.error(error.data?.message || 'Có lỗi xảy ra khi cập nhật cấu hình');
     }
@@ -73,7 +92,34 @@ export default function SystemSettingsPage() {
             />
           </button>
         </div>
-        <div className="h-px bg-outline/10 w-full mt-6"></div>
+        <div className="h-px bg-outline/10 w-full my-6"></div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-on-surface mb-1">Yêu cầu Quản lý phê duyệt khi hủy đơn hàng</h2>
+            <p className="text-sm text-on-surface-variant">
+              Khi bật, nhân viên thu ngân (Sale) sẽ phải nhập mã PIN của Quản lý hoặc Admin để có thể hủy hóa đơn.
+            </p>
+          </div>
+          
+          <button
+            type="button"
+            role="switch"
+            aria-checked={requireCancelApproval}
+            disabled={isUpdating}
+            onClick={handleToggleCancelApproval}
+            className={`${
+              requireCancelApproval ? 'bg-primary' : 'bg-surface-container-high'
+            } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-white/75 disabled:opacity-50`}
+          >
+            <span
+              aria-hidden="true"
+              className={`${
+                requireCancelApproval ? 'translate-x-5' : 'translate-x-0'
+              } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+            />
+          </button>
+        </div>
       </div>
     </div>
   );

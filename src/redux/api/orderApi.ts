@@ -35,12 +35,13 @@ export const orderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Order', id: 'LIST' }, { type: 'Statistic', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Customer' }],
     }),
-    cancelOrder: builder.mutation<RestResponse<Order>, number>({
-      query: (id) => ({
+    cancelOrder: builder.mutation<RestResponse<Order>, { id: number; data: { reason: string; approvalPin?: string } }>({
+      query: ({ id, data }) => ({
         url: `/orders/${id}/cancel`,
         method: 'PUT',
+        data,
       }),
-      invalidatesTags: (_result, _error, id) => [{ type: 'Order', id }, { type: 'Order', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Statistic', id: 'LIST' }, { type: 'Customer' }],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Order', id }, { type: 'Order', id: 'LIST' }, { type: 'Product' }, { type: 'StockLog' }, { type: 'Statistic', id: 'LIST' }, { type: 'Customer' }],
     }),
     updateOrder: builder.mutation<RestResponse<Order>, { id: number; data: OrderRequest }>({
       query: ({ id, data }) => ({
