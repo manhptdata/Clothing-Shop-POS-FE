@@ -55,6 +55,20 @@ export const orderApi = baseApi.injectEndpoints({
         { type: 'Statistic', id: 'LIST' },
       ],
     }),
+    completeOrderPayment: builder.mutation<RestResponse<Order>, { id: number; paymentMethod: string; paidAmount?: number }>({
+      query: ({ id, paymentMethod, paidAmount }) => ({
+        url: `/orders/${id}/complete-payment`,
+        method: 'POST',
+        params: { paymentMethod, paidAmount },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Order', id },
+        { type: 'Order', id: 'LIST' },
+        { type: 'Statistic', id: 'LIST' },
+        { type: 'Product' },
+        { type: 'Customer' },
+      ],
+    }),
     getReturnOrders: builder.query<RestResponse<PageResponse<ReturnOrder>>, PaginationParams & { search?: string }>({
       query: (params) => ({
         url: '/returns',
@@ -105,6 +119,7 @@ export const {
   useCreateOrderMutation,
   useCancelOrderMutation,
   useUpdateOrderMutation,
+  useCompleteOrderPaymentMutation,
   useGetReturnOrdersQuery,
   useGetReturnOrdersByOriginalOrderIdQuery,
   useCreateReturnOrderMutation,
