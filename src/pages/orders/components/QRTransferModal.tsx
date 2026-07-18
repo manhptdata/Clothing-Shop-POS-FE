@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useNotifications } from '@/providers/NotificationProvider';
 import type { Order } from '@/types/order.types';
 
@@ -45,17 +46,46 @@ export function QRTransferModal({
     }
   }, [notifications, isOpen, pendingOrder, onPaymentSuccess]);
 
-  if (!isOpen) return null;
+  const [qrUrl, setQrUrl] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const bankAccount = import.meta.env.VITE_SEPAY_BANK_ACCOUNT || 'SBSEPAY';
-  const bankName = import.meta.env.VITE_SEPAY_BANK_NAME || 'MBBank';
-  const accountName = import.meta.env.VITE_SEPAY_ACCOUNT_NAME || 'SHOP QUAN AO';
+  useEffect(() => {
+    if (!isOpen || !pendingOrder) return;
+    
+    setIsLoading(true);
+    const fetchQr = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await fetch(`/api/v1/payments/qr-code?orderNumber=${pendingOrder.orderNumber}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setQrUrl(data.qrUrl);
+          setBankName(data.bankName);
+          setBankAccount(data.bankAccount);
+          setAccountName(data.accountName);
+        } else {
+          toast.error('Lỗi lấy thông tin thanh toán');
+        }
+      } catch (e) {
+        toast.error('Không thể kết nối với máy chủ');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchQr();
+  }, [isOpen, pendingOrder, total]);
+
+  if (!isOpen) return null;
 
   // Format description
   const description = pendingOrder?.orderNumber || 'THANH TOAN DON HANG';
-
-  //api qr.sepay.vn or img.vietqr.io 
-  const qrUrl = `https://qr.sepay.vn/img?acc=${bankAccount}&bank=${bankName}&amount=${total}&des=${description}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -83,12 +113,18 @@ export function QRTransferModal({
 
         {/* QR Code */}
         <div className="flex justify-center py-6">
-          <div className="bg-white rounded-2xl p-2 shadow border border-gray-100">
-            <img
-              src={qrUrl}
-              alt="Mã QR Thanh Toán"
-              className="w-[200px] h-[220px] object-contain rounded-lg"
-            />
+          <div className="bg-white rounded-2xl p-2 shadow border border-gray-100 min-h-[220px] min-w-[200px] flex items-center justify-center">
+            {isLoading ? (
+               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            ) : qrUrl ? (
+              <img
+                src={qrUrl}
+                alt="Mã QR Thanh Toán"
+                className="w-[200px] h-[220px] object-contain rounded-lg"
+              />
+            ) : (
+              <p className="text-gray-400 text-xs">Không tải được QR</p>
+            )}
           </div>
         </div>
 
@@ -119,6 +155,14 @@ export function QRTransferModal({
             className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all border border-gray-200 text-center"
           >
             Quay lại
+          </button>
+          <button
+            onClick={confirmCheckout}
+            disabled={isCreatingOrder}
+            className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 transition-all text-center flex items-center justify-center gap-1"
+          >
+            {isCreatingOrder && <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>}
+            Xác nhận đã nhận tiền
           </button>
         </div>
       </div>

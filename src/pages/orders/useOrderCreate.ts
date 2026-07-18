@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useGetProductsQuery, useLazyGetProductByIdQuery } from '@/redux/api/productApi';
 import { useGetRecommendationsQuery } from '@/redux/api/recommendationApi';
-import { useCreateOrderMutation, useUpdateOrderMutation } from '@/redux/api/orderApi';
+import { useCreateOrderMutation, useUpdateOrderMutation, useCompleteOrderPaymentMutation } from '@/redux/api/orderApi';
 import type { CartItem } from './hooks/useCart';
 import type { Order, OrderRequest } from '@/types/order.types';
 
@@ -22,6 +22,7 @@ export function useOrderCreate() {
   const [getProductById] = useLazyGetProductByIdQuery();
   const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
   const [updateOrder, { isLoading: isUpdatingOrder }] = useUpdateOrderMutation();
+  const [completeOrderPayment, { isLoading: isCompletingPayment }] = useCompleteOrderPaymentMutation();
 
   const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [searchProductQuery, setSearchProductQuery] = useState('');
@@ -214,6 +215,32 @@ export function useOrderCreate() {
       toast.error(discounts.voucherError);
       return;
     }
+
+    // Nếu đang thanh toán QR và có đơn hàng chờ QR, sử dụng API hoàn thành thanh toán tối giản
+    if (checkout.paymentMethod === 'QR_SEPAY' && pendingOrderForQR) {
+      try {
+        const response = await completeOrderPayment({
+          id: pendingOrderForQR.id,
+          paymentMethod: 'QR_SEPAY',
+          paidAmount: discounts.total
+        }).unwrap();
+
+        toast.success(`Thanh toán thành công! Mã hóa đơn: ${response.data.orderNumber}`);
+        checkout.setIsQRModalOpen(false);
+        setPendingOrderForQR(null);
+        clearPOSState();
+
+        if (checkout.autoPrint) {
+          setLastCreatedOrder(response.data);
+        } else {
+          navigate('/orders');
+        }
+      } catch (error: any) {
+        toast.error(error?.data?.message || 'Có lỗi xảy ra khi hoàn thành thanh toán. Vui lòng thử lại.');
+      }
+      return;
+    }
+
     try {
       const orderPayload: OrderRequest = {
         customerId: customer.customerType === 'GUEST' ? 1 : (customer.selectedCustomer?.id || 1),
@@ -352,7 +379,7 @@ export function useOrderCreate() {
       subtotal: cart.subtotal,
       tax: cart.tax,
       note: checkout.note,
-      isCreatingOrder: isCreatingOrder || isUpdatingOrder,
+      isCreatingOrder: isCreatingOrder || isUpdatingOrder || isCompletingPayment,
       paymentMethod: checkout.paymentMethod,
       isQRModalOpen: checkout.isQRModalOpen,
       pendingOrderId: pendingOrders.pendingOrderId,
