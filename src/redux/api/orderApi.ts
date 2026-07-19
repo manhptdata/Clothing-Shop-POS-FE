@@ -27,6 +27,12 @@ export const orderApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _error, id) => [{ type: 'Order', id }],
     }),
+    getOrderIdByNumber: builder.query<RestResponse<number>, string>({
+      query: (orderNumber) => ({
+        url: `/orders/by-number/${orderNumber}`,
+        method: 'GET',
+      }),
+    }),
     createOrder: builder.mutation<RestResponse<Order>, OrderRequest>({
       query: (data) => ({
         url: '/orders',
@@ -116,6 +122,7 @@ export const orderApi = baseApi.injectEndpoints({
 export const {
   useGetOrdersQuery,
   useGetOrderByIdQuery,
+  useLazyGetOrderByIdQuery,
   useCreateOrderMutation,
   useCancelOrderMutation,
   useUpdateOrderMutation,
@@ -123,4 +130,5 @@ export const {
   useGetReturnOrdersQuery,
   useGetReturnOrdersByOriginalOrderIdQuery,
   useCreateReturnOrderMutation,
+  useLazyGetOrderIdByNumberQuery,
 } = orderApi;

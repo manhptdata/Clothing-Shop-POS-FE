@@ -90,6 +90,10 @@ export default function VoucherHistoryPage() {
             variant = "success";
             label = "Chưa sử dụng";
             break;
+          case "RESERVED":
+            variant = "warning";
+            label = "Đang giữ chỗ";
+            break;
           case "USED":
             variant = "secondary";
             label = "Đã sử dụng";

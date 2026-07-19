@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useOrderCreate } from './useOrderCreate';
 import { CheckoutPanel } from './components/CheckoutPanel';
@@ -36,13 +36,22 @@ export default function OrderCreatePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const hasPrintedRef = useRef<number | null>(null);
+
   // Khi có đơn hàng vừa tạo (autoPrint=true), in qua popup window riêng biệt
   useEffect(() => {
     if (!state.lastCreatedOrder) return;
+    if (hasPrintedRef.current === state.lastCreatedOrder.id) return;
+    
+    hasPrintedRef.current = state.lastCreatedOrder.id as number;
     const allProducts = state.filteredProducts.length > 0 ? state.filteredProducts : [];
     printReceipt(state.lastCreatedOrder, allProducts);
-    actions.setLastCreatedOrder(null);
-  }, [state.lastCreatedOrder]);
+    
+    // Đợi 1 chút rồi mới clear state để không bị component re-render vòng lặp
+    setTimeout(() => {
+      actions.setLastCreatedOrder(null);
+    }, 500);
+  }, [state.lastCreatedOrder, state.filteredProducts, actions]);
 
   const handleAddCustomProduct = useCallback((name: string, price: number, qty: number) => {
     const fakeProduct = {

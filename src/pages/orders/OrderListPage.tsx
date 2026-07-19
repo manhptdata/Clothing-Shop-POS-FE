@@ -113,6 +113,18 @@ export default function OrderListPage() {
       ) 
     },
     {
+      key: 'paymentMethod',
+      header: 'Thanh toán',
+      render: (row) => {
+        if (row.paymentMethod === 'QR_SEPAY') {
+          return <Badge variant="info">Chuyển khoản</Badge>;
+        } else if (row.paymentMethod === 'CASH') {
+          return <Badge variant="success">Tiền mặt</Badge>;
+        }
+        return <span className="text-gray-400 text-sm">-</span>;
+      },
+    },
+    {
       key: 'status',
       header: 'Trạng thái',
       render: (row) => {

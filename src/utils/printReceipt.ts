@@ -103,12 +103,12 @@ export function printReceipt(order: Order, products: Product[]) {
     <span>${fmt(order.totalAmount)}</span>
   </div>
   <div class="row">
-    <span>Tiền khách đưa</span>
+    <span>Khách thanh toán</span>
     <span>${fmt(paidAmount)}</span>
   </div>
   <div class="row">
+    <span>Phương thức TT</span>
     <span>${paymentMethodText}</span>
-    <span>${fmt(paidAmount)}</span>
   </div>
   ${changeAmount > 0 ? `
   <div class="row-bold">

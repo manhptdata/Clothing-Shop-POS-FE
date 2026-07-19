@@ -19,6 +19,7 @@ export interface Order {
   changeAmount: number;
   status: OrderStatus;
   paymentMethod?: 'CASH' | 'QR_SEPAY';
+  isPrinted?: boolean;
   customerId: number;
   customerName?: string;
   pointsUsed?: number;
@@ -26,6 +27,7 @@ export interface Order {
   discountFromPoints?: number;
   voucherCode?: string;
   discountFromVoucher?: number;
+  voucherMinOrderValue?: number;
   createdById: number;
   createdByUsername?: string;
   note?: string;

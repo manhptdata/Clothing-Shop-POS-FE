@@ -12,7 +12,8 @@ import type {
   CreateCareLogRequest,
   UpdateCareLogRequest,
   AiSuggestionResponseDto,
-  VoucherOption
+  VoucherOption,
+  PointHistory
 } from '@/types/customer.types';
 import type { RestResponse, PageResponse, PaginationParams } from '@/types/common.types';
 
@@ -42,6 +43,14 @@ export const customerApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
       providesTags: (_result, _error, id) => [{ type: 'Customer', id }],
+    }),
+    getCustomerPointHistory: builder.query<RestResponse<PageResponse<PointHistory>>, { id: number } & PaginationParams>({
+      query: ({ id, page, size }) => ({
+        url: `/crm/customers/${id}/point-history`,
+        method: 'GET',
+        params: { page, size }
+      }),
+      providesTags: (_result, _error, { id }) => [{ type: 'Customer', id: `POINT_HISTORY_${id}` }],
     }),
     createCustomer: builder.mutation<RestResponse<Customer>, CustomerRequest>({
       query: (data) => ({
@@ -403,6 +412,7 @@ export const customerApi = baseApi.injectEndpoints({
 export const {
   useGetCustomersQuery,
   useGetCustomerByIdQuery,
+  useGetCustomerPointHistoryQuery,
   useCreateCustomerMutation,
   useUpdateCustomerMutation,
   useGetCustomerGroupsQuery,
