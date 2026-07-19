@@ -38,7 +38,7 @@ export interface VoucherInfo {
   discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
   maxDiscountAmount?: number | null;
   minOrderValue: number;
-  status: 'UNUSED' | 'USED' | 'EXPIRED';
+  status: 'UNUSED' | 'USED' | 'EXPIRED' | 'RESERVED';
   expiredAt: string;
   receivedAt: string;
   usedAt: string | null;
