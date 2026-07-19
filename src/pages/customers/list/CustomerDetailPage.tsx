@@ -268,7 +268,7 @@ export default function CustomerDetailPage() {
                           variant={
                             voucher.status === 'USED' ? 'secondary' :
                             voucher.status === 'RESERVED' ? 'warning' :
-                            isExpired ? 'destructive' :
+                            isExpired ? 'danger' :
                             'success'
                           }
                         >
