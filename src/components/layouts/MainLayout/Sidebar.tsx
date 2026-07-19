@@ -20,6 +20,7 @@ const menuItems: MenuItem[] = [
     children: [
       { path: '/orders/new', label: 'Bán hàng (POS)', icon: 'point_of_sale', permissions: ['CREATE_ORDER'] },
       { path: '/orders', label: 'Danh sách đơn hàng', icon: 'receipt_long', permissions: ['VIEW_ORDER'] },
+      { path: '/orders/payment-logs', label: 'Lịch sử thanh toán QR', icon: 'qr_code_scanner', permissions: ['VIEW_ORDER'] },
     ]
   },
   {

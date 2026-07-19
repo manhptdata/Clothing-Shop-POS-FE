@@ -64,6 +64,7 @@ const CareLogEditPage = lazy(() => import("@/pages/customers/care/CareLogEditPag
 const OrderListPage = lazy(() => import('@/pages/orders/OrderListPage'));
 const OrderCreatePage = lazy(() => import('@/pages/orders/OrderCreatePage'));
 const OrderDetailPage = lazy(() => import('@/pages/orders/OrderDetailPage'));
+const PaymentLogListPage = lazy(() => import('@/pages/orders/PaymentLogListPage'));
 
 // Users
 const UserListPage = lazy(() => import('@/pages/users/UserListPage'));
@@ -202,8 +203,10 @@ export const routes: RouteObject[] = [
             children: [
               { path: "orders", element: <OrderListPage /> },
               { path: "orders/:id", element: <OrderDetailPage /> },
+              { path: "orders/payment-logs", element: <PaymentLogListPage /> },
             ],
           },
+          
           // Create Order (Admin, Sale with CREATE_ORDER)
           {
             element: <PermissionRoute allowedPermissions={["CREATE_ORDER"]} />,

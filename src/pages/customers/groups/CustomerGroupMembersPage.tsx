@@ -274,10 +274,13 @@ export default function CustomerGroupMembersPage() {
                         </span>
                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
                           v.status === 'USED' ? 'bg-gray-200 text-gray-600' :
-                          isExpired ? 'bg-orange-100 text-orange-600' :
+                          v.status === 'RESERVED' ? 'bg-orange-100 text-orange-700' :
+                          isExpired ? 'bg-red-100 text-red-600' :
                           'bg-green-100 text-green-700'
                         }`}>
-                          {v.status === 'USED' ? 'Đã sử dụng' : isExpired ? 'Hết hạn' : 'Khả dụng'}
+                          {v.status === 'USED' ? 'Đã sử dụng' :
+                           v.status === 'RESERVED' ? 'Đang giữ chỗ' :
+                           isExpired ? 'Hết hạn' : 'Khả dụng'}
                         </span>
                       </div>
                       <div className="text-xs font-bold text-gray-900 mt-1">{v.voucherName}</div>

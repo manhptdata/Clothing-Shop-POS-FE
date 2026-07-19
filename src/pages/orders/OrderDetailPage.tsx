@@ -221,9 +221,11 @@ export default function OrderDetailPage() {
   const orderDate = new Date(order.createdAt);
   const isReturnExpired = (new Date().getTime() - orderDate.getTime()) > (7 * 24 * 60 * 60 * 1000);
 
-  // --- Calculate Return Refund Amount ---
+  // --- Calculate Return Refund Amount (mirror logic từ ReturnOrderService.java) ---
   const alreadyRefundedTotal = returnOrdersResponse?.data?.reduce((sum, ret) => sum + ret.totalRefundAmount, 0) || 0;
   const remainingPaidAmount = (order?.totalAmount || 0) - alreadyRefundedTotal;
+
+  // BƯỚC 1: Tính refund thuần túy theo discountRatio (giống BE dòng 203-205)
   const rawTotalRefund = Object.entries(returnQuantities).reduce((sum, [varId, qty]) => {
     const originalItem = order?.items?.find(i => (i.variantId || (i as any).productId) === Number(varId));
     if (!originalItem) return sum;
@@ -231,7 +233,38 @@ export default function OrderDetailPage() {
     const refundPrice = Math.round(price * (1 - discountRatio));
     return sum + refundPrice * qty;
   }, 0);
-  const totalRefund = Math.min(rawTotalRefund, remainingPaidAmount);
+
+  // BƯỚC 2: Re-evaluate Voucher (giống BE dòng 231-257)
+  const voucherMinOrderValue = order?.voucherMinOrderValue ?? 0;
+  const currentDiscountFromVoucher = order?.discountFromVoucher ?? 0;
+  const hasActiveVoucher = currentDiscountFromVoucher > 0 && voucherMinOrderValue > 0;
+
+  // newOrderValue = giá trị đơn hàng còn lại SAU KHI trả (theo totalAmount đã trừ discount)
+  const newOrderValue = (order?.totalAmount || 0) - rawTotalRefund - alreadyRefundedTotal;
+  
+  // isVoucherReclaimed: voucher sẽ bị thu hồi nếu newOrderValue < minOrderValue
+  const isVoucherReclaimed = hasActiveVoucher && newOrderValue < voucherMinOrderValue;
+
+  // BƯỚC 3: Nếu voucher bị thu hồi, tính lại từ đầu theo full price (không bake-in voucher)
+  // Phản ánh chính xác logic của ReturnOrderService.java
+  let adjustedRefund = rawTotalRefund;
+  if (isVoucherReclaimed) {
+    // Chỉ áp dụng discount ratio của điểm (không bao gồm voucher)
+    const originalSubtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
+    const discountRatioPoints = originalSubtotal > 0 ? (order.discountFromPoints || 0) / originalSubtotal : 0;
+    const fullRefundWithPoints = Object.entries(returnQuantities).reduce((sum, [varId, qty]) => {
+      const originalItem = order?.items?.find(i => (i.variantId || (i as any).productId) === Number(varId));
+      if (!originalItem) return sum;
+      const price = originalItem.unitPrice || (originalItem as any).price || 0;
+      const refundPrice = Math.round(price * (1 - discountRatioPoints));
+      return sum + refundPrice * qty;
+    }, 0);
+    adjustedRefund = fullRefundWithPoints - currentDiscountFromVoucher;
+    if (adjustedRefund < 0) adjustedRefund = 0;
+  }
+
+  // BƯỚC 4: Cap lại theo số tiền thực tế khách còn được hoàn
+  const totalRefund = Math.min(adjustedRefund, remainingPaidAmount);
 
   // --- Compute Totals ---
   const subtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
@@ -530,6 +563,12 @@ export default function OrderDetailPage() {
             
             <div className="space-y-xs text-sm">
               <div className="flex justify-between items-center">
+                <span className="text-on-surface-variant">Thanh toán:</span>
+                <span className="font-bold text-on-surface">
+                  {order.paymentMethod === 'QR_SEPAY' ? 'Chuyển khoản (SePay)' : 'Tiền mặt'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-on-surface-variant">Khách đã trả:</span>
                 <span className="font-bold text-on-surface">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.paidAmount || (order as any).customerPaid)}
@@ -695,6 +734,21 @@ export default function OrderDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Cảnh báo: Voucher bị thu hồi do vi phạm điều kiện */}
+            {isVoucherReclaimed && (
+              <div className="mx-md mb-sm bg-amber-50 border border-amber-300 rounded-xl p-sm flex gap-xs items-start">
+                <span className="material-symbols-outlined text-amber-600 text-[20px] mt-0.5 flex-shrink-0">warning</span>
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold">Voucher bị hủy do không đủ điều kiện</p>
+                  <p className="text-xs mt-0.5">
+                    Sau khi trả hàng, tổng giá trị đơn còn lại ({new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(newOrderValue)}) 
+                    thấp hơn mức tối thiểu ({new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherMinOrderValue)}) để áp dụng voucher.
+                    Tiền hoàn trả đã được khấu trừ thêm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentDiscountFromVoucher)} (giá trị voucher đã được hoàn về ví voucher khách).
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Modal Footer */}
             <div className="p-md border-t border-outline/10 bg-surface-container-lowest flex justify-between items-center">

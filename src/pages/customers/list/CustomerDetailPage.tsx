@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareLogsQuery } from "@/redux/api/customerApi";
+import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareLogsQuery, useGetCustomerPointHistoryQuery } from "@/redux/api/customerApi";
 import type { CustomerOrderHistory, CustomerWithEmail } from "@/types/customer.types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,7 +17,7 @@ export default function CustomerDetailPage() {
   const hasManageCustomerPermission = isAdmin || userPerms.includes('MANAGE_CUSTOMER');
 
   // State quản lý việc chuyển đổi giữa 2 tab (Đơn hàng và Chăm sóc)
-  const [activeTab, setActiveTab] = useState<"orders" | "care">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "care" | "points">("orders");
   const [orderPage, setOrderPage] = useState(0); // State quản lý trang hiện tại
   const [orderSize, setOrderSize] = useState(5); // State quản lý số dòng mỗi trang
   const [orderKeyword, setOrderKeyword] = useState("");
@@ -49,6 +49,17 @@ export default function CustomerDetailPage() {
 
   const careLogs = careLogsResponse?.data?.content || [];
   const carePageData = careLogsResponse?.data;
+
+  // Lấy danh sách lịch sử điểm thưởng
+  const [pointPage, setPointPage] = useState(0);
+  const [pointSize, setPointSize] = useState(5);
+  const { data: pointLogsResponse, isLoading: isPointLogsLoading, isFetching: isPointLogsFetching } = useGetCustomerPointHistoryQuery(
+    { id: Number(id), page: pointPage, size: pointSize },
+    { skip: !id }
+  );
+  
+  const pointLogs = pointLogsResponse?.data?.content || [];
+  const pointPageData = pointLogsResponse?.data;
 
   const customer = responseData?.data as CustomerWithEmail;
 
@@ -256,11 +267,14 @@ export default function CustomerDetailPage() {
                         <Badge
                           variant={
                             voucher.status === 'USED' ? 'secondary' :
-                            isExpired ? 'warning' :
+                            voucher.status === 'RESERVED' ? 'warning' :
+                            isExpired ? 'destructive' :
                             'success'
                           }
                         >
-                          {voucher.status === 'USED' ? 'Đã sử dụng' : isExpired ? 'Hết hạn' : 'Khả dụng'}
+                          {voucher.status === 'USED' ? 'Đã sử dụng' :
+                           voucher.status === 'RESERVED' ? 'Đang giữ chỗ' :
+                           isExpired ? 'Hết hạn' : 'Khả dụng'}
                         </Badge>
                       </div>
                       <div className="text-[12px] font-bold text-gray-900">
@@ -332,6 +346,18 @@ export default function CustomerDetailPage() {
               (Timeline)
               <span className="bg-gray-200 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
                 {carePageData?.totalElements || 0}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("points")}
+              className={`px-6 py-3.5 border-b-2 transition-all flex items-center gap-2 ${activeTab === "points"
+                ? "border-blue-600 text-blue-600 bg-white"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                }`}
+            >
+              <i className="fa-solid fa-star"></i> Điểm thưởng
+              <span className="bg-yellow-100 text-yellow-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                {pointPageData?.totalElements || 0}
               </span>
             </button>
           </div>
@@ -461,28 +487,34 @@ export default function CustomerDetailPage() {
               </div>
             )}
 
-            {/* CONTENT TAB: CHĂM SÓC */}
+            {/* CONTENT TAB: LỊCH SỬ CHĂM SÓC */}
             {activeTab === "care" && (
-              <div className="space-y-5 block">
+              <div className="space-y-4">
                 {(isCareLogsLoading || isCareLogsFetching) ? (
                   <div className="p-10 flex justify-center bg-white rounded-xl border border-gray-200">
                     <i className="fa-solid fa-spinner fa-spin text-blue-600 text-2xl"></i>
                   </div>
                 ) : careLogs.length === 0 ? (
-                  <div className="p-10 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
+                  <div className="p-10 text-center text-gray-500 bg-white rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <i className="fa-solid fa-headset text-gray-400 text-xl"></i>
+                    </div>
                     Khách hàng chưa có lịch sử chăm sóc nào.
                   </div>
                 ) : (
-                  <div className="relative border-l-[3px] border-slate-200 pl-6 ml-3 space-y-6">
+                  <div className="relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                     {careLogs.map((log) => (
-                      <div key={log.id} className="relative group">
-                        <span className="absolute -left-[33px] top-1.5 bg-emerald-500 w-[18px] h-[18px] rounded-full border-[3px] border-white ring-4 ring-emerald-50 transition-all duration-300 group-hover:ring-emerald-100 group-hover:scale-110 z-10"></span>
-                        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/70 shadow-sm hover:shadow-md hover:border-gray-300/80 transition-all duration-300">
-                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs mb-3 gap-2">
-                            <div className="font-semibold text-gray-800 flex items-center gap-2">
-                              <span className="bg-blue-50 text-blue-600 w-7 h-7 rounded-xl flex items-center justify-center text-xs shadow-3xs">
-                                <i className="fa-solid fa-headset"></i>
-                              </span>
+                      <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active mb-6">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10 transition-transform group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-100">
+                          <i className="fa-solid fa-phone-volume text-sm"></i>
+                        </div>
+                        <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative group-hover:border-blue-200">
+                          <div className="hidden md:block absolute top-5 -left-3 group-odd:left-auto group-odd:-right-3 w-3 h-3 bg-white border-t border-r border-gray-100 group-hover:border-blue-200 transform -rotate-135 group-odd:rotate-45 transition-colors"></div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-2 border-b border-gray-50 pb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs uppercase overflow-hidden shadow-sm">
+                                {log.calledBy?.fullName?.substring(0, 2) || "AD"}
+                              </div>
                               <div>
                                 <span className="text-gray-400 font-medium">
                                   Nhân viên thực hiện:
@@ -573,6 +605,79 @@ export default function CustomerDetailPage() {
                       onSizeChange={(newSize) => {
                         setCareSize(newSize);
                         setCarePage(0);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* CONTENT TAB: LỊCH SỬ ĐIỂM THƯỞNG */}
+            {activeTab === "points" && (
+              <div className="space-y-4">
+                {(isPointLogsLoading || isPointLogsFetching) ? (
+                  <div className="p-10 flex justify-center bg-white rounded-xl border border-gray-200">
+                    <i className="fa-solid fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                  </div>
+                ) : pointLogs.length === 0 ? (
+                  <div className="p-10 text-center text-gray-500 bg-white rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <i className="fa-solid fa-star text-gray-400 text-xl"></i>
+                    </div>
+                    Khách hàng chưa có lịch sử điểm thưởng nào.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
+                          <th className="px-4 py-3 font-semibold w-1/4">Thời gian</th>
+                          <th className="px-4 py-3 font-semibold w-1/6">Loại</th>
+                          <th className="px-4 py-3 font-semibold w-1/6 text-right">Số điểm</th>
+                          <th className="px-4 py-3 font-semibold">Diễn giải</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {pointLogs.map((log) => (
+                          <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3 text-gray-500 font-medium whitespace-nowrap">
+                              {new Date(log.createdAt).toLocaleString("vi-VN")}
+                            </td>
+                            <td className="px-4 py-3">
+                              {log.type === 'EARN' ? (
+                                <Badge variant="success">Tích điểm</Badge>
+                              ) : log.type === 'REDEEM' ? (
+                                <Badge variant="warning">Tiêu điểm</Badge>
+                              ) : (
+                                <Badge variant="secondary">Hoàn điểm</Badge>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className={`font-bold ${log.pointsChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {log.pointsChange > 0 ? `+${log.pointsChange}` : log.pointsChange}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-700">
+                              {log.description}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                
+                {pointPageData && pointPageData.totalPages > 1 && (
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
+                    <Pagination
+                      currentPage={pointPage}
+                      totalPages={pointPageData.totalPages}
+                      totalElements={pointPageData.totalElements}
+                      pageSize={pointPageData.size || pointSize}
+                      onPageChange={(newPage) => setPointPage(newPage)}
+                      onSizeChange={(newSize) => {
+                        setPointSize(newSize);
+                        setPointPage(0);
                       }}
                     />
                   </div>

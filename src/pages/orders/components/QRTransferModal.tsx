@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNotifications } from '@/providers/NotificationProvider';
 import type { Order } from '@/types/order.types';
+import { useLazyGetOrderByIdQuery } from '@/redux/api/orderApi';
 
 interface QRTransferModalProps {
   isOpen: boolean;
@@ -23,10 +24,18 @@ export function QRTransferModal({
   onPaymentSuccess
 }: QRTransferModalProps) {
   const { notifications } = useNotifications();
+  const [getOrderById] = useLazyGetOrderByIdQuery();
+
+  const [qrUrl, setQrUrl] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSuccessHandled, setIsSuccessHandled] = useState(false);
 
   // Nghe thông báo SSE qua NotificationProvider
   useEffect(() => {
-    if (!isOpen || !pendingOrder || !onPaymentSuccess) return;
+    if (!isOpen || !pendingOrder || !onPaymentSuccess || isSuccessHandled) return;
 
     // Tìm kiếm trong mảng thông báo để tìm đúng thông báo thanh toán của đơn hàng này
     const matchedNotification = notifications.find((n) => {
@@ -42,18 +51,24 @@ export function QRTransferModal({
     });
 
     if (matchedNotification) {
-      onPaymentSuccess(pendingOrder);
+      setIsSuccessHandled(true);
+      getOrderById(pendingOrder.id as number).unwrap().then(res => {
+        if (res.data) {
+          onPaymentSuccess(res.data);
+        } else {
+          onPaymentSuccess(pendingOrder);
+        }
+      }).catch(() => {
+        onPaymentSuccess(pendingOrder);
+      });
     }
-  }, [notifications, isOpen, pendingOrder, onPaymentSuccess]);
-
-  const [qrUrl, setQrUrl] = useState('');
-  const [bankName, setBankName] = useState('');
-  const [bankAccount, setBankAccount] = useState('');
-  const [accountName, setAccountName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  }, [notifications, isOpen, pendingOrder, onPaymentSuccess, getOrderById, isSuccessHandled]);
 
   useEffect(() => {
-    if (!isOpen || !pendingOrder) return;
+    if (!isOpen || !pendingOrder) {
+      if (!isOpen) setIsSuccessHandled(false); // Reset khi đóng
+      return;
+    }
     
     setIsLoading(true);
     const fetchQr = async () => {
@@ -80,7 +95,7 @@ export function QRTransferModal({
       }
     };
     fetchQr();
-  }, [isOpen, pendingOrder, total]);
+  }, [isOpen, pendingOrder]);
 
   if (!isOpen) return null;
 

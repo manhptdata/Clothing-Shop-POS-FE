@@ -203,3 +203,13 @@ export interface AiSuggestionResponseDto {
   smsTemplate: string;
   objectionHandling: string;
 }
+
+export interface PointHistory {
+  id: number;
+  customerId: number;
+  orderId?: number;
+  pointsChange: number;
+  type: 'EARN' | 'REDEEM' | 'REFUND';
+  description: string;
+  createdAt: string;
+}
