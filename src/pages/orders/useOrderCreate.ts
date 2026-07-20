@@ -364,6 +364,7 @@ export function useOrderCreate() {
       debouncedSearch: customer.debouncedSearch,
       customerSearchData: customer.customerSearchData,
       vouchersList: discounts.vouchersList,
+      eligiblePrivateVouchers: discounts.eligiblePrivateVouchers,
       voucherCode: discounts.voucherCode,
       voucherError: discounts.voucherError,
       isVoucherValid: discounts.isVoucherValid,

@@ -40,7 +40,7 @@ export default function VoucherListPage() {
         const index = filteredVouchers.findIndex((v: any) => v.id === row.id);
         return <span className="text-gray-700 font-semibold">{index + 1}</span>;
       },
-      width: "80px",
+      className: "w-20",
     },
     {
       key: "name",
@@ -73,6 +73,52 @@ export default function VoucherListPage() {
       ),
     },
     {
+      key: "isPublic",
+      header: "Phân loại",
+      render: (row) => (
+        <div className="flex flex-col gap-1">
+          <Badge variant={row.isPublic ? "success" : "secondary"}>
+            {row.isPublic ? "Public" : "Private"}
+          </Badge>
+          {!row.isPublic && row.targetCustomerGroupId && (
+            <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-medium">
+              ID nhóm: #{row.targetCustomerGroupId}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "duration",
+      header: "Thời hạn",
+      render: (row) => {
+        const formatDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
+        const start = formatDate(row.startDate);
+        const end = formatDate(row.endDate);
+
+        if (!start && !end) return <span className="text-gray-400 text-xs font-normal">Vô thời hạn</span>;
+        return (
+          <div className="text-xs text-gray-700 flex flex-col font-mono leading-tight">
+            <span>{start ? `Từ: ${start}` : "Tự do"}</span>
+            <span>{end ? `Đến: ${end}` : "Không Hạn"}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "quantity",
+      header: "Lượt dùng",
+      render: (row) => {
+        const isFull = row.totalQuantity && (row.usedQuantity || 0) >= row.totalQuantity;
+        return (
+          <span className={`text-xs font-medium ${isFull ? "text-rose-600 font-bold" : "text-gray-800"}`}>
+            {row.usedQuantity || 0} / {row.totalQuantity ? row.totalQuantity : "∞"}
+            {isFull && <span className="block text-[10px] text-rose-500 font-normal">Hết lượt</span>}
+          </span>
+        );
+      },
+    },
+    {
       key: "minOrderValue",
       header: "Đơn tối thiểu",
       render: (row) => (
@@ -84,35 +130,59 @@ export default function VoucherListPage() {
     {
       key: "status",
       header: "Trạng thái",
-      className: "w-32",
+      className: "w-36",
       render: (row) => {
         const isActive = row.status === "ACTIVE";
+        const now = new Date();
+        const isExpired = row.endDate && new Date(row.endDate) < now;
+        const isUpcoming = row.startDate && new Date(row.startDate) > now;
+        const isFull = row.totalQuantity && (row.usedQuantity || 0) >= row.totalQuantity;
+
+        let statusText = "Đang bật";
+        let statusBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+
+        if (!isActive) {
+          statusText = "Đã tắt";
+          statusBadgeClass = "bg-gray-100 text-gray-500 border-gray-200";
+        } else if (isExpired) {
+          statusText = "Hết hạn";
+          statusBadgeClass = "bg-rose-50 text-rose-600 border-rose-200";
+        } else if (isUpcoming) {
+          statusText = "Sắp chạy";
+          statusBadgeClass = "bg-amber-50 text-amber-600 border-amber-200";
+        } else if (isFull) {
+          statusText = "Hết lượt";
+          statusBadgeClass = "bg-rose-50 text-rose-600 border-rose-200";
+        }
+
         return (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={async () => {
-                try {
-                  const res = await toggleStatus(row.id).unwrap();
-                  toast.success(res.message || "Thay đổi trạng thái thành công!");
-                } catch (error: any) {
-                  toast.error(error?.data?.message || "Lỗi khi đổi trạng thái!");
-                }
-              }}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${isActive ? "bg-blue-600" : "bg-gray-200"
-                }`}
-              role="switch"
-              aria-checked={isActive}
-            >
-              <span className="sr-only">Toggle status</span>
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? "translate-x-4" : "translate-x-0"
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await toggleStatus(row.id).unwrap();
+                    toast.success(res.message || "Thay đổi trạng thái thành công!");
+                  } catch (error: any) {
+                    toast.error(error?.data?.message || "Lỗi khi đổi trạng thái!");
+                  }
+                }}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${isActive ? "bg-blue-600" : "bg-gray-200"
                   }`}
-              />
-            </button>
-            <span className={`text-xs font-semibold ${isActive ? "text-blue-600" : "text-gray-500"}`}>
-              {isActive ? "Đang bật" : "Đã tắt"}
-            </span>
+                role="switch"
+                aria-checked={isActive}
+              >
+                <span className="sr-only">Toggle status</span>
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? "translate-x-4" : "translate-x-0"
+                    }`}
+                />
+              </button>
+              <span className={`text-xs border px-1.5 py-0.5 rounded font-semibold ${statusBadgeClass}`}>
+                {statusText}
+              </span>
+            </div>
           </div>
         );
       },

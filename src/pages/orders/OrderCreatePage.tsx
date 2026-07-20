@@ -235,6 +235,7 @@ export default function OrderCreatePage() {
               handleSelectCustomer={actions.handleSelectCustomer}
               setIsCustomerModalOpen={actions.setIsCustomerModalOpen}
               vouchersList={state.vouchersList}
+              eligiblePrivateVouchers={state.eligiblePrivateVouchers}
               voucherCode={state.voucherCode}
               setVoucherCode={actions.setVoucherCode}
               voucherError={state.voucherError}

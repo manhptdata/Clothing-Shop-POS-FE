@@ -211,7 +211,21 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: ['Customer'],
     }),
 
-    createVoucher: builder.mutation<RestResponse<void>, { name: string; code: string; discountAmount: number; discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE'; maxDiscountAmount?: number | null; minOrderValue?: number }>({
+    createVoucher: builder.mutation<RestResponse<void>, {
+      name: string;
+      code: string;
+      discountAmount: number;
+      discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
+      maxDiscountAmount?: number | null;
+      minOrderValue?: number;
+      startDate?: string | null;
+      endDate?: string | null;
+      totalQuantity?: number | null;
+      maxUsagePerUser?: number | null;
+      isPublic?: boolean;
+      targetCustomerGroupId?: number | null;
+      applyType?: string;
+    }>({
       query: (data) => ({
         url: '/crm/customer-groups/vouchers',
         method: 'POST',
@@ -220,7 +234,24 @@ export const customerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Customer'],
     }),
 
-    updateVoucher: builder.mutation<RestResponse<void>, { id: number; data: { name: string; code: string; discountAmount: number; discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE'; maxDiscountAmount?: number | null; minOrderValue?: number } }>({
+    updateVoucher: builder.mutation<RestResponse<void>, {
+      id: number;
+      data: {
+        name: string;
+        code: string;
+        discountAmount: number;
+        discountType?: 'FIXED_AMOUNT' | 'PERCENTAGE';
+        maxDiscountAmount?: number | null;
+        minOrderValue?: number;
+        startDate?: string | null;
+        endDate?: string | null;
+        totalQuantity?: number | null;
+        maxUsagePerUser?: number | null;
+        isPublic?: boolean;
+        targetCustomerGroupId?: number | null;
+        applyType?: string;
+      };
+    }>({
       query: ({ id, data }) => ({
         url: `/crm/customer-groups/vouchers/${id}`,
         method: 'PUT',
@@ -404,6 +435,22 @@ export const customerApi = baseApi.injectEndpoints({
       providesTags: ['Customer'],
     }),
 
+    revokeCustomerVoucher: builder.mutation<RestResponse<void>, { customerVoucherId: number; customerId: number }>({
+      query: ({ customerVoucherId }) => ({
+        url: `/crm/customers/vouchers/${customerVoucherId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { customerId }) => [{ type: 'Customer', id: customerId }],
+    }),
+
+    giveCustomerVoucher: builder.mutation<RestResponse<void>, { customerId: number; voucherId: number }>({
+      query: ({ customerId, voucherId }) => ({
+        url: `/crm/customers/${customerId}/vouchers/${voucherId}`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, { customerId }) => [{ type: 'Customer', id: customerId }],
+    }),
+
   }),
 
   overrideExisting: false,
@@ -442,5 +489,7 @@ export const {
   useDeleteCareLogMutation,
   useImportCustomersMutation,
   useLazyGetAiSuggestScriptQuery,
-  useGetVoucherHistoryQuery
+  useGetVoucherHistoryQuery,
+  useRevokeCustomerVoucherMutation,
+  useGiveCustomerVoucherMutation
 } = customerApi;
