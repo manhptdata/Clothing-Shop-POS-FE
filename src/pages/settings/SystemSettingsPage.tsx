@@ -11,6 +11,7 @@ export default function SystemSettingsPage() {
 
   const [requireReturnApproval, setRequireReturnApproval] = useState(true);
   const [requireCancelApproval, setRequireCancelApproval] = useState(true);
+  const [maxPendingOrders, setMaxPendingOrders] = useState<number>(3);
 
   const [bankName, setBankName] = useState('MBBank');
   const [bankAccount, setBankAccount] = useState('SBSEPAY');
@@ -37,6 +38,10 @@ export default function SystemSettingsPage() {
       const cancelSetting = settings.find(s => s.settingKey === 'REQUIRE_CANCEL_APPROVAL');
       if (cancelSetting) {
         setRequireCancelApproval(cancelSetting.settingValue === 'true');
+      }
+      const maxPendingSetting = settings.find(s => s.settingKey === 'MAX_PENDING_ORDERS_PER_CUSTOMER');
+      if (maxPendingSetting) {
+        setMaxPendingOrders(parseInt(maxPendingSetting.settingValue) || 3);
       }
       const bankNameSetting = settings.find(s => s.settingKey === 'PAYMENT_BANK_NAME');
       if (bankNameSetting) setBankName(bankNameSetting.settingValue);
@@ -72,6 +77,19 @@ export default function SystemSettingsPage() {
       }).unwrap();
       setRequireCancelApproval(newChecked);
       toast.success('Cập nhật cấu hình hủy đơn thành công!');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Có lỗi xảy ra khi cập nhật cấu hình');
+    }
+  };
+
+  const handleSaveMaxPendingConfig = async () => {
+    try {
+      if (maxPendingOrders < 1) {
+        toast.error('Số lượng đơn tối đa phải lớn hơn 0');
+        return;
+      }
+      await updateSetting({ key: 'MAX_PENDING_ORDERS_PER_CUSTOMER', value: maxPendingOrders.toString() }).unwrap();
+      toast.success('Cập nhật giới hạn đơn tạm thành công!');
     } catch (error: any) {
       toast.error(error.data?.message || 'Có lỗi xảy ra khi cập nhật cấu hình');
     }
@@ -154,6 +172,34 @@ export default function SystemSettingsPage() {
               } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
             />
           </button>
+        </div>
+        
+        <div className="h-px bg-outline/10 w-full my-6"></div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-on-surface mb-1">Giới hạn số lượng đơn giữ tạm cho mỗi khách hàng</h2>
+            <p className="text-sm text-on-surface-variant">
+              Quy định số lượng tối đa các đơn hàng (ở trạng thái PENDING) mà một khách hàng có thể giữ trên hệ thống.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="1"
+              value={maxPendingOrders}
+              onChange={(e) => setMaxPendingOrders(parseInt(e.target.value) || 1)}
+              className="w-24 h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-center"
+            />
+            <button
+              onClick={handleSaveMaxPendingConfig}
+              disabled={isUpdating}
+              className="h-11 px-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              Lưu
+            </button>
+          </div>
         </div>
       </div>
 

@@ -19,6 +19,7 @@ interface CustomerSelectionProps {
   handleSelectCustomer: (customer: Customer) => void;
   setIsCustomerModalOpen: (open: boolean) => void;
   vouchersList: any[];
+  eligiblePrivateVouchers?: any[];
   voucherCode: string;
   setVoucherCode: (code: string) => void;
   voucherError: string | null;
@@ -46,6 +47,7 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
   handleSelectCustomer,
   setIsCustomerModalOpen,
   vouchersList,
+  eligiblePrivateVouchers = [],
   voucherCode,
   setVoucherCode,
   voucherError,
@@ -248,15 +250,15 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Voucher áp dụng</span>
-                      {vouchersList.length > 0 && (
+                      {(vouchersList.length > 0 || eligiblePrivateVouchers.length > 0) && (
                         <span className="text-[9px] text-green-600 font-semibold">
-                          {vouchersList.filter((v) => v.status === 'UNUSED').length} khả dụng
+                          {vouchersList.filter((v) => v.status === 'UNUSED').length + eligiblePrivateVouchers.length} khả dụng
                         </span>
                       )}
                     </div>
                     <div className="space-y-2">
                       <Select
-                        value={voucherCode}
+                        value={(vouchersList.some(v => v.voucherCode === voucherCode) || eligiblePrivateVouchers.some(v => v.voucherCode === voucherCode)) ? voucherCode : ''}
                         onChange={(val) => setVoucherCode(val as string)}
                         className="bg-white border-gray-300 text-gray-700 text-xs"
                         options={[
@@ -264,7 +266,15 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
                           ...vouchersList
                             .filter((v) => v.status === 'UNUSED')
                             .map((v) => ({
-                              label: `${v.voucherCode} (Giảm ${new Intl.NumberFormat('vi-VN', {
+                              label: `${v.voucherCode} (Ví cá nhân - Giảm ${new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND',
+                              }).format(v.discountAmount)})`,
+                              value: v.voucherCode,
+                            })),
+                          ...eligiblePrivateVouchers
+                            .map((v) => ({
+                              label: `${v.voucherCode} (Ưu đãi hạng - Giảm ${new Intl.NumberFormat('vi-VN', {
                                 style: 'currency',
                                 currency: 'VND',
                               }).format(v.discountAmount)})`,

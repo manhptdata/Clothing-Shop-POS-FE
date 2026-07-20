@@ -143,6 +143,14 @@ export interface VoucherOption {
   maxDiscountAmount?: number | null;
   minOrderValue?: number;
   status: 'ACTIVE' | 'INACTIVE';
+  startDate?: string | null;
+  endDate?: string | null;
+  totalQuantity?: number | null;
+  usedQuantity?: number;
+  maxUsagePerUser?: number | null;
+  isPublic?: boolean;
+  targetCustomerGroupId?: number | null;
+  applyType?: 'ALL' | 'CATEGORY' | 'PRODUCT';
 }
 
 

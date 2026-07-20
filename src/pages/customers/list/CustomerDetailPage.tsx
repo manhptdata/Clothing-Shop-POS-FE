@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useGetCustomerByIdQuery, useGetCustomerOrdersQuery, useGetCustomerCareLogsQuery, useGetCustomerPointHistoryQuery } from "@/redux/api/customerApi";
+import toast from "react-hot-toast";
+import {
+  useGetCustomerByIdQuery,
+  useGetCustomerOrdersQuery,
+  useGetCustomerCareLogsQuery,
+  useGetCustomerPointHistoryQuery,
+  useRevokeCustomerVoucherMutation,
+  useGiveCustomerVoucherMutation,
+  useGetVoucherOptionsQuery
+} from "@/redux/api/customerApi";
 import type { CustomerOrderHistory, CustomerWithEmail } from "@/types/customer.types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -60,6 +69,44 @@ export default function CustomerDetailPage() {
   
   const pointLogs = pointLogsResponse?.data?.content || [];
   const pointPageData = pointLogsResponse?.data;
+
+  // Quản lý Ví Voucher thủ công
+  const [isGiveModalOpen, setIsGiveModalOpen] = useState(false);
+  const [selectedVoucherId, setSelectedVoucherId] = useState<number | null>(null);
+
+  const [revokeCustomerVoucher, { isLoading: isRevoking }] = useRevokeCustomerVoucherMutation();
+  const [giveCustomerVoucher, { isLoading: isGiving }] = useGiveCustomerVoucherMutation();
+
+  const { data: voucherOptionsData } = useGetVoucherOptionsQuery(
+    { status: "ACTIVE" },
+    { skip: !isGiveModalOpen }
+  );
+
+  const activeVouchersList = voucherOptionsData?.data || [];
+
+  const handleRevokeVoucher = async (customerVoucherId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn thu hồi voucher này khỏi ví của khách hàng không?")) {
+      return;
+    }
+    try {
+      await revokeCustomerVoucher({ customerVoucherId, customerId: Number(id) }).unwrap();
+      toast.success("Đã thu hồi voucher khỏi ví khách thành công!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Lỗi khi thu hồi voucher!");
+    }
+  };
+
+  const handleGiveVoucher = async () => {
+    if (!selectedVoucherId || !id) return;
+    try {
+      await giveCustomerVoucher({ customerId: Number(id), voucherId: selectedVoucherId }).unwrap();
+      toast.success("Đã tặng voucher thành công vào ví khách hàng!");
+      setIsGiveModalOpen(false);
+      setSelectedVoucherId(null);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Lỗi khi tặng voucher!");
+    }
+  };
 
   const customer = responseData?.data as CustomerWithEmail;
 
@@ -241,9 +288,19 @@ export default function CustomerDetailPage() {
 
             {/* VOUCHER TỪ API */}
             <div className="pt-3 border-t border-gray-100 space-y-2">
-              <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-1">
-                Kho Voucher của khách ({customer.vouchers?.length || 0})
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                  Kho Voucher của khách ({customer.vouchers?.length || 0})
+                </label>
+                {hasManageCustomerPermission && (
+                  <button
+                    onClick={() => setIsGiveModalOpen(true)}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded transition flex items-center gap-1 border border-blue-200"
+                  >
+                    <i className="fa-solid fa-plus text-[10px]"></i> Tặng Voucher
+                  </button>
+                )}
+              </div>
 
               {customer.vouchers?.map((voucher) => {
                 const isExpired = new Date(voucher.expiredAt) < new Date() && voucher.status === 'UNUSED';
@@ -289,8 +346,18 @@ export default function CustomerDetailPage() {
                             HĐ từ {voucher.minOrderValue ? voucher.minOrderValue.toLocaleString() : "0"}đ
                           </div>
                         </div>
-                        <div className="text-[10px] text-gray-400 font-medium text-right flex flex-col gap-0.5 items-end">
+                        <div className="text-[10px] text-gray-400 font-medium text-right flex flex-col gap-1 items-end">
                           <span>HSD: {new Date(voucher.expiredAt).toLocaleDateString('vi-VN')}</span>
+                          {hasManageCustomerPermission && voucher.status === 'UNUSED' && (
+                            <button
+                              onClick={() => handleRevokeVoucher(voucher.id)}
+                              disabled={isRevoking}
+                              className="text-[10px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-1.5 py-0.5 rounded transition border border-rose-200 flex items-center gap-1"
+                              title="Thu hồi voucher này khỏi ví khách"
+                            >
+                              <i className="fa-solid fa-trash-can text-[9px]"></i> Thu hồi
+                            </button>
+                          )}
                           {voucher.status === 'USED' && voucher.usedAt && (
                             <div className="flex flex-col items-end gap-0.5">
                               <span className="text-[9px] text-red-500 bg-red-50 px-1 rounded font-bold border border-red-100">
@@ -687,6 +754,57 @@ export default function CustomerDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL TẶNG VOUCHER */}
+      {isGiveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div 
+            className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 p-5 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                <i className="fa-solid fa-gift text-rose-500"></i> Tặng Voucher cho khách hàng
+              </h3>
+              <button onClick={() => setIsGiveModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Chọn chương trình Voucher muốn tặng
+              </label>
+              <select
+                className="w-full bg-white border border-gray-300 text-gray-800 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500"
+                value={selectedVoucherId || ''}
+                onChange={(e) => setSelectedVoucherId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">-- Chọn voucher từ danh sách --</option>
+                {activeVouchersList.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.code} - {v.name} (Giảm {v.discountAmount?.toLocaleString()}đ)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="outline" onClick={() => setIsGiveModalOpen(false)}>
+                Hủy
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleGiveVoucher}
+                isLoading={isGiving}
+                disabled={!selectedVoucherId || isGiving}
+              >
+                Xác nhận tặng
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
