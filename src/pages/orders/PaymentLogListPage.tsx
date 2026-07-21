@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { useLazyGetOrderIdByNumberQuery } from '@/redux/api/orderApi';
+import { useLazyGetOrderIdByNumberQuery, useLazyGetOrderByIdQuery } from '@/redux/api/orderApi';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -28,8 +28,13 @@ export default function PaymentLogListPage() {
   const [selectedLog, setSelectedLog] = useState<PaymentLog | null>(null);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
   const [refundAmountInput, setRefundAmountInput] = useState<string>('');
+  const [orderTotalAmount, setOrderTotalAmount] = useState<number | null>(null);
+  const [suggestedRefundAmount, setSuggestedRefundAmount] = useState<number | null>(null);
+  const [isLoadingOrderInfo, setIsLoadingOrderInfo] = useState(false);
 
   const [refundPaymentLog, { isLoading: isRefunding }] = useRefundPaymentLogMutation();
+  const [getOrderId] = useLazyGetOrderIdByNumberQuery();
+  const [getOrderById] = useLazyGetOrderByIdQuery();
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -38,7 +43,9 @@ export default function PaymentLogListPage() {
     return () => clearTimeout(handler);
   }, [filterOrderNumber]);
 
-  const [getOrderId] = useLazyGetOrderIdByNumberQuery();
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [debouncedOrderNumber, filterStatus, filterGateway, filterDateFrom, filterDateTo]);
 
   const handleOrderClick = async (orderNumber?: string) => {
     if (!orderNumber) return;
@@ -55,10 +62,46 @@ export default function PaymentLogListPage() {
     }
   };
 
-  const openRefundModal = (log: PaymentLog) => {
+  const openRefundModal = async (log: PaymentLog) => {
     setSelectedLog(log);
     setRefundAmountInput('');
+    setOrderTotalAmount(null);
+    setSuggestedRefundAmount(null);
     setIsRefundModalOpen(true);
+
+    if (log.orderNumber) {
+      setIsLoadingOrderInfo(true);
+      try {
+        const idRes = await getOrderId(log.orderNumber).unwrap();
+        const orderId = typeof idRes === 'number' ? idRes : (idRes as any)?.data || (idRes as any)?.result;
+        if (orderId) {
+          const orderRes = await getOrderById(orderId).unwrap();
+          const order = (orderRes as any)?.data || orderRes;
+          if (order && order.totalAmount !== undefined) {
+            const total = Number(order.totalAmount);
+            setOrderTotalAmount(total);
+
+            let calculatedSuggested = 0;
+            if (log.status === 'DUPLICATE_PAYMENT') {
+              calculatedSuggested = log.transferAmount || 0;
+            } else if (log.status === 'OVERPAID') {
+              calculatedSuggested = Math.max(0, (log.transferAmount || 0) - total);
+            } else {
+              calculatedSuggested = (log.transferAmount || 0) - total;
+            }
+
+            if (calculatedSuggested > 0) {
+              setSuggestedRefundAmount(calculatedSuggested);
+              setRefundAmountInput(String(calculatedSuggested));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Không thể lấy thông tin giá trị đơn hàng:', err);
+      } finally {
+        setIsLoadingOrderInfo(false);
+      }
+    }
   };
 
   const handleConfirmRefund = async () => {
@@ -291,31 +334,60 @@ export default function PaymentLogListPage() {
             <p className="text-sm text-gray-600">
               Bạn đang thực hiện xác nhận hoàn tiền mặt cho giao dịch:
             </p>
-            <div className="bg-gray-50 p-3 rounded-lg text-sm space-y-1 border border-gray-200">
-              <div><span className="font-semibold text-gray-700">Mã tham chiếu:</span> {selectedLog.referenceCode}</div>
-              <div><span className="font-semibold text-gray-700">Đơn hàng:</span> {selectedLog.orderNumber || 'Không có'}</div>
-              <div>
-                <span className="font-semibold text-gray-700">Số tiền nhận:</span>{' '}
+            
+            <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-2 border border-gray-200">
+              <div className="flex justify-between">
+                <span className="font-semibold text-gray-700">Mã tham chiếu:</span> 
+                <span>{selectedLog.referenceCode}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold text-gray-700">Mã đơn hàng:</span> 
+                <span className="font-bold text-blue-600">{selectedLog.orderNumber || 'Không có'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-semibold text-gray-700">Số tiền khách đã chuyển:</span>{' '}
                 <span className="font-bold text-green-600">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount)}
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
                 </span>
               </div>
-              <div>
-                <span className="font-semibold text-gray-700">Trạng thái:</span>{' '}
-                <Badge variant="warning">{selectedLog.status === 'OVERPAID' ? 'Chuyển thừa' : 'Chuyển trùng'}</Badge>
+              
+              <div className="flex justify-between">
+                <span className="font-semibold text-gray-700">Giá trị đơn hàng (Cần trả):</span>{' '}
+                {isLoadingOrderInfo ? (
+                  <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tải...</span>
+                ) : orderTotalAmount !== null ? (
+                  <span className="font-bold text-gray-900">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderTotalAmount)}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
+              </div>
+
+              <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                <span className="font-semibold text-orange-700">Số tiền chênh lệch cần hoàn:</span>{' '}
+                {isLoadingOrderInfo ? (
+                  <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tính...</span>
+                ) : suggestedRefundAmount !== null ? (
+                  <span className="font-bold text-orange-600 text-base">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(suggestedRefundAmount)}
+                  </span>
+                ) : (
+                  <span className="text-gray-400">-</span>
+                )}
               </div>
             </div>
 
             <Input
               label="Số tiền hoàn thực tế (VND)"
               type="number"
-              placeholder="Để trống nếu hoàn toàn bộ"
+              placeholder="Nhập số tiền hoàn"
               value={refundAmountInput}
               onChange={(e) => setRefundAmountInput(e.target.value)}
             />
 
             <p className="text-xs text-gray-500 italic">
-              * Lưu ý: Thao tác này sẽ ghi chú thông tin hoàn tiền vào Log giao dịch và đổi trạng thái sang <span className="font-semibold text-green-600">Đã hoàn tiền</span>.
+              * Hệ thống đã tự động tính và điền số tiền chênh lệch cần hoàn. Bạn có thể điều chỉnh lại nếu cần.
             </p>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -340,4 +412,5 @@ export default function PaymentLogListPage() {
     </div>
   );
 }
+
 
