@@ -8,7 +8,7 @@ export function usePendingOrders() {
   const [isPendingOrdersModalOpen, setIsPendingOrdersModalOpen] = useState(false);
   const [orderIdToCancel, setOrderIdToCancel] = useState<number | null>(null);
 
-  const { data: pendingOrdersData } = useGetOrdersQuery({
+  const { data: pendingOrdersData, refetch: refetchPendingOrders } = useGetOrdersQuery({
     page: 0,
     size: 100,
     status: 'PENDING'
@@ -45,6 +45,7 @@ export function usePendingOrders() {
     pendingOrdersCount,
     isCancellingOrder,
     handleCancelPendingOrder,
-    clearPendingState
+    clearPendingState,
+    refetchPendingOrders
   };
 }

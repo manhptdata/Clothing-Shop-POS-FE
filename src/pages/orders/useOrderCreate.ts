@@ -424,7 +424,10 @@ export function useOrderCreate() {
       setIsQRModalOpen: checkout.setIsQRModalOpen,
       setAutoPrint: checkout.setAutoPrint,
       confirmCheckout,
-      setIsPendingOrdersModalOpen: pendingOrders.setIsPendingOrdersModalOpen,
+      setIsPendingOrdersModalOpen: (isOpen: boolean) => {
+        if (isOpen) pendingOrders.refetchPendingOrders();
+        pendingOrders.setIsPendingOrdersModalOpen(isOpen);
+      },
       handleSaveTemporary,
       handleResumePendingOrder,
       handleCancelPendingOrder: pendingOrders.handleCancelPendingOrder,
