@@ -150,8 +150,9 @@ export const routes: RouteObject[] = [
               {
                 path: "customers",
                 children: [
-                  { index: true, element: <CustomerCenterPage /> },
+                  { index: true, element: <CustomerListPage /> },
                   { path: "list", element: <CustomerListPage /> },
+                  { path: "center", element: <CustomerCenterPage /> },
                   { path: ":id", element: <CustomerDetailPage /> },
                   { path: "care/history", element: <CareLogListPage /> },
                   { path: "care/history/:id", element: <CareHistoryDetailPage /> },
