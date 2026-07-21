@@ -212,7 +212,7 @@ export default function PaymentLogListPage() {
       header: 'Hành động',
       className: 'text-center',
       render: (row) => {
-        if (row.status === 'OVERPAID' || row.status === 'DUPLICATE_PAYMENT') {
+        if (row.status === 'OVERPAID' || row.status === 'DUPLICATE_PAYMENT' || row.status === 'INSUFFICIENT') {
           return (
             <Button
               size="sm"
