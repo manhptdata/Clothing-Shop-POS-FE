@@ -33,7 +33,7 @@ const menuItems: MenuItem[] = [
   {
     path: '#customers', label: 'Khách hàng', icon: 'group', permissions: ['VIEW_CUSTOMER', 'VIEW_CAMPAIGN'],
     children: [
-      { path: '/customers', label: 'Danh sách khách hàng', icon: 'recent_actors', permissions: ['VIEW_CUSTOMER'] },
+      { path: '/customers/list', label: 'Danh sách khách hàng', icon: 'recent_actors', permissions: ['VIEW_CUSTOMER'] },
       { path: '/customers/groups', label: 'Nhóm khách hàng', icon: 'loyalty', permissions: ['VIEW_CUSTOMER'] },
       { path: '/customers/groups/vouchers', label: 'Quản lý Voucher', icon: 'local_activity', permissions: ['VIEW_CUSTOMER'] },
       { path: '/customers/care/history', label: 'Chăm sóc khách hàng', icon: 'support_agent', permissions: ['VIEW_CAMPAIGN'] },
