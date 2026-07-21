@@ -82,7 +82,7 @@ export default function PaymentLogListPage() {
             setOrderTotalAmount(total);
 
             let calculatedSuggested = 0;
-            if (log.status === 'DUPLICATE_PAYMENT') {
+            if (log.status === 'DUPLICATE_PAYMENT' || log.status === 'INSUFFICIENT') {
               calculatedSuggested = log.transferAmount || 0;
             } else if (log.status === 'OVERPAID') {
               calculatedSuggested = Math.max(0, (log.transferAmount || 0) - total);
