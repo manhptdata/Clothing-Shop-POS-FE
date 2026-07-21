@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useGetPaymentLogsQuery } from '@/redux/api/paymentApi';
+import { useGetPaymentLogsQuery, useRefundPaymentLogMutation } from '@/redux/api/paymentApi';
 import type { PaymentLog } from '@/types/payment.types';
 import { Table, type Column } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { useLazyGetOrderIdByNumberQuery } from '@/redux/api/orderApi';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -21,6 +23,13 @@ export default function PaymentLogListPage() {
   const [filterGateway, setFilterGateway] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
+
+  // Refund Modal state
+  const [selectedLog, setSelectedLog] = useState<PaymentLog | null>(null);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [refundAmountInput, setRefundAmountInput] = useState<string>('');
+
+  const [refundPaymentLog, { isLoading: isRefunding }] = useRefundPaymentLogMutation();
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -43,6 +52,30 @@ export default function PaymentLogListPage() {
       }
     } catch (e) {
       toast.error('Đơn hàng không tồn tại hoặc đã bị xóa');
+    }
+  };
+
+  const openRefundModal = (log: PaymentLog) => {
+    setSelectedLog(log);
+    setRefundAmountInput('');
+    setIsRefundModalOpen(true);
+  };
+
+  const handleConfirmRefund = async () => {
+    if (!selectedLog) return;
+    try {
+      const amount = refundAmountInput.trim() !== '' ? Number(refundAmountInput) : undefined;
+      if (amount !== undefined && (isNaN(amount) || amount <= 0)) {
+        toast.error('Số tiền hoàn không hợp lệ');
+        return;
+      }
+
+      await refundPaymentLog({ id: selectedLog.id, refundAmount: amount }).unwrap();
+      toast.success('Xác nhận hoàn tiền thành công!');
+      setIsRefundModalOpen(false);
+      setSelectedLog(null);
+    } catch (e: any) {
+      toast.error(e?.data?.message || 'Có lỗi xảy ra khi hoàn tiền');
     }
   };
 
@@ -100,6 +133,9 @@ export default function PaymentLogListPage() {
         if (row.status === 'PROCESSING') return <Badge variant="info">Đang xử lý</Badge>;
         if (row.status === 'INSUFFICIENT') return <Badge variant="warning">Thiếu tiền</Badge>;
         if (row.status === 'NO_ORDER') return <Badge variant="warning">Không khớp đơn</Badge>;
+        if (row.status === 'OVERPAID') return <Badge variant="warning">Chuyển thừa</Badge>;
+        if (row.status === 'DUPLICATE_PAYMENT') return <Badge variant="warning">Chuyển trùng</Badge>;
+        if (row.status === 'REFUNDED') return <Badge variant="success">Đã hoàn tiền</Badge>;
         if (row.status === 'ERROR') return <Badge variant="danger">Lỗi hệ thống</Badge>;
         return <Badge variant="default">{row.status}</Badge>;
       },
@@ -127,6 +163,26 @@ export default function PaymentLogListPage() {
           {new Date(row.createdAt).toLocaleString('vi-VN')}
         </span>
       ),
+    },
+    {
+      key: 'actions',
+      header: 'Hành động',
+      className: 'text-center',
+      render: (row) => {
+        if (row.status === 'OVERPAID' || row.status === 'DUPLICATE_PAYMENT') {
+          return (
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+              onClick={() => openRefundModal(row)}
+            >
+              <i className="fa-solid fa-rotate-left mr-1"></i> Hoàn tiền
+            </Button>
+          );
+        }
+        return <span className="text-gray-400 text-xs">-</span>;
+      },
     },
   ];
 
@@ -160,6 +216,9 @@ export default function PaymentLogListPage() {
               { value: 'PROCESSING', label: 'Đang xử lý' },
               { value: 'INSUFFICIENT', label: 'Thiếu tiền' },
               { value: 'NO_ORDER', label: 'Không khớp đơn' },
+              { value: 'OVERPAID', label: 'Chuyển thừa' },
+              { value: 'DUPLICATE_PAYMENT', label: 'Chuyển trùng' },
+              { value: 'REFUNDED', label: 'Đã hoàn tiền' },
               { value: 'ERROR', label: 'Lỗi hệ thống' },
             ]}
           />
@@ -220,6 +279,65 @@ export default function PaymentLogListPage() {
           </>
         )}
       </div>
+
+      {/* Refund Modal */}
+      <Modal
+        isOpen={isRefundModalOpen}
+        onClose={() => setIsRefundModalOpen(false)}
+        title="Xác nhận hoàn tiền cho khách"
+      >
+        {selectedLog && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Bạn đang thực hiện xác nhận hoàn tiền mặt cho giao dịch:
+            </p>
+            <div className="bg-gray-50 p-3 rounded-lg text-sm space-y-1 border border-gray-200">
+              <div><span className="font-semibold text-gray-700">Mã tham chiếu:</span> {selectedLog.referenceCode}</div>
+              <div><span className="font-semibold text-gray-700">Đơn hàng:</span> {selectedLog.orderNumber || 'Không có'}</div>
+              <div>
+                <span className="font-semibold text-gray-700">Số tiền nhận:</span>{' '}
+                <span className="font-bold text-green-600">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount)}
+                </span>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Trạng thái:</span>{' '}
+                <Badge variant="warning">{selectedLog.status === 'OVERPAID' ? 'Chuyển thừa' : 'Chuyển trùng'}</Badge>
+              </div>
+            </div>
+
+            <Input
+              label="Số tiền hoàn thực tế (VND)"
+              type="number"
+              placeholder="Để trống nếu hoàn toàn bộ"
+              value={refundAmountInput}
+              onChange={(e) => setRefundAmountInput(e.target.value)}
+            />
+
+            <p className="text-xs text-gray-500 italic">
+              * Lưu ý: Thao tác này sẽ ghi chú thông tin hoàn tiền vào Log giao dịch và đổi trạng thái sang <span className="font-semibold text-green-600">Đã hoàn tiền</span>.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <Button
+                variant="outline"
+                onClick={() => setIsRefundModalOpen(false)}
+                disabled={isRefunding}
+              >
+                Hủy
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleConfirmRefund}
+                isLoading={isRefunding}
+              >
+                Xác nhận hoàn tiền
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
+
