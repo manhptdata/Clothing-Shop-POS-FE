@@ -20,8 +20,17 @@ export const paymentApi = baseApi.injectEndpoints({
       }),
       providesTags: ['PaymentLog'],
     }),
+    refundPaymentLog: builder.mutation<RestResponse<void>, { id: number; refundAmount?: number }>({
+      query: ({ id, refundAmount }) => ({
+        url: `/v1/payments/logs/${id}/refund`,
+        method: 'POST',
+        params: refundAmount !== undefined && refundAmount !== null ? { refundAmount } : undefined,
+      }),
+      invalidatesTags: ['PaymentLog'],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetPaymentLogsQuery } = paymentApi;
+export const { useGetPaymentLogsQuery, useRefundPaymentLogMutation } = paymentApi;
+
