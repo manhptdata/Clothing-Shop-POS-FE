@@ -82,10 +82,8 @@ export default function PaymentLogListPage() {
             setOrderTotalAmount(total);
 
             let calculatedSuggested = 0;
-            if (log.status === 'DUPLICATE_PAYMENT' || log.status === 'INSUFFICIENT') {
+            if (log.status === 'DUPLICATE_PAYMENT' || log.status === 'INSUFFICIENT' || log.status === 'OVERPAID') {
               calculatedSuggested = log.transferAmount || 0;
-            } else if (log.status === 'OVERPAID') {
-              calculatedSuggested = Math.max(0, (log.transferAmount || 0) - total);
             } else {
               calculatedSuggested = (log.transferAmount || 0) - total;
             }
@@ -344,38 +342,49 @@ export default function PaymentLogListPage() {
                 <span className="font-semibold text-gray-700">Mã đơn hàng:</span> 
                 <span className="font-bold text-blue-600">{selectedLog.orderNumber || 'Không có'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-700">Số tiền khách đã chuyển:</span>{' '}
-                <span className="font-bold text-green-600">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
-                </span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-700">Giá trị đơn hàng (Cần trả):</span>{' '}
-                {isLoadingOrderInfo ? (
-                  <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tải...</span>
-                ) : orderTotalAmount !== null ? (
-                  <span className="font-bold text-gray-900">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderTotalAmount)}
-                  </span>
-                ) : (
-                  <span className="text-gray-400">-</span>
-                )}
-              </div>
-
-              <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
-                <span className="font-semibold text-orange-700">Số tiền chênh lệch cần hoàn:</span>{' '}
-                {isLoadingOrderInfo ? (
-                  <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tính...</span>
-                ) : suggestedRefundAmount !== null ? (
+              {selectedLog.status === 'OVERPAID' ? (
+                <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                  <span className="font-semibold text-orange-700">Số tiền chuyển thừa cần hoàn:</span>{' '}
                   <span className="font-bold text-orange-600 text-base">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(suggestedRefundAmount)}
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
                   </span>
-                ) : (
-                  <span className="text-gray-400">-</span>
-                )}
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-700">Số tiền khách đã chuyển:</span>{' '}
+                    <span className="font-bold text-green-600">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-700">Giá trị đơn hàng (Cần trả):</span>{' '}
+                    {isLoadingOrderInfo ? (
+                      <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tải...</span>
+                    ) : orderTotalAmount !== null ? (
+                      <span className="font-bold text-gray-900">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderTotalAmount)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                    <span className="font-semibold text-orange-700">Số tiền chênh lệch cần hoàn:</span>{' '}
+                    {isLoadingOrderInfo ? (
+                      <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tính...</span>
+                    ) : suggestedRefundAmount !== null ? (
+                      <span className="font-bold text-orange-600 text-base">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(suggestedRefundAmount)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <Input
