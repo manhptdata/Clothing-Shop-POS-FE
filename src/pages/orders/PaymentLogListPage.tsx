@@ -18,6 +18,7 @@ export default function PaymentLogListPage() {
   const [filterOrderNumber, setFilterOrderNumber] = useState('');
   const [debouncedOrderNumber, setDebouncedOrderNumber] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterGateway, setFilterGateway] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
 
@@ -50,6 +51,7 @@ export default function PaymentLogListPage() {
     size: pageSize,
     orderNumber: debouncedOrderNumber,
     status: filterStatus,
+    gateway: filterGateway,
     startDate: filterDateFrom,
     endDate: filterDateTo,
   });
@@ -103,6 +105,16 @@ export default function PaymentLogListPage() {
       },
     },
     {
+      key: 'gateway',
+      header: 'Nguồn xác nhận',
+      render: (row) => {
+        if (row.gateway === 'MANUAL') {
+          return <Badge variant="warning"><i className="fa-solid fa-hand-pointer mr-1"></i>Duyệt tay</Badge>;
+        }
+        return <Badge variant="info"><i className="fa-solid fa-robot mr-1"></i>Tự động (SePay)</Badge>;
+      },
+    },
+    {
       key: 'content',
       header: 'Nội dung',
       render: (row) => <span className="text-gray-600 text-sm">{row.content}</span>,
@@ -149,6 +161,18 @@ export default function PaymentLogListPage() {
               { value: 'INSUFFICIENT', label: 'Thiếu tiền' },
               { value: 'NO_ORDER', label: 'Không khớp đơn' },
               { value: 'ERROR', label: 'Lỗi hệ thống' },
+            ]}
+          />
+        </div>
+        <div className="w-48">
+          <Select 
+            label="Nguồn xác nhận"
+            value={filterGateway}
+            onChange={(val) => setFilterGateway(val)}
+            options={[
+              { value: '', label: 'Tất cả nguồn' },
+              { value: 'SEPAY', label: 'Tự động (SePay)' },
+              { value: 'MANUAL', label: 'Duyệt thủ công' },
             ]}
           />
         </div>
