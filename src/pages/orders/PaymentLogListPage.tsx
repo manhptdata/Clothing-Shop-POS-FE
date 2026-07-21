@@ -343,12 +343,42 @@ export default function PaymentLogListPage() {
                 <span className="font-bold text-blue-600">{selectedLog.orderNumber || 'Không có'}</span>
               </div>
               {selectedLog.status === 'OVERPAID' ? (
-                <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
-                  <span className="font-semibold text-orange-700">Số tiền chuyển thừa cần hoàn:</span>{' '}
-                  <span className="font-bold text-orange-600 text-base">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
-                  </span>
-                </div>
+                <>
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-700">Giá trị đơn hàng (Cần trả):</span>{' '}
+                    {isLoadingOrderInfo ? (
+                      <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tải...</span>
+                    ) : orderTotalAmount !== null ? (
+                      <span className="font-bold text-gray-900">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderTotalAmount)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-700">Số tiền khách đã chuyển:</span>{' '}
+                    {isLoadingOrderInfo ? (
+                      <span className="text-gray-400 text-xs"><i className="fa-solid fa-spinner fa-spin mr-1"></i>Đang tính...</span>
+                    ) : orderTotalAmount !== null ? (
+                      <span className="font-bold text-green-600">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(orderTotalAmount + (selectedLog.transferAmount || 0))}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-green-600">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                    <span className="font-semibold text-orange-700">Số tiền chuyển thừa cần hoàn:</span>{' '}
+                    <span className="font-bold text-orange-600 text-base">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedLog.transferAmount || 0)}
+                    </span>
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="flex justify-between">
