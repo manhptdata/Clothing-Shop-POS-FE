@@ -4,7 +4,7 @@ import type { RestResponse, PageResponse, PaginationParams } from '@/types/commo
 
 export const paymentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPaymentLogs: builder.query<RestResponse<PageResponse<PaymentLog>>, PaginationParams & { orderNumber?: string; status?: string; startDate?: string; endDate?: string }>({
+    getPaymentLogs: builder.query<RestResponse<PageResponse<PaymentLog>>, PaginationParams & { orderNumber?: string; status?: string; gateway?: string; startDate?: string; endDate?: string }>({
       query: (params) => ({
         url: '/v1/payments/logs',
         method: 'GET',
@@ -13,6 +13,7 @@ export const paymentApi = baseApi.injectEndpoints({
           size: params.size,
           orderNumber: params.orderNumber || undefined,
           status: params.status || undefined,
+          gateway: params.gateway || undefined,
           startDate: params.startDate || undefined,
           endDate: params.endDate || undefined
         },
