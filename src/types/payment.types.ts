@@ -6,6 +6,6 @@ export interface PaymentLog {
   gateway?: string;
   transactionDate?: string;
   content?: string;
-  status: 'SUCCESS' | 'INSUFFICIENT' | 'NO_ORDER' | 'ERROR' | 'PROCESSING';
+  status: 'SUCCESS' | 'INSUFFICIENT' | 'NO_ORDER' | 'ERROR' | 'PROCESSING' | 'OVERPAID' | 'DUPLICATE_PAYMENT' | 'REFUNDED' | string;
   createdAt: string;
 }

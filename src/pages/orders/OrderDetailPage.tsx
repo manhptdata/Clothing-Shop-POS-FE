@@ -577,7 +577,11 @@ export default function OrderDetailPage() {
               <div className="flex justify-between items-center">
                 <span className="text-on-surface-variant">Tiền thừa trả khách:</span>
                 <span className="font-bold text-primary">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.changeAmount)}
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                    order.changeAmount && Number(order.changeAmount) > 0 
+                      ? order.changeAmount 
+                      : Math.max(0, (order.paidAmount || (order as any).customerPaid || 0) - order.totalAmount)
+                  )}
                 </span>
               </div>
               {order.pointsEarned !== undefined && Number(order.pointsEarned) > 0 && (
