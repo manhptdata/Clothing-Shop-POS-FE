@@ -135,7 +135,7 @@ export function useOrderCreate() {
         note: checkout.note || undefined,
         status: 'PENDING' as any,
         pointsToUse: customer.customerType === 'MEMBER' ? discounts.pointsToUse : 0,
-        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode)
+        voucherCode: (discounts.isVoucherValid && discounts.voucherCode)
           ? discounts.voucherCode.trim()
           : undefined,
         items: cart.cart.map(item => ({
@@ -248,7 +248,7 @@ export function useOrderCreate() {
         note: checkout.note || undefined,
         status: 'COMPLETED' as any,
         pointsToUse: customer.customerType === 'MEMBER' ? discounts.pointsToUse : 0,
-        voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode)
+        voucherCode: (discounts.isVoucherValid && discounts.voucherCode)
           ? discounts.voucherCode.trim()
           : undefined,
         items: cart.cart.map(item => ({
@@ -311,7 +311,7 @@ export function useOrderCreate() {
           status: 'PENDING' as any,
           paymentMethod: 'QR_SEPAY',
           pointsToUse: customer.customerType === 'MEMBER' ? discounts.pointsToUse : 0,
-          voucherCode: (customer.customerType === 'MEMBER' && discounts.isVoucherValid && discounts.voucherCode)
+          voucherCode: (discounts.isVoucherValid && discounts.voucherCode)
             ? discounts.voucherCode.trim()
             : undefined,
           items: cart.cart.map(item => ({

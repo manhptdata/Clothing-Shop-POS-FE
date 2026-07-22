@@ -134,8 +134,23 @@ export default function OrderListPage() {
           variant = 'success';
           text = 'Hoàn thành';
         } else if (row.status === 'PENDING') {
-          variant = 'warning';
-          text = 'Đang xử lý';
+          const paid = row.paidAmount || 0;
+          if (paid > 0) {
+            const remaining = row.totalAmount - paid;
+            return (
+              <div className="flex flex-col gap-0.5 items-start">
+                <Badge variant="info" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
+                  Đã cọc {new Intl.NumberFormat('vi-VN').format(paid)}đ
+                </Badge>
+                {remaining > 0 && (
+                  <span className="text-[11px] text-gray-500 font-medium">
+                    Còn thiếu: {new Intl.NumberFormat('vi-VN').format(remaining)}đ
+                  </span>
+                )}
+              </div>
+            );
+          }
+          return <Badge variant="warning">Chờ thanh toán (0đ)</Badge>;
         } else if (row.status === 'CANCELLED') {
           variant = 'danger';
           text = 'Đã hủy';

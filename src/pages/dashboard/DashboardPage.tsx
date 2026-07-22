@@ -58,7 +58,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-[1440px] mx-auto">
       {/* Summary Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {/* Card 1 */}
         <div className="bg-surface rounded-xl border border-outline/10 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-start">
@@ -73,7 +73,21 @@ export default function DashboardPage() {
             <span>+12.5% so với hôm qua</span>
           </div>
         </div>
-        {/* Card 2 */}
+        {/* Card 2: Lợi nhuận ròng */}
+        <div className="bg-surface rounded-xl border border-outline/10 p-6 flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+            <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Lợi nhuận hôm nay</span>
+            <span className="material-symbols-outlined text-emerald-500">monitoring</span>
+          </div>
+          <div className="font-display-lg text-display-lg text-emerald-600 dark:text-emerald-400 tracking-tighter">
+            {stats && stats.dailyProfit !== undefined ? formatCurrency(stats.dailyProfit) : '...'}
+          </div>
+          <div className="flex items-center gap-2 text-emerald-600 font-body-sm text-body-sm">
+            <span className="material-symbols-outlined text-sm">trending_up</span>
+            <span>Doanh thu trừ Giá vốn</span>
+          </div>
+        </div>
+        {/* Card 3 */}
         <div className="bg-surface rounded-xl border border-outline/10 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-start">
             <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Đơn hàng mới</span>
@@ -87,7 +101,7 @@ export default function DashboardPage() {
             <span>Ổn định</span>
           </div>
         </div>
-        {/* Card 3 */}
+        {/* Card 4 */}
         <div className="bg-surface rounded-xl border border-outline/10 p-6 flex flex-col gap-4">
           <div className="flex justify-between items-start">
             <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Lượng khách mới</span>

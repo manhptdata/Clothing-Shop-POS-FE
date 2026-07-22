@@ -161,57 +161,67 @@ export default function ShiftHistoryPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-              <thead>
-                <tr className="bg-outline/5 border-b border-outline/10 text-xs font-semibold text-on-surface-variant">
-                  <th className="p-4">Thời gian</th>
-                  <th className="p-4">Nhân viên</th>
-                  <th className="p-4">Ca làm việc</th>
-                  <th className="p-4 text-right">Doanh thu hệ thống</th>
-                  <th className="p-4 text-right">Tiền mặt thực tế</th>
-                  <th className="p-4 text-right">Chênh lệch két</th>
-                  <th className="p-4 max-w-xs">Ghi chú</th>
+            <table className="w-full text-sm text-left border-collapse min-w-[900px]">
+              <thead className="bg-outline/5 border-b border-outline/10 text-xs font-semibold text-on-surface uppercase">
+                <tr>
+                  <th className="px-4 py-3">Thu ngân</th>
+                  <th className="px-4 py-3">Tên ca</th>
+                  <th className="px-4 py-3">Thời gian mở ca</th>
+                  <th className="px-4 py-3">Thời gian kết ca</th>
+                  <th className="px-4 py-3 text-right">Tiền đầu ca</th>
+                  <th className="px-4 py-3 text-right">Doanh thu ca</th>
+                  <th className="px-4 py-3 text-right">Tiền đếm thực tế</th>
+                  <th className="px-4 py-3 text-center">Chênh lệch két</th>
+                  <th className="px-4 py-3 text-center">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline/5 text-sm">
-                {filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-outline/5 transition-colors">
-                    <td className="p-4 text-xs text-on-surface-variant whitespace-nowrap">
-                      {formatDate(item.createdAt)}
-                    </td>
-                    <td className="p-4 font-medium text-on-surface">
-                      {item.cashierUsername}
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 rounded bg-primary/10 text-primary text-xs font-medium">
-                        {item.shiftName}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right font-semibold text-on-surface-variant">
-                      {formatCurrency(item.systemAmount)}
-                    </td>
-                    <td className="p-4 text-right font-semibold text-on-surface">
-                      {formatCurrency(item.actualAmount)}
-                    </td>
-                    <td className="p-4 text-right">
-                      <span
-                        className={`font-bold ${
-                          item.discrepancy > 0
-                            ? 'text-primary'
-                            : item.discrepancy < 0
-                            ? 'text-rose-500 font-bold'
-                            : 'text-on-surface-variant/60'
-                        }`}
-                      >
-                        {item.discrepancy > 0 ? '+' : ''}
-                        {formatCurrency(item.discrepancy)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs text-on-surface-variant break-words max-w-xs">
-                      {item.note || <span className="text-on-surface-variant/30 italic">Không có</span>}
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-outline/10 text-on-surface text-xs">
+                {filtered.map((item) => {
+                  const discrepancy = item.discrepancy || 0;
+                  return (
+                    <tr key={item.id} className="hover:bg-outline/5 transition-colors">
+                      <td className="px-4 py-3.5 font-semibold text-on-surface">{item.cashierUsername}</td>
+                      <td className="px-4 py-3.5 font-medium text-primary">
+                        <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
+                          {item.shiftName}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-on-surface-variant">{formatDate(item.openedAt || item.createdAt)}</td>
+                      <td className="px-4 py-3.5 text-on-surface-variant">{item.closedAt ? formatDate(item.closedAt) : '---'}</td>
+                      <td className="px-4 py-3.5 text-right font-medium">{formatCurrency(item.initialAmount || 0)}</td>
+                      <td className="px-4 py-3.5 text-right font-medium text-primary">{formatCurrency(item.systemAmount || 0)}</td>
+                      <td className="px-4 py-3.5 text-right font-bold text-secondary">{formatCurrency(item.actualAmount || 0)}</td>
+                      <td className="px-4 py-3.5 text-center font-bold">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold inline-block ${
+                            discrepancy === 0
+                              ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                              : discrepancy > 0
+                              ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                          }`}
+                        >
+                          {discrepancy === 0
+                            ? 'Khớp 100%'
+                            : discrepancy > 0
+                            ? `Thừa +${formatCurrency(discrepancy)}`
+                            : `Thiếu ${formatCurrency(discrepancy)}`}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <span
+                          className={`px-2.5 py-1 rounded-full font-semibold text-xs inline-block ${
+                            item.status === 'OPEN'
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'bg-outline/10 text-on-surface-variant'
+                          }`}
+                        >
+                          {item.status === 'OPEN' ? 'ĐANG MỞ' : 'ĐÃ KẾT CA'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
