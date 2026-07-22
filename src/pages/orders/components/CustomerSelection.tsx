@@ -224,7 +224,7 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
             </div>
           )}
 
-          {/* Loyalty Points & Vouchers Integration */}
+          {/* Loyalty Points & Vouchers Integration (Dành cho Thành Viên - Giữ Nguyên 100% Gốc) */}
           {selectedCustomer && selectedCustomer.fullName !== 'Khách lẻ' && (
             <div className="mt-2 pt-2 border-t border-gray-100">
               <button
@@ -246,7 +246,7 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
 
               {isPromotionOpen && (
                 <div className="mt-2 space-y-3 animate-in fade-in duration-200">
-                  {/* Voucher Select */}
+                  {/* Voucher Select từ Ví */}
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Voucher áp dụng</span>
@@ -357,14 +357,73 @@ export const CustomerSelection: React.FC<CustomerSelectionProps> = ({
           )}
         </div>
       ) : (
-        // Guest Profile
-        <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">
-            KL
+        // Guest Profile & Voucher Input
+        <div className="space-y-3">
+          <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">
+              KL
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-gray-800">Khách lẻ vãng lai</h3>
+              <p className="text-[10px] text-gray-500 mt-0.5">Không tích lũy điểm thưởng</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xs font-bold text-gray-800">Khách lẻ vãng lai</h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">Không tích lũy điểm thưởng</p>
+
+          {/* Khối nhập Mã Voucher công khai cho Khách lẻ */}
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setIsPromotionOpen(!isPromotionOpen)}
+              className="w-full flex items-center justify-between text-[10px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-wider py-1"
+            >
+              <span className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors">
+                <span className="material-symbols-outlined text-[16px]">redeem</span>
+                Voucher giảm giá
+              </span>
+              <span
+                className="material-symbols-outlined text-[16px] text-gray-400 transition-transform duration-200"
+                style={{ transform: isPromotionOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                keyboard_arrow_down
+              </span>
+            </button>
+
+            {isPromotionOpen && (
+              <div className="mt-2 space-y-2 animate-in fade-in duration-200">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Nhập mã voucher công khai..."
+                    value={voucherCode}
+                    onChange={(e) => setVoucherCode(e.target.value)}
+                    leftIcon={<span className="material-symbols-outlined text-sm text-gray-400">local_activity</span>}
+                    className="bg-white border-gray-300 text-gray-800 placeholder:text-gray-400 text-xs"
+                  />
+                  {voucherCode && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setVoucherCode('')}
+                      className="px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs flex-shrink-0"
+                    >
+                      Xóa
+                    </Button>
+                  )}
+                </div>
+                {voucherError && (
+                  <p className="text-[9px] text-red-500 mt-1 font-medium">{voucherError}</p>
+                )}
+                {isVoucherValid && activeVoucher && (
+                  <p className="text-[9px] text-green-600 mt-1 font-medium">
+                    Áp dụng thành công: Giảm -
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    }).format(voucherDiscount)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

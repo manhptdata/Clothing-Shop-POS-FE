@@ -110,13 +110,13 @@ export default function UserProfilePage() {
                   <p className="text-sm text-on-surface-variant mb-1">Mã PIN duyệt trả hàng</p>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center bg-surface-container-low px-4 py-2 rounded-xl border border-outline/10">
-                      <span className="text-lg font-mono font-bold tracking-widest text-primary mr-3">
-                        {showPin ? (pinData?.data?.pin || 'Chưa có') : '••••••'}
+                      <span className="text-sm font-semibold tracking-wide text-primary mr-3">
+                        {showPin ? ((pinData?.data as any)?.hasPin ? 'Đã cài đặt' : 'Chưa cài đặt') : '••••••'}
                       </span>
                       <button 
                         onClick={() => setShowPin(!showPin)}
                         className="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center"
-                        title={showPin ? "Ẩn mã PIN" : "Hiện mã PIN"}
+                        title={showPin ? "Ẩn trạng thái PIN" : "Hiện trạng thái PIN"}
                       >
                         <span className="material-symbols-outlined text-[20px]">{showPin ? 'visibility_off' : 'visibility'}</span>
                       </button>

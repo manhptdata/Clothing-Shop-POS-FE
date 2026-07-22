@@ -20,11 +20,23 @@ export interface ShiftHandoverItem {
   id: number;
   cashierUsername: string;
   shiftName: string;
+  initialAmount: number;
   systemAmount: number;
   actualAmount: number;
   discrepancy: number;
+  status: string;
   note?: string;
+  openedAt?: string;
+  closedAt?: string;
   createdAt: string;
+}
+
+export interface ShiftConfigItem {
+  id: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  active: boolean;
 }
 
 interface NotificationContextType {
@@ -36,9 +48,16 @@ interface NotificationContextType {
   sendApprovalRequest: (orderNumber: string, reason: string) => Promise<void>;
   approveRequest: (id: number) => Promise<void>;
   rejectRequest: (id: number) => Promise<void>;
-  submitShiftHandover: (data: { shiftName: string; systemAmount: number; actualAmount: number; note?: string }) => Promise<ShiftHandoverItem>;
+  submitShiftHandover: (data: { shiftName: string; initialAmount?: number; systemAmount: number; actualAmount: number; note?: string }) => Promise<ShiftHandoverItem>;
   fetchHandoverHistory: () => Promise<ShiftHandoverItem[]>;
   fetchSystemAmount: () => Promise<number>;
+  fetchActiveShift: () => Promise<ShiftHandoverItem | null>;
+  openShift: (data: { shiftName: string; initialAmount: number }) => Promise<ShiftHandoverItem>;
+  updateOpenShift: (data: { shiftName?: string; initialAmount?: number }) => Promise<ShiftHandoverItem>;
+  fetchShiftConfigs: () => Promise<ShiftConfigItem[]>;
+  createShiftConfig: (data: { name: string; startTime: string; endTime: string }) => Promise<ShiftConfigItem>;
+  updateShiftConfig: (id: number, data: { name: string; startTime: string; endTime: string }) => Promise<ShiftConfigItem>;
+  deleteShiftConfig: (id: number) => Promise<void>;
   deleteNotification: (id: number) => Promise<void>;
   deleteAllNotifications: () => Promise<void>;
 }
@@ -122,7 +141,7 @@ export default function NotificationProvider({ children }: { children: React.Rea
     }
   };
 
-  const submitShiftHandover = async (data: { shiftName: string; systemAmount: number; actualAmount: number; note?: string }) => {
+  const submitShiftHandover = async (data: { shiftName: string; initialAmount?: number; systemAmount: number; actualAmount: number; note?: string }) => {
     try {
       const res = await axiosInstance.post<ShiftHandoverItem>('shifts/handover', data);
       const result = (res.data as any).data || res.data;
@@ -171,6 +190,94 @@ export default function NotificationProvider({ children }: { children: React.Rea
     } catch (e) {
       console.error('Failed to fetch system amount', e);
       return 0;
+    }
+  };
+
+  const fetchActiveShift = async () => {
+    try {
+      const res = await axiosInstance.get<ShiftHandoverItem | null>('shifts/active');
+      return (res.data as any).data !== undefined ? (res.data as any).data : res.data;
+    } catch (e) {
+      console.error('Failed to fetch active shift', e);
+      return null;
+    }
+  };
+
+  const openShift = async (data: { shiftName: string; initialAmount: number }) => {
+    try {
+      const res = await axiosInstance.post<ShiftHandoverItem>('shifts/open', data);
+      const result = (res.data as any).data || res.data;
+      toast.success('Mở ca làm việc thành công');
+      return result;
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể mở ca làm việc');
+      throw e;
+    }
+  };
+
+  const fetchLatestSystemShift = async () => {
+    try {
+      const res = await axiosInstance.get<ShiftHandoverItem | null>('shifts/latest-system');
+      return (res.data as any).data !== undefined ? (res.data as any).data : res.data;
+    } catch (e) {
+      console.error('Failed to fetch latest system shift', e);
+      return null;
+    }
+  };
+
+  const updateOpenShift = async (data: { shiftName?: string; initialAmount?: number }) => {
+    try {
+      const res = await axiosInstance.put<ShiftHandoverItem>('shifts/update-open', data);
+      const result = (res.data as any).data || res.data;
+      toast.success('Cập nhật thông tin ca thành công');
+      return result;
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể cập nhật ca làm việc');
+      throw e;
+    }
+  };
+
+  const fetchShiftConfigs = async () => {
+    try {
+      const res = await axiosInstance.get<ShiftConfigItem[]>('shifts/configs');
+      return (res.data as any).data || res.data;
+    } catch (e) {
+      console.error('Failed to fetch shift configs', e);
+      return [];
+    }
+  };
+
+  const createShiftConfig = async (data: { name: string; startTime: string; endTime: string }) => {
+    try {
+      const res = await axiosInstance.post<ShiftConfigItem>('shifts/configs', data);
+      const result = (res.data as any).data || res.data;
+      toast.success('Thêm ca làm việc thành công');
+      return result;
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể thêm ca làm việc');
+      throw e;
+    }
+  };
+
+  const updateShiftConfig = async (id: number, data: { name: string; startTime: string; endTime: string }) => {
+    try {
+      const res = await axiosInstance.put<ShiftConfigItem>(`shifts/configs/${id}`, data);
+      const result = (res.data as any).data || res.data;
+      toast.success('Cập nhật ca làm việc thành công');
+      return result;
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể cập nhật ca làm việc');
+      throw e;
+    }
+  };
+
+  const deleteShiftConfig = async (id: number) => {
+    try {
+      await axiosInstance.delete(`shifts/configs/${id}`);
+      toast.success('Đã xóa ca làm việc');
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Không thể xóa ca làm việc');
+      throw e;
     }
   };
 
@@ -321,6 +428,13 @@ export default function NotificationProvider({ children }: { children: React.Rea
         submitShiftHandover,
         fetchHandoverHistory,
         fetchSystemAmount,
+        fetchActiveShift,
+        openShift,
+        updateOpenShift,
+        fetchShiftConfigs,
+        createShiftConfig,
+        updateShiftConfig,
+        deleteShiftConfig,
         deleteNotification,
         deleteAllNotifications,
       }}
