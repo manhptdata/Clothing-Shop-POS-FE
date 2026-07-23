@@ -40,6 +40,7 @@ const ReceiptCreatePage = lazy(() => import('@/pages/warehouse/ReceiptCreatePage
 const ReceiptUpdatePage = lazy(() => import('@/pages/warehouse/ReceiptUpdatePage'));
 const ReceiptDetailPage = lazy(() => import('@/pages/warehouse/ReceiptDetailPage'));
 const StockHistoryPage = lazy(() => import('@/pages/warehouse/StockHistoryPage'));
+const DamagedItemsPage = lazy(() => import('@/pages/warehouse/DamagedItemsPage'));
 
 // Customers 
 const CustomerCenterPage = lazy(() => import('@/pages/customers/CustomerCenterPage'));
@@ -122,6 +123,7 @@ export const routes: RouteObject[] = [
               { path: "warehouse/receipts", element: <ReceiptListPage /> },
               { path: "warehouse/receipts/:id", element: <ReceiptDetailPage /> },
               { path: "warehouse/stock-history", element: <StockHistoryPage /> },
+              { path: "warehouse/damaged-items", element: <DamagedItemsPage /> },
             ],
           },
           // Products management
