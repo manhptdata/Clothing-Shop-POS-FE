@@ -127,22 +127,34 @@ export default function StockHistoryPage() {
                                         <div className="text-xs text-on-surface-variant font-mono">{log.variantSku}</div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${SOURCE_COLORS[log.source]}`}>
-                                            {SOURCE_LABELS[log.source]}
-                                        </span>
+                                        {log.source === 'TRA_HANG' && (log.note?.toLowerCase().includes('hỏng') || log.note?.toLowerCase().includes('lỗi')) ? (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200">
+                                                🔴 Hàng hỏng/lỗi
+                                            </span>
+                                        ) : (
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${SOURCE_COLORS[log.source]}`}>
+                                                {SOURCE_LABELS[log.source]}
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3 text-center text-on-surface-variant font-mono text-sm">
                                         {log.quantityBefore}
                                     </td>
                                     <td className="px-4 py-3 text-center font-bold font-mono text-base">
-                                        <span className={log.quantityChange > 0 ? 'text-emerald-600' : 'text-red-500'}>
-                                            {log.quantityChange > 0 ? '+' : ''}{log.quantityChange}
-                                        </span>
+                                        {log.source === 'TRA_HANG' && (log.note?.toLowerCase().includes('hỏng') || log.note?.toLowerCase().includes('lỗi')) ? (
+                                            <span className="text-rose-600 text-xs px-2 py-0.5 rounded bg-rose-50 border border-rose-200 inline-block font-sans font-medium">
+                                                0 (Không cộng kho)
+                                            </span>
+                                        ) : (
+                                            <span className={log.quantityChange > 0 ? 'text-emerald-600' : 'text-red-500'}>
+                                                {log.quantityChange > 0 ? '+' : ''}{log.quantityChange}
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3 text-center font-semibold text-on-surface font-mono text-sm">
                                         {log.quantityAfter}
                                     </td>
-                                    <td className="px-4 py-3 text-on-surface-variant text-xs max-w-[220px] truncate" title={log.note}>
+                                    <td className="px-4 py-3 text-on-surface-variant text-xs max-w-[250px]" title={log.note}>
                                         {log.note ?? '—'}
                                     </td>
                                 </tr>

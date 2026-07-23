@@ -130,6 +130,14 @@ export default function ReceiptDetailPage() {
                                     Sửa phiếu
                                 </Button>
                                 <Button
+                                    variant="outline"
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="border-error hover:bg-error/10 text-error"
+                                    leftIcon={<span className="material-symbols-outlined text-[18px]">cancel</span>}
+                                >
+                                    Hủy phiếu nháp
+                                </Button>
+                                <Button
                                     onClick={() => setShowConfirmModal(true)}
                                     leftIcon={<span className="material-symbols-outlined text-[18px]">verified</span>}
                                 >
@@ -281,7 +289,11 @@ export default function ReceiptDetailPage() {
                         </p>
                         <div className="bg-error/5 border border-error/20 rounded-lg p-3 mb-5">
                             <p className="text-sm font-medium text-on-surface">
-                                Hệ thống sẽ trừ lại tồn kho các sản phẩm đã nhập từ phiếu này và khôi phục giá vốn bình quân về trạng thái trước đó. <span className="text-error font-semibold">Hành động này không thể hoàn tác.</span>
+                                {isDraft
+                                    ? "Hệ thống sẽ chuyển trạng thái bản nháp này thành Đã hủy (không ảnh hưởng tồn kho hay giá vốn)."
+                                    : "Hệ thống sẽ trừ lại tồn kho các sản phẩm đã nhập từ phiếu này và khôi phục giá vốn bình quân về trạng thái trước đó."}
+                                {" "}
+                                <span className="text-error font-semibold">Hành động này không thể hoàn tác.</span>
                             </p>
                         </div>
                         <div className="flex justify-end gap-3">

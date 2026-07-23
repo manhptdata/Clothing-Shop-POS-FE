@@ -11,6 +11,7 @@ export interface UserLogin {
   username: string;
   fullName: string;
   phone?: string;
+  email?: string;
   role: string;
   permissions?: string[];
 }
