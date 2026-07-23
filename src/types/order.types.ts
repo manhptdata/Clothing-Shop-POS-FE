@@ -57,6 +57,7 @@ export interface ReturnOrderItem {
   quantity: number;
   refundPrice: number;
   subtotal: number;
+  isRestocked?: boolean;
 }
 
 export interface ReturnOrder {
@@ -83,6 +84,7 @@ export interface ReturnOrderRequest {
   items: {
     variantId: number;
     quantity: number;
+    restock?: boolean;
   }[];
 }
 

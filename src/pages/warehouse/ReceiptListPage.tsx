@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
-import { useGetReceiptsQuery } from '@/redux/api/receiptApi';
+import { useGetReceiptsQuery, useCancelReceiptMutation } from '@/redux/api/receiptApi';
 import { useAppSelector } from '@/redux/hooks';
 
 const fmtDate = (val?: string | null) => {
@@ -26,6 +27,19 @@ export default function ReceiptListPage() {
     const userPerms = user?.permissions || [];
     const isAdmin = user?.role === 'ROLE_ADMIN';
     const hasManageReceiptPermission = isAdmin || userPerms.includes('MANAGE_RECEIPT');
+    const [cancelReceipt] = useCancelReceiptMutation();
+
+    const handleCancelReceipt = async (e: React.MouseEvent, id: number) => {
+        e.stopPropagation();
+        if (window.confirm('Bạn có chắc chắn muốn hủy bản nháp phiếu nhập kho này?')) {
+            try {
+                await cancelReceipt(id).unwrap();
+                toast.success('Hủy phiếu nhập nháp thành công!');
+            } catch (err: any) {
+                toast.error(err?.data?.message || 'Không thể hủy phiếu nhập này.');
+            }
+        }
+    };
 
     const [page, setPage] = useState(0);
     const [status, setStatus] = useState<string>('');
@@ -184,13 +198,24 @@ export default function ReceiptListPage() {
                                         <td className="py-4 px-6 text-right font-semibold text-on-surface">{fmtCurrency(r.totalAmount)}</td>
                                         <td className="py-4 px-6 text-sm text-on-surface-variant">{fmtDate(r.createdAt)}</td>
                                         <td className="py-4 px-6 text-right">
-                                            <button
-                                                onClick={() => navigate(`/warehouse/receipts/${r.id}`)}
-                                                className="text-on-surface-variant hover:text-primary transition-colors p-1"
-                                                title="Xem chi tiết"
-                                            >
-                                                <span className="material-symbols-outlined text-xl">visibility</span>
-                                            </button>
+                                            <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/warehouse/receipts/${r.id}`); }}
+                                                    className="text-on-surface-variant hover:text-primary transition-colors p-1"
+                                                    title="Xem chi tiết"
+                                                >
+                                                    <span className="material-symbols-outlined text-xl">visibility</span>
+                                                </button>
+                                                {r.status === 'DRAFT' && hasManageReceiptPermission && (
+                                                    <button
+                                                        onClick={(e) => handleCancelReceipt(e, r.id)}
+                                                        className="text-on-surface-variant hover:text-error transition-colors p-1"
+                                                        title="Hủy phiếu nháp"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl">cancel</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

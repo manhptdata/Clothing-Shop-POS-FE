@@ -58,6 +58,7 @@ export default function OrderDetailPage() {
 
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [returnQuantities, setReturnQuantities] = useState<Record<number, number>>({});
+  const [returnRestock, setReturnRestock] = useState<Record<number, boolean>>({});
   const [reason, setReason] = useState('');
   const [approvalPin, setApprovalPin] = useState('');
 
@@ -184,7 +185,8 @@ export default function OrderDetailPage() {
     const items = Object.entries(returnQuantities)
       .map(([variantId, qty]) => ({
         variantId: Number(variantId),
-        quantity: qty
+        quantity: qty,
+        restock: returnRestock[Number(variantId)] ?? true
       }))
       .filter(item => item.quantity > 0);
 
@@ -211,6 +213,7 @@ export default function OrderDetailPage() {
       toast.success('Tạo phiếu trả hàng thành công!');
       setIsReturnModalOpen(false);
       setReturnQuantities({});
+      setReturnRestock({});
       setReason('');
       setApprovalPin('');
     } catch (err: any) {
@@ -221,50 +224,76 @@ export default function OrderDetailPage() {
   const orderDate = new Date(order.createdAt);
   const isReturnExpired = (new Date().getTime() - orderDate.getTime()) > (7 * 24 * 60 * 60 * 1000);
 
-  // --- Calculate Return Refund Amount (mirror logic từ ReturnOrderService.java) ---
+  // --- Calculate Return Refund Amount (Fair Price Algorithm - Đồng bộ 100% với BE) ---
   const alreadyRefundedTotal = returnOrdersResponse?.data?.reduce((sum, ret) => sum + ret.totalRefundAmount, 0) || 0;
-  const remainingPaidAmount = (order?.totalAmount || 0) - alreadyRefundedTotal;
+  
+  // 1. Tái sử dụng originalSubtotal đã tính ở trên (dòng 160)
 
-  // BƯỚC 1: Tính refund thuần túy theo discountRatio (giống BE dòng 203-205)
-  const rawTotalRefund = Object.entries(returnQuantities).reduce((sum, [varId, qty]) => {
+  // 2. Tính tổng giá trị hàng trả ở LẦN NÀY
+  const returnedItemsSubtotal = Object.entries(returnQuantities).reduce((sum, [varId, qty]) => {
     const originalItem = order?.items?.find(i => (i.variantId || (i as any).productId) === Number(varId));
     if (!originalItem) return sum;
     const price = originalItem.unitPrice || (originalItem as any).price || 0;
-    const refundPrice = Math.round(price * (1 - discountRatio));
-    return sum + refundPrice * qty;
+    return sum + price * qty;
   }, 0);
 
-  // BƯỚC 2: Re-evaluate Voucher (giống BE dòng 231-257)
+  // 3. Tính tổng giá trị hàng đã trả ở CÁC LẦN TRƯỚC
+  let previousReturnedSubtotal = 0;
+  if (returnOrdersResponse?.data) {
+    returnOrdersResponse.data.forEach((retOrder) => {
+      retOrder.items?.forEach((retItem) => {
+        const origItem = order?.items?.find(i => (i.variantId || (i as any).productId) === retItem.variantId);
+        if (origItem) {
+          previousReturnedSubtotal += (origItem.unitPrice || (origItem as any).price || 0) * retItem.quantity;
+        }
+      });
+    });
+  }
+
+  // 4. Tính giá trị niêm yết của hàng GIỮ LẠI sau lần trả này
+  const newSubtotal = Math.max(0, originalSubtotal - previousReturnedSubtotal - returnedItemsSubtotal);
+
+  // Helper tính Fair Price của phần hàng giữ lại
+  const computeFairPrice = (keptSubtotal: number) => {
+    if (keptSubtotal <= 0 || originalSubtotal <= 0) return 0;
+    
+    // Giảm giá từ Điểm cho hàng giữ lại
+    const pointsDiscount = (order.pointsUsed || 0) > 0 
+      ? Math.round((order.discountFromPoints || 0) * (keptSubtotal / originalSubtotal))
+      : 0;
+
+    // Giảm giá từ Voucher cho hàng giữ lại
+    let voucherDiscount = 0;
+    const voucherMinOrderValue = order.voucherMinOrderValue ?? 0;
+    const currentDiscountFromVoucher = order.discountFromVoucher ?? 0;
+
+    if (currentDiscountFromVoucher > 0) {
+      if (!voucherMinOrderValue || keptSubtotal >= voucherMinOrderValue) {
+        voucherDiscount = Math.round(currentDiscountFromVoucher * (keptSubtotal / originalSubtotal));
+      }
+    }
+
+    return Math.max(0, keptSubtotal - pointsDiscount - voucherDiscount);
+  };
+
+  // Giá trị công bằng của hàng giữ lại
+  const fairPriceOfKeptItems = computeFairPrice(newSubtotal);
+
+  // Tổng tiền thực tế khách đã trả lúc mua
+  const truePaidAmount = Math.max(0, (order?.paidAmount || 0) - (order?.changeAmount || 0));
+
+  // Tổng tiền dự kiến hoàn trả cho tất cả các đợt
+  const totalExpectedRefund = Math.max(0, truePaidAmount - fairPriceOfKeptItems);
+
+  // Số tiền hoàn thực tế đợt này hiển thị lên Modal
+  const totalRefund = Math.max(0, totalExpectedRefund - alreadyRefundedTotal);
+
+  // Cấu hình hiển thị cảnh báo Voucher trong Modal
   const voucherMinOrderValue = order?.voucherMinOrderValue ?? 0;
   const currentDiscountFromVoucher = order?.discountFromVoucher ?? 0;
   const hasActiveVoucher = currentDiscountFromVoucher > 0 && voucherMinOrderValue > 0;
-
-  // newOrderValue = giá trị đơn hàng còn lại SAU KHI trả (theo totalAmount đã trừ discount)
-  const newOrderValue = (order?.totalAmount || 0) - rawTotalRefund - alreadyRefundedTotal;
-  
-  // isVoucherReclaimed: voucher sẽ bị thu hồi nếu newOrderValue < minOrderValue
+  const newOrderValue = newSubtotal;
   const isVoucherReclaimed = hasActiveVoucher && newOrderValue < voucherMinOrderValue;
-
-  // BƯỚC 3: Nếu voucher bị thu hồi, tính lại từ đầu theo full price (không bake-in voucher)
-  // Phản ánh chính xác logic của ReturnOrderService.java
-  let adjustedRefund = rawTotalRefund;
-  if (isVoucherReclaimed) {
-    // Chỉ áp dụng discount ratio của điểm (không bao gồm voucher)
-    const originalSubtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
-    const discountRatioPoints = originalSubtotal > 0 ? (order.discountFromPoints || 0) / originalSubtotal : 0;
-    const fullRefundWithPoints = Object.entries(returnQuantities).reduce((sum, [varId, qty]) => {
-      const originalItem = order?.items?.find(i => (i.variantId || (i as any).productId) === Number(varId));
-      if (!originalItem) return sum;
-      const price = originalItem.unitPrice || (originalItem as any).price || 0;
-      const refundPrice = Math.round(price * (1 - discountRatioPoints));
-      return sum + refundPrice * qty;
-    }, 0);
-    adjustedRefund = fullRefundWithPoints - currentDiscountFromVoucher;
-    if (adjustedRefund < 0) adjustedRefund = 0;
-  }
-
-  // BƯỚC 4: Cap lại theo số tiền thực tế khách còn được hoàn
-  const totalRefund = Math.min(adjustedRefund, remainingPaidAmount);
 
   // --- Compute Totals ---
   const subtotal = order.items.reduce((sum, item) => sum + (item.unitPrice || (item as any).price || 0) * item.quantity, 0);
@@ -640,6 +669,7 @@ export default function OrderDetailPage() {
                         <th className="py-sm px-md text-right font-semibold text-on-surface-variant">Giá hoàn lại</th>
                         <th className="py-sm px-md text-center font-semibold text-on-surface-variant">Có thể trả</th>
                         <th className="py-sm px-md text-center w-28 font-semibold text-on-surface-variant">SL trả</th>
+                        <th className="py-sm px-md text-center font-semibold text-on-surface-variant">Trạng thái hàng</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-outline/5">
@@ -652,6 +682,8 @@ export default function OrderDetailPage() {
                         const maxAllowed = item.quantity - alreadyReturned;
 
                         if (maxAllowed <= 0) return null;
+
+                        const isRestock = returnRestock[variantId] !== false;
 
                         return (
                           <tr key={variantId} className="hover:bg-surface-container-lowest/50">
@@ -691,12 +723,25 @@ export default function OrderDetailPage() {
                                 </button>
                               </div>
                             </td>
+                            <td className="py-sm px-md text-center">
+                              <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={isRestock}
+                                  onChange={(e) => setReturnRestock(prev => ({ ...prev, [variantId]: e.target.checked }))}
+                                  className="rounded border-outline/30 text-primary focus:ring-primary w-4 h-4"
+                                />
+                                <span className={isRestock ? "text-emerald-600 font-medium" : "text-rose-600 font-medium"}>
+                                  {isRestock ? "Nhập lại kho" : "Hàng hỏng/lỗi"}
+                                </span>
+                              </label>
+                            </td>
                           </tr>
                         );
                       })}
                       {order.items.every(i => getAlreadyReturnedQty(i.variantId || (i as any).productId) === i.quantity) && (
                         <tr>
-                          <td colSpan={4} className="py-md text-center text-on-surface-variant italic">
+                          <td colSpan={5} className="py-md text-center text-on-surface-variant italic">
                             Tất cả sản phẩm đã được trả lại hoàn toàn.
                           </td>
                         </tr>
@@ -748,7 +793,7 @@ export default function OrderDetailPage() {
                   <p className="text-xs mt-0.5">
                     Sau khi trả hàng, tổng giá trị đơn còn lại ({new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(newOrderValue)}) 
                     thấp hơn mức tối thiểu ({new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucherMinOrderValue)}) để áp dụng voucher.
-                    Tiền hoàn trả đã được khấu trừ thêm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(currentDiscountFromVoucher)} (giá trị voucher đã được hoàn về ví voucher khách).
+                    Tiền hoàn trả đã được điều chỉnh tự động theo quy tắc Fair Price (phần hàng giữ lại không còn áp dụng ưu đãi voucher).
                   </p>
                 </div>
               </div>

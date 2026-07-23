@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Table, Column } from '@/components/ui/Table';
@@ -17,8 +17,8 @@ export default function OrderListPage() {
   const isAdmin = user?.role === 'ROLE_ADMIN';
   const hasCreateOrderPermission = isAdmin || userPerms.includes('CREATE_ORDER');
 
-  // --- Main Tab (Sales vs Returns) ---
-  const [mainTab, setMainTab] = useState<'sales' | 'returns'>('sales');
+  // --- Main Tab (Sales vs Returns vs Damaged) ---
+  const [mainTab, setMainTab] = useState<'sales' | 'returns' | 'damaged'>('sales');
 
   // --- State for Pagination & Filtering ---
   const [currentPage, setCurrentPage] = useState(0);
@@ -58,22 +58,115 @@ export default function OrderListPage() {
 
   // --- Fetch Returns from RTK Query ---
   const { data: returnResponse, isLoading: isReturnsLoading } = useGetReturnOrdersQuery({
-    page: currentPage + 1,
-    size: pageSize,
+    page: mainTab === 'damaged' ? 1 : currentPage + 1,
+    size: mainTab === 'damaged' ? 200 : pageSize,
     sort: 'createdAt,desc',
     search: debouncedSearch || undefined,
-  }, { skip: mainTab !== 'returns' });
+  }, { skip: mainTab === 'sales' });
 
   const orders = (orderResponse?.data as any)?.result || orderResponse?.data?.content || [];
   const returnOrders = (returnResponse?.data as any)?.result || returnResponse?.data?.content || [];
 
+  // --- Aggregate Damaged Items Summary ---
+  interface DamagedItemSummary {
+    variantId: number;
+    productName: string;
+    productSku: string;
+    totalQuantity: number;
+    totalRefund: number;
+    returnCount: number;
+  }
+
+  const damagedSummary = useMemo(() => {
+    if (!returnOrders || returnOrders.length === 0) return [];
+
+    const map = new Map<string, DamagedItemSummary>();
+
+    returnOrders.forEach((retOrder: ReturnOrder) => {
+      retOrder.items?.forEach((item) => {
+        if (item.isRestocked === false) {
+          const key = item.productSku || `${item.variantId}` || item.productName;
+          const existing = map.get(key);
+          if (existing) {
+            existing.totalQuantity += item.quantity;
+            existing.totalRefund += item.subtotal;
+            existing.returnCount += 1;
+          } else {
+            map.set(key, {
+              variantId: item.variantId,
+              productName: item.productName || `Sản phẩm #${item.variantId}`,
+              productSku: item.productSku || 'N/A',
+              totalQuantity: item.quantity,
+              totalRefund: item.subtotal,
+              returnCount: 1,
+            });
+          }
+        }
+      });
+    });
+
+    let list = Array.from(map.values());
+    if (debouncedSearch && mainTab === 'damaged') {
+      const q = debouncedSearch.toLowerCase();
+      list = list.filter(item => item.productName.toLowerCase().includes(q) || item.productSku.toLowerCase().includes(q));
+    }
+    return list;
+  }, [returnOrders, debouncedSearch, mainTab]);
+
+  const totalDamagedTypes = damagedSummary.length;
+  const totalDamagedQty = damagedSummary.reduce((sum, item) => sum + item.totalQuantity, 0);
+  const totalDamagedLoss = damagedSummary.reduce((sum, item) => sum + item.totalRefund, 0);
+
   const totalPages = mainTab === 'sales'
     ? ((orderResponse?.data as any)?.meta?.pages || orderResponse?.data?.totalPages || 0)
-    : ((returnResponse?.data as any)?.meta?.pages || returnResponse?.data?.totalPages || 0);
+    : mainTab === 'returns'
+    ? ((returnResponse?.data as any)?.meta?.pages || returnResponse?.data?.totalPages || 0)
+    : 1;
 
   const totalElements = mainTab === 'sales'
     ? ((orderResponse?.data as any)?.meta?.total || orderResponse?.data?.totalElements || 0)
-    : ((returnResponse?.data as any)?.meta?.total || returnResponse?.data?.totalElements || 0);
+    : mainTab === 'returns'
+    ? ((returnResponse?.data as any)?.meta?.total || returnResponse?.data?.totalElements || 0)
+    : damagedSummary.length;
+
+  const damagedColumns: Column<DamagedItemSummary>[] = [
+    {
+      key: 'productName',
+      header: 'Sản phẩm lỗi / hỏng',
+      render: (row) => (
+        <div>
+          <span className="font-semibold text-on-surface block">{row.productName}</span>
+          <span className="text-xs text-on-surface-variant">SKU: {row.productSku}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'totalQuantity',
+      header: 'Số lượng hỏng',
+      className: 'text-center',
+      render: (row) => (
+        <span className="font-bold text-rose-600 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200 inline-block text-xs">
+          {row.totalQuantity} sản phẩm
+        </span>
+      ),
+    },
+    {
+      key: 'returnCount',
+      header: 'Số lượt nhận trả lỗi',
+      className: 'text-center',
+      render: (row) => <span className="text-on-surface-variant font-medium text-sm">{row.returnCount} đợt</span>,
+    },
+    {
+      key: 'totalRefund',
+      header: 'Tiền thối thất thoát',
+      className: 'text-right',
+      render: (row) => (
+        <span className="text-rose-600 font-bold block text-right">
+          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.totalRefund)}
+        </span>
+      ),
+    },
+  ];
 
   const salesColumns: Column<Order>[] = [
     { 
@@ -289,7 +382,60 @@ export default function OrderListPage() {
         >
           Đơn trả hàng
         </button>
+        <button
+          onClick={() => {
+            setMainTab('damaged');
+            setCurrentPage(0);
+          }}
+          className={`font-semibold text-lg pb-1 border-b-2 transition-colors flex items-center gap-1.5 ${
+            mainTab === 'damaged'
+              ? 'border-rose-500 text-rose-600'
+              : 'border-transparent text-on-surface-variant hover:text-rose-600'
+          }`}
+        >
+          <span>Hàng hỏng / lỗi</span>
+          {totalDamagedQty > 0 && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">
+              {totalDamagedQty}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Summary Cards for Damaged Mode */}
+      {mainTab === 'damaged' && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-md mb-md">
+          <div className="bg-surface p-md rounded-xl border border-outline/10 flex items-center gap-md">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[24px]">inventory_2</span>
+            </div>
+            <div>
+              <span className="text-xs text-on-surface-variant block font-medium">Mẫu sản phẩm bị lỗi</span>
+              <span className="text-xl font-bold text-on-surface">{totalDamagedTypes} loại</span>
+            </div>
+          </div>
+          <div className="bg-surface p-md rounded-xl border border-outline/10 flex items-center gap-md">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[24px]">warning</span>
+            </div>
+            <div>
+              <span className="text-xs text-on-surface-variant block font-medium">Tổng SL sản phẩm hỏng</span>
+              <span className="text-xl font-bold text-rose-600">{totalDamagedQty} sản phẩm</span>
+            </div>
+          </div>
+          <div className="bg-surface p-md rounded-xl border border-outline/10 flex items-center gap-md">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[24px]">payments</span>
+            </div>
+            <div>
+              <span className="text-xs text-on-surface-variant block font-medium">Tổng tiền thối thất thoát</span>
+              <span className="text-xl font-bold text-rose-600">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalDamagedLoss)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs for Sales Mode */}
       {mainTab === 'sales' && (
@@ -327,7 +473,13 @@ export default function OrderListPage() {
         </span>
         <input
           type="text"
-          placeholder={mainTab === 'sales' ? "Tìm kiếm mã hóa đơn, tên khách hàng..." : "Tìm kiếm mã phiếu trả, mã hóa đơn gốc, tên khách..."}
+          placeholder={
+            mainTab === 'sales'
+              ? "Tìm kiếm mã hóa đơn, tên khách hàng..."
+              : mainTab === 'returns'
+              ? "Tìm kiếm mã phiếu trả, mã hóa đơn gốc, tên khách..."
+              : "Tìm kiếm tên sản phẩm lỗi, mã SKU..."
+          }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 bg-surface rounded-xl border border-outline/10 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-sm placeholder:text-on-surface-variant/50 text-on-surface transition-all"
@@ -349,10 +501,14 @@ export default function OrderListPage() {
             <span className="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
             <p className="font-medium text-body-md">Đang tải dữ liệu...</p>
           </div>
-        ) : currentData.length === 0 ? (
+        ) : (mainTab === 'damaged' ? damagedSummary.length === 0 : currentData.length === 0) ? (
           <div className="py-24 text-center text-on-surface-variant">
-            <span className="material-symbols-outlined text-4xl mb-2 text-outline/50">receipt_long</span>
-            <p className="text-body-md">Không tìm thấy thông tin nào.</p>
+            <span className="material-symbols-outlined text-4xl mb-2 text-outline/50">
+              {mainTab === 'damaged' ? 'verified' : 'receipt_long'}
+            </span>
+            <p className="text-body-md">
+              {mainTab === 'damaged' ? 'Không có sản phẩm hỏng/lỗi nào.' : 'Không tìm thấy thông tin nào.'}
+            </p>
           </div>
         ) : (
           <>
@@ -365,7 +521,7 @@ export default function OrderListPage() {
                   navigate(`/orders/${row.id}`);
                 }} 
               />
-            ) : (
+            ) : mainTab === 'returns' ? (
               <Table 
                 columns={returnColumns} 
                 data={returnOrders} 
@@ -373,6 +529,12 @@ export default function OrderListPage() {
                 onRowClick={(row) => {
                   setSelectedReturn(row);
                 }} 
+              />
+            ) : (
+              <Table 
+                columns={damagedColumns} 
+                data={damagedSummary} 
+                rowKey={(row) => row.productSku || row.variantId} 
               />
             )}
             <Pagination
@@ -438,6 +600,7 @@ export default function OrderListPage() {
                       <tr className="bg-surface-container-low border-b border-outline/10 font-bold">
                         <th className="py-2 px-3">Sản phẩm</th>
                         <th className="py-2 px-3 text-center">SL</th>
+                        <th className="py-2 px-3 text-center">Trạng thái kho</th>
                         <th className="py-2 px-3 text-right">Giá hoàn</th>
                         <th className="py-2 px-3 text-right font-bold">Tổng hoàn</th>
                       </tr>
@@ -450,6 +613,17 @@ export default function OrderListPage() {
                             <span className="text-[10px] text-on-surface-variant">SKU: {item.productSku}</span>
                           </td>
                           <td className="py-2 px-3 text-center">{item.quantity}</td>
+                          <td className="py-2 px-3 text-center">
+                            {item.isRestocked === false ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-700 border border-rose-200">
+                                🔴 Hàng hỏng/lỗi
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                🟢 Đã nhập lại kho
+                              </span>
+                            )}
+                          </td>
                           <td className="py-2 px-3 text-right">
                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.refundPrice)}
                           </td>

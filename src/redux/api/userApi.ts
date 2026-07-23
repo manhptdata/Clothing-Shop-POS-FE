@@ -71,7 +71,7 @@ export const userApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
-    getSecurityPin: builder.query<RestResponse<{ pin: string | null }>, void>({
+    getSecurityPin: builder.query<RestResponse<{ hasPin: boolean }>, void>({
       query: () => ({
         url: `/users/me/security-pin`,
         method: 'GET'

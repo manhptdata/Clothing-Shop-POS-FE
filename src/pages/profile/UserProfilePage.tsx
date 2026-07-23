@@ -111,7 +111,7 @@ export default function UserProfilePage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center bg-surface-container-low px-4 py-2 rounded-xl border border-outline/10">
                       <span className="text-sm font-semibold tracking-wide text-primary mr-3">
-                        {showPin ? ((pinData?.data as any)?.hasPin ? 'Đã cài đặt' : 'Chưa cài đặt') : '••••••'}
+                        {showPin ? (pinData?.data?.hasPin ? 'Đã cài đặt' : 'Chưa cài đặt') : '••••••'}
                       </span>
                       <button 
                         onClick={() => setShowPin(!showPin)}
