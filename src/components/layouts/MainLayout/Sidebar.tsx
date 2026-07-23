@@ -44,6 +44,7 @@ const menuItems: MenuItem[] = [
     children: [
       { path: '/warehouse/receipts', label: 'Nhập kho', icon: 'input', permissions: ['VIEW_RECEIPT'] },
       { path: '/warehouse/stock-history', label: 'Lịch sử kho', icon: 'history', permissions: ['VIEW_RECEIPT'] },
+      { path: '/warehouse/damaged-items', label: 'Hàng lỗi & Phế phẩm', icon: 'report_problem', permissions: ['VIEW_RECEIPT'] },
       { path: '/suppliers', label: 'Nhà cung cấp', icon: 'local_shipping', permissions: ['VIEW_SUPPLIER'] },
     ]
   },

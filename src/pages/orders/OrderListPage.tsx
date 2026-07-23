@@ -84,7 +84,8 @@ export default function OrderListPage() {
 
     returnOrders.forEach((retOrder: ReturnOrder) => {
       retOrder.items?.forEach((item) => {
-        if (item.isRestocked === false) {
+        const isDamaged = item.isRestocked === false || (item as any).restocked === false;
+        if (isDamaged) {
           const key = item.productSku || `${item.variantId}` || item.productName;
           const existing = map.get(key);
           if (existing) {
@@ -614,7 +615,7 @@ export default function OrderListPage() {
                           </td>
                           <td className="py-2 px-3 text-center">{item.quantity}</td>
                           <td className="py-2 px-3 text-center">
-                            {item.isRestocked === false ? (
+                            {item.isRestocked === false || (item as any).restocked === false ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-100 text-rose-700 border border-rose-200">
                                 🔴 Hàng hỏng/lỗi
                               </span>
