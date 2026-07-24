@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useGetSettingsQuery, useUpdateSettingMutation } from '@/redux/api/settingApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useNotifications } from '@/providers/NotificationProvider';
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from '@/utils/cloudinary';
 
 export default function SystemSettingsPage() {
   const { data: settingsRes, isLoading } = useGetSettingsQuery();
@@ -10,15 +11,80 @@ export default function SystemSettingsPage() {
   const [updateSetting, { isLoading: isUpdating }] = useUpdateSettingMutation();
   const { user } = useAppSelector(state => state.auth);
 
-  // Accordion open states (Default: Section 1 open, others collapsed)
+  // Accordion open states (Default: Section brand & approvals open, others collapsed)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    approvals: true,
+    brand: true,
+    approvals: false,
     payment: false,
     shifts: false,
   });
 
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const [storeName, setStoreName] = useState('FASHION POS');
+  const [logoType, setLogoType] = useState<'icon' | 'image' | 'none'>('icon');
+  const [logoIcon, setLogoIcon] = useState('checkroom');
+  const [logoImageUrl, setLogoImageUrl] = useState('');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  const ICON_OPTIONS = [
+    { icon: 'checkroom', label: 'Quần áo' },
+    { icon: 'shopping_bag', label: 'Túi xách' },
+    { icon: 'diamond', label: 'Trang sức' },
+    { icon: 'spa', label: 'Mỹ phẩm' },
+    { icon: 'face_retouching_natural', label: 'Làm đẹp' },
+    { icon: 'palette', label: 'Trang điểm' },
+    { icon: 'storefront', label: 'Cửa hàng' },
+    { icon: 'dry_cleaning', label: 'Đồ thiết kế' },
+    { icon: 'watch', label: 'Đồng hồ' },
+    { icon: 'crown', label: 'Vương miện' },
+    { icon: 'styler', label: 'Thời trang' },
+  ];
+
+  const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Vui lòng chọn file hình ảnh (.png, .jpg, .svg, .webp...)');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      try {
+        const url = await uploadImageToCloudinary(file);
+        setLogoImageUrl(url);
+        toast.success('Tải ảnh logo từ máy tính lên thành công!');
+      } catch {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            setLogoImageUrl(reader.result);
+            toast.success('Tải ảnh logo từ máy tính thành công!');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err: any) {
+      toast.error('Không thể xử lý file ảnh này.');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleDeleteLogoImage = async () => {
+    if (logoImageUrl && logoImageUrl.startsWith('http')) {
+      try {
+        await deleteImageFromCloudinary(logoImageUrl);
+      } catch (err) {
+        console.error('Không thể xóa ảnh trên Cloudinary:', err);
+      }
+    }
+    setLogoImageUrl('');
+    toast.success('Đã xóa ảnh logo!');
   };
 
   const [requireReturnApproval, setRequireReturnApproval] = useState(true);
@@ -44,6 +110,23 @@ export default function SystemSettingsPage() {
 
   useEffect(() => {
     if (settings) {
+      const storeNameSetting = settings.find(s => s.settingKey === 'STORE_NAME');
+      if (storeNameSetting && storeNameSetting.settingValue) {
+        setStoreName(storeNameSetting.settingValue);
+      }
+      const logoTypeSetting = settings.find(s => s.settingKey === 'STORE_LOGO_TYPE');
+      if (logoTypeSetting && logoTypeSetting.settingValue) {
+        setLogoType(logoTypeSetting.settingValue as any);
+      }
+      const logoIconSetting = settings.find(s => s.settingKey === 'STORE_LOGO_ICON');
+      if (logoIconSetting && logoIconSetting.settingValue) {
+        setLogoIcon(logoIconSetting.settingValue);
+      }
+      const logoImgSetting = settings.find(s => s.settingKey === 'STORE_LOGO_IMAGE_URL');
+      if (logoImgSetting && logoImgSetting.settingValue) {
+        setLogoImageUrl(logoImgSetting.settingValue);
+      }
+
       const returnSetting = settings.find(s => s.settingKey === 'REQUIRE_RETURN_APPROVAL');
       if (returnSetting) {
         setRequireReturnApproval(returnSetting.settingValue === 'true');
@@ -70,6 +153,22 @@ export default function SystemSettingsPage() {
       if (accNameSetting) setAccountName(accNameSetting.settingValue);
     }
   }, [settings]);
+
+  const handleSaveBrandConfig = async () => {
+    if (!storeName.trim()) {
+      toast.error('Vui lòng nhập tên cửa hàng');
+      return;
+    }
+    try {
+      await updateSetting({ key: 'STORE_NAME', value: storeName.trim() }).unwrap();
+      await updateSetting({ key: 'STORE_LOGO_TYPE', value: logoType }).unwrap();
+      await updateSetting({ key: 'STORE_LOGO_ICON', value: logoIcon }).unwrap();
+      await updateSetting({ key: 'STORE_LOGO_IMAGE_URL', value: logoImageUrl.trim() }).unwrap();
+      toast.success('Cập nhật cấu hình Thương hiệu & Logo thành công!');
+    } catch (error: any) {
+      toast.error(error.data?.message || 'Có lỗi xảy ra khi cập nhật thương hiệu');
+    }
+  };
 
   const handleToggleReturnApproval = async () => {
     const newChecked = !requireReturnApproval;
@@ -151,7 +250,208 @@ export default function SystemSettingsPage() {
         <p className="text-xs text-on-surface-variant mt-1">Quản lý quy trình phê duyệt, tài khoản thanh toán QR và danh mục ca làm việc.</p>
       </div>
 
-      {/* SECTION 1: Quy trình Phê duyệt & Giới hạn Đơn hàng */}
+      {/* SECTION 1: Thông tin Thương hiệu & Tên Cửa hàng */}
+      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
+        {/* Accordion Header */}
+        <button
+          type="button"
+          onClick={() => toggleSection('brand')}
+          className="w-full p-6 flex items-center justify-between gap-4 text-left hover:bg-surface-container-low/50 transition-colors"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px]">storefront</span>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-on-surface">1. Thông tin Thương hiệu & Tên Cửa hàng</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">Cấu hình Tên Cửa hàng hiển thị linh hoạt ở góc màn hình, tiêu đề trang và hóa đơn.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full">
+              {storeName || 'FASHION POS'}
+            </span>
+            <span className="material-symbols-outlined text-on-surface-variant transition-transform duration-300">
+              {openSections.brand ? 'expand_less' : 'expand_more'}
+            </span>
+          </div>
+        </button>
+
+        {/* Accordion Content */}
+        {openSections.brand && (
+          <div className="px-6 pb-6 pt-2 border-t border-outline/10 space-y-5 animate-in fade-in duration-200">
+            {/* Tên cửa hàng */}
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-on-surface mb-1">Tên Cửa hàng / Thương hiệu</label>
+              <input
+                type="text"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="VD: FASHION POS, SAPO CLOTHING..."
+                className="w-full max-w-xl h-10 px-3 rounded-xl border border-outline/20 bg-surface text-sm text-on-surface font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              />
+            </div>
+
+            {/* Chế độ Logo */}
+            <div>
+              <label className="block text-xs font-bold text-on-surface mb-2">Chế độ hiển thị Logo / Biểu tượng</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
+                <button
+                  type="button"
+                  onClick={() => setLogoType('icon')}
+                  className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    logoType === 'icon'
+                      ? 'border-primary bg-sky-50/50 text-primary font-bold shadow-sm'
+                      : 'border-outline/20 bg-surface text-on-surface hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">category</span>
+                  <div>
+                    <div className="text-xs">1. Icon Hệ thống</div>
+                    <div className="text-[10px] text-on-surface-variant font-normal">Chọn từ danh sách Icon</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLogoType('image')}
+                  className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    logoType === 'image'
+                      ? 'border-primary bg-sky-50/50 text-primary font-bold shadow-sm'
+                      : 'border-outline/20 bg-surface text-on-surface hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">image</span>
+                  <div>
+                    <div className="text-xs">2. Ảnh PNG Tùy chỉnh</div>
+                    <div className="text-[10px] text-on-surface-variant font-normal">Dán link/Ảnh Logo shop</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLogoType('none')}
+                  className={`p-3 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    logoType === 'none'
+                      ? 'border-primary bg-sky-50/50 text-primary font-bold shadow-sm'
+                      : 'border-outline/20 bg-surface text-on-surface hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">visibility_off</span>
+                  <div>
+                    <div className="text-xs">3. Ẩn Logo</div>
+                    <div className="text-[10px] text-on-surface-variant font-normal">Chỉ hiện Tên chữ</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Tùy chỉnh theo chế độ */}
+            {logoType === 'icon' && (
+              <div className="p-4 bg-surface-container-lowest rounded-xl border border-outline/10 space-y-3 max-w-xl">
+                <label className="block text-xs font-bold text-on-surface">Chọn Biểu tượng phù hợp với shop</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {ICON_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.icon}
+                      type="button"
+                      onClick={() => setLogoIcon(opt.icon)}
+                      className={`p-2.5 rounded-lg border flex flex-col items-center justify-center gap-1.5 transition-all ${
+                        logoIcon === opt.icon
+                          ? 'border-primary bg-primary text-white font-bold shadow-sm scale-105'
+                          : 'border-outline/20 bg-surface text-on-surface hover:bg-outline/5'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[24px]">{opt.icon}</span>
+                      <span className="text-xs text-center font-medium leading-tight">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {logoType === 'image' && (
+              <div className="p-4 bg-surface-container-lowest rounded-xl border border-outline/10 space-y-3 max-w-xl">
+                <label className="block text-xs font-bold text-on-surface">Tải ảnh Logo từ máy tính</label>
+                
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-sky-600 transition-all shadow-sm">
+                      <span className="material-symbols-outlined text-[18px]">cloud_upload</span>
+                      {isUploadingLogo ? 'Đang tải ảnh...' : '📁 Chọn file ảnh từ máy tính'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoFileUpload}
+                        disabled={isUploadingLogo}
+                        className="hidden"
+                      />
+                    </label>
+                    {logoImageUrl && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteLogoImage}
+                        className="text-xs font-medium text-rose-600 hover:underline flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                        Xóa ảnh
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Live Preview Box */}
+                  {logoImageUrl ? (
+                    <div className="p-3 border border-outline/10 bg-surface rounded-xl flex items-center gap-4">
+                      <div className="h-16 max-w-[220px] flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src={logoImageUrl} alt="Logo preview" className="h-full object-contain" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="text-xs font-bold text-on-surface">Ảnh Logo đã sẵn sàng</div>
+                        <div className="text-[10px] text-on-surface-variant font-mono truncate max-w-xs">{logoImageUrl}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 border-2 border-dashed border-outline/20 rounded-xl text-center text-on-surface-variant">
+                      <span className="material-symbols-outlined text-3xl text-outline-variant block mb-1">image</span>
+                      <span className="text-xs">Bấm nút ở trên để chọn và tải file logo từ máy tính của bạn (.png, .jpg, .svg)</span>
+                    </div>
+                  )}
+
+                  <details className="text-xs text-on-surface-variant">
+                    <summary className="cursor-pointer font-medium hover:text-primary">Hoặc dán trực tiếp đường dẫn URL ảnh (nếu có)</summary>
+                    <input
+                      type="text"
+                      value={logoImageUrl}
+                      onChange={(e) => setLogoImageUrl(e.target.value)}
+                      placeholder="https://domain.com/logo.png"
+                      className="w-full mt-2 h-9 px-3 rounded-lg border border-outline/20 bg-surface text-xs font-mono focus:outline-none focus:border-primary"
+                    />
+                  </details>
+                </div>
+              </div>
+            )}
+
+            {logoType === 'none' && (
+              <div className="p-3 bg-amber-50/50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center gap-2 max-w-xl">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                <span>Chế độ <b>Ẩn Logo</b> sẽ tắt biểu tượng ở Sidebar và trang Đăng Nhập, chỉ giữ lại Tên Cửa Hàng dạng chữ tinh tế.</span>
+              </div>
+            )}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={handleSaveBrandConfig}
+                disabled={isUpdating}
+                className="h-10 px-6 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-sm"
+              >
+                Lưu cấu hình Thương hiệu & Logo
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 2: Quy trình Phê duyệt & Giới hạn Đơn hàng */}
       <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
         {/* Accordion Header */}
         <button
@@ -164,7 +464,7 @@ export default function SystemSettingsPage() {
               <span className="material-symbols-outlined text-[24px]">verified_user</span>
             </div>
             <div>
-              <h2 className="text-base font-bold text-on-surface">1. Quy trình Phê duyệt & Giới hạn Hóa đơn</h2>
+              <h2 className="text-base font-bold text-on-surface">2. Quy trình Phê duyệt & Giới hạn Hóa đơn</h2>
               <p className="text-xs text-on-surface-variant mt-0.5">Yêu cầu mã PIN Quản lý khi trả/hủy đơn và giới hạn đơn hàng tạm giữ.</p>
             </div>
           </div>
@@ -310,7 +610,7 @@ export default function SystemSettingsPage() {
               <span className="material-symbols-outlined text-[24px]">qr_code_2</span>
             </div>
             <div>
-              <h2 className="text-base font-bold text-on-surface">2. Cấu hình Tài khoản Thanh toán QR (VietQR / SePay)</h2>
+              <h2 className="text-base font-bold text-on-surface">3. Cấu hình Tài khoản Thanh toán QR (VietQR / SePay)</h2>
               <p className="text-xs text-on-surface-variant mt-0.5">Tài khoản ngân hàng nhận tiền chuyển khoản tự động cho cửa hàng.</p>
             </div>
           </div>
@@ -380,7 +680,7 @@ export default function SystemSettingsPage() {
         )}
       </div>
 
-      {/* SECTION 3: Quản lý Danh mục Ca làm việc */}
+      {/* SECTION 4: Quản lý Danh mục Ca làm việc */}
       <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
         {/* Accordion Header */}
         <button
@@ -393,7 +693,7 @@ export default function SystemSettingsPage() {
               <span className="material-symbols-outlined text-[24px]">history_toggle_off</span>
             </div>
             <div>
-              <h2 className="text-base font-bold text-on-surface">3. Quản lý Danh mục Ca làm việc (Enterprise Shift Settings)</h2>
+              <h2 className="text-base font-bold text-on-surface">4. Quản lý Danh mục Ca làm việc (Enterprise Shift Settings)</h2>
               <p className="text-xs text-on-surface-variant mt-0.5">Danh mục các ca làm việc cho thu ngân chọn khi bán hàng tại cửa hàng.</p>
             </div>
           </div>
