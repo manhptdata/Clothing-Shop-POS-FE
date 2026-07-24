@@ -29,10 +29,13 @@ interface DamagedLogItem {
   reason: string;
 }
 
+type DateFilterType = 'ALL' | 'TODAY' | 'THIS_WEEK' | 'THIS_MONTH' | 'THIS_YEAR';
+
 export default function DamagedItemsPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'summary' | 'logs'>('summary');
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('ALL');
   const [selectedReturn, setSelectedReturn] = useState<ReturnOrder | null>(null);
 
   // Fetch all return orders (page 1, size 300 to aggregate)
@@ -77,11 +80,48 @@ export default function DamagedItemsPage() {
     return logs;
   }, [returnOrders]);
 
-  // Aggregate by product SKU / variant ID
+  // Filter damaged logs by selected date range
+  const dateFilteredLogs = useMemo(() => {
+    if (dateFilter === 'ALL') return damagedLogs;
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return damagedLogs.filter((log) => {
+      if (!log.createdAt) return true;
+      const logDate = new Date(log.createdAt);
+
+      if (dateFilter === 'TODAY') {
+        return logDate >= startOfToday;
+      }
+
+      if (dateFilter === 'THIS_WEEK') {
+        const dayOfWeek = now.getDay() || 7; // 1 = Mon, 7 = Sun
+        const startOfWeek = new Date(startOfToday);
+        startOfWeek.setDate(startOfToday.getDate() - (dayOfWeek - 1));
+        return logDate >= startOfWeek;
+      }
+
+      if (dateFilter === 'THIS_MONTH') {
+        return (
+          logDate.getMonth() === now.getMonth() &&
+          logDate.getFullYear() === now.getFullYear()
+        );
+      }
+
+      if (dateFilter === 'THIS_YEAR') {
+        return logDate.getFullYear() === now.getFullYear();
+      }
+
+      return true;
+    });
+  }, [damagedLogs, dateFilter]);
+
+  // Aggregate by product SKU / variant ID from dateFilteredLogs
   const damagedSummary = useMemo(() => {
     const map = new Map<string, DamagedProductSummary>();
 
-    damagedLogs.forEach((log) => {
+    dateFilteredLogs.forEach((log) => {
       const key = log.productSku !== 'N/A' ? log.productSku : `${log.variantId}`;
       const existing = map.get(key);
       if (existing) {
@@ -101,7 +141,7 @@ export default function DamagedItemsPage() {
     });
 
     return Array.from(map.values());
-  }, [damagedLogs]);
+  }, [dateFilteredLogs]);
 
   // Filter by search query
   const filteredSummary = useMemo(() => {
@@ -113,16 +153,16 @@ export default function DamagedItemsPage() {
   }, [damagedSummary, searchQuery]);
 
   const filteredLogs = useMemo(() => {
-    if (!searchQuery) return damagedLogs;
+    if (!searchQuery) return dateFilteredLogs;
     const q = searchQuery.toLowerCase();
-    return damagedLogs.filter(
+    return dateFilteredLogs.filter(
       (log) =>
         log.productName.toLowerCase().includes(q) ||
         log.productSku.toLowerCase().includes(q) ||
         log.returnNumber.toLowerCase().includes(q) ||
         log.originalOrderNumber.toLowerCase().includes(q)
     );
-  }, [damagedLogs, searchQuery]);
+  }, [dateFilteredLogs, searchQuery]);
 
   // Metric stats
   const totalProductTypes = damagedSummary.length;
@@ -141,9 +181,28 @@ export default function DamagedItemsPage() {
             Báo cáo, thống kê và kiểm kê toàn bộ sản phẩm bị hỏng/lỗi không thể nhập lại kho bán.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 shrink-0">
-          <span className="material-symbols-outlined text-[18px]">report_problem</span>
-          <span>Thất thoát phế phẩm</span>
+
+        {/* Date Filter & Status Badge */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-lg border border-outline/20 shadow-sm text-xs font-medium text-on-surface">
+            <span className="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_today</span>
+            <span>Thời gian:</span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
+              className="bg-transparent font-semibold text-rose-600 focus:outline-none cursor-pointer"
+            >
+              <option value="ALL">Tất cả thời gian</option>
+              <option value="TODAY">Hôm nay</option>
+              <option value="THIS_WEEK">Tuần này</option>
+              <option value="THIS_MONTH">Tháng này</option>
+              <option value="THIS_YEAR">Năm nay</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 shrink-0">
+            <span className="material-symbols-outlined text-[18px]">report_problem</span>
+            <span>Thất thoát phế phẩm</span>
+          </div>
         </div>
       </div>
 

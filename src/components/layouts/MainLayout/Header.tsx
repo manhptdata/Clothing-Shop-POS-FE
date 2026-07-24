@@ -79,22 +79,99 @@ export default function Header({ onMenuClick }: HeaderProps) {
     if (!notif.read) {
       await markRead(notif.id);
     }
+
+    let meta: any = null;
     if (notif.metadata) {
-      try {
-        const meta = JSON.parse(notif.metadata);
-        if (meta.orderId) {
-          navigate(`/orders/${meta.orderId}`);
-          setIsOpen(false);
-        } else if (meta.handoverId) {
-          navigate(`/shifts/history`);
-          setIsOpen(false);
-        } else if (meta.variantId) {
-          navigate(`/products`);
-          setIsOpen(false);
+      if (typeof notif.metadata === 'object') {
+        meta = notif.metadata;
+      } else if (typeof notif.metadata === 'string') {
+        try {
+          meta = JSON.parse(notif.metadata);
+        } catch (e) {
+          console.error('Failed to parse notification metadata', e);
         }
-      } catch (e) {
-        console.error('Failed to parse notification metadata', e);
       }
+    }
+
+    setIsOpen(false);
+
+    // 1. Direct navigation via metadata properties
+    if (meta?.orderId) {
+      navigate(`/orders/${meta.orderId}`);
+      return;
+    }
+    if (meta?.productId) {
+      navigate(`/products/${meta.productId}`);
+      return;
+    }
+    if (meta?.receiptId) {
+      navigate(`/warehouse/receipts/${meta.receiptId}`);
+      return;
+    }
+    if (meta?.customerId) {
+      navigate(`/customers`);
+      return;
+    }
+    if (meta?.voucherId) {
+      navigate(`/vouchers`);
+      return;
+    }
+    if (meta?.returnId) {
+      navigate(`/warehouse/damaged-items`);
+      return;
+    }
+    if (meta?.handoverId) {
+      navigate(`/shifts/history`);
+      return;
+    }
+    if (meta?.variantId) {
+      navigate(`/products`);
+      return;
+    }
+
+    // 2. Fallback navigation based on notification type
+    if (notif.type === 'ORDER_CREATED' || notif.type === 'ORDER_PAID' || notif.type === 'APPROVAL_REQUEST') {
+      navigate('/orders');
+      return;
+    }
+    if (notif.type === 'SHIFT_HANDOVER') {
+      navigate('/shifts/history');
+      return;
+    }
+    if (notif.type === 'LOW_STOCK' || (notif.type as any) === 'RETURN_ORDER') {
+      navigate('/warehouse/damaged-items');
+      return;
+    }
+    if ((notif.type as any) === 'NEW_CUSTOMER') {
+      navigate('/customers');
+      return;
+    }
+    if ((notif.type as any) === 'VOUCHER_CREATED') {
+      navigate('/vouchers');
+      return;
+    }
+
+    // 3. Fallback navigation based on Title/Message keywords
+    const textContent = `${notif.title || ''} ${notif.message || ''}`.toLowerCase();
+    if (textContent.includes('nhập kho') || textContent.includes('phiếu nhập')) {
+      navigate('/warehouse/receipts');
+      return;
+    }
+    if (textContent.includes('sản phẩm')) {
+      navigate('/products');
+      return;
+    }
+    if (textContent.includes('tồn kho') || textContent.includes('cảnh báo') || textContent.includes('trả hàng')) {
+      navigate('/warehouse/damaged-items');
+      return;
+    }
+    if (textContent.includes('khách hàng')) {
+      navigate('/customers');
+      return;
+    }
+    if (textContent.includes('voucher') || textContent.includes('mã giảm giá') || textContent.includes('khuyến mãi')) {
+      navigate('/vouchers');
+      return;
     }
   };
 
@@ -188,6 +265,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
                             )}
                             {notif.type === 'ORDER_PAID' && (
                               <span className="material-symbols-outlined text-green-600 text-lg">payments</span>
+                            )}
+                            {(notif.type as any) === 'NEW_CUSTOMER' && (
+                              <span className="material-symbols-outlined text-indigo-500 text-lg">person_add</span>
+                            )}
+                            {(notif.type as any) === 'VOUCHER_CREATED' && (
+                              <span className="material-symbols-outlined text-purple-500 text-lg">confirmation_number</span>
+                            )}
+                            {(notif.type as any) === 'RETURN_ORDER' && (
+                              <span className="material-symbols-outlined text-orange-500 text-lg">assignment_return</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
