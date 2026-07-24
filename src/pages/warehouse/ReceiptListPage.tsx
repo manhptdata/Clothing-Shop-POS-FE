@@ -171,7 +171,7 @@ export default function ReceiptListPage() {
                                         className="hover:bg-surface-variant/20 transition-colors cursor-pointer"
                                     >
                                         <td className="py-4 px-6">
-                                            <span className="font-mono font-semibold text-primary">{r.code}</span>
+                                            <span className="font-mono font-extrabold text-slate-900">{r.code}</span>
                                         </td>
                                         <td className="py-4 px-6 text-center">
                                             {r.status === 'DRAFT' ? (

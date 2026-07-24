@@ -38,12 +38,12 @@ export default function LoginPage() {
         <div className="w-full max-w-[480px] bg-surface-container-lowest border border-outline/10 p-lg flex flex-col">
           {/* Header Section */}
           <div className="flex flex-col items-center mb-xl">
-            <div className="h-12 w-12 bg-primary-container text-on-primary-container rounded-none flex items-center justify-center mb-md">
+            <div className="h-12 w-12 bg-primary text-white rounded-xl flex items-center justify-center mb-md shadow-md">
               <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                diamond
+                checkroom
               </span>
             </div>
-            <h1 className="font-display-lg text-display-lg text-primary tracking-tighter mb-xs text-center">Sapo</h1>
+            <h1 className="font-display-lg text-2xl font-extrabold text-primary tracking-tight mb-xs text-center">FASHION POS</h1>
             <p className="font-body-sm text-body-sm text-on-surface-variant text-center uppercase tracking-widest">
               Quản lý cửa hàng cao cấp
             </p>

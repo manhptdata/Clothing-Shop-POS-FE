@@ -13,19 +13,16 @@
 }
 
 :root {
-  /* Brand Colors - High-End Minimalism (Sapo OS) */
-  --color-bg: #FDFBF7;
-  /* Warm cream */
+  /* Brand Colors - High-End Soft Sky Blue */
+  --color-bg: #f0f9ff;
   --color-surface: #ffffff;
-  --color-border: rgba(33, 37, 41, 0.1);
-  /* 1px border at 10% opacity */
-  --color-border-active: #0F5132;
-  --color-text: #212529;
-  /* Dark charcoal */
-  --color-text-muted: #707971;
-  --color-primary: #0F5132;
-  /* Deep Forest Green */
-  --color-primary-light: rgba(15, 81, 50, 0.1);
+  --color-border: rgba(14, 165, 233, 0.12);
+  --color-border-active: #0284c7;
+  --color-text: #0c4a6e;
+  --color-text-muted: #64748b;
+  --color-primary: #0284c7;
+  /* Pure Soft Sky Blue */
+  --color-primary-light: rgba(2, 132, 199, 0.08);
   --color-accent: #D4AF37;
   /* Soft Gold */
   --color-success: #84c39b;
