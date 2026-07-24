@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { useLogoutMutation } from '@/redux/api/authApi';
+import { useGetSettingsQuery } from '@/redux/api/settingApi';
 import ShiftHandoverModal from '@/components/ui/ShiftHandoverModal';
 import { ROLE_LABEL } from '@/utils/constants';
 
@@ -111,6 +112,18 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     );
   };
 
+  const { data: settingsRes } = useGetSettingsQuery();
+  const settings = settingsRes?.data || [];
+  const storeNameSetting = settings.find(s => s.settingKey === 'STORE_NAME');
+  const logoTypeSetting = settings.find(s => s.settingKey === 'STORE_LOGO_TYPE');
+  const logoIconSetting = settings.find(s => s.settingKey === 'STORE_LOGO_ICON');
+  const logoImgSetting = settings.find(s => s.settingKey === 'STORE_LOGO_IMAGE_URL');
+
+  const dynamicStoreName = storeNameSetting?.settingValue || 'FASHION POS';
+  const logoType = logoTypeSetting?.settingValue || 'icon';
+  const logoIcon = logoIconSetting?.settingValue || 'checkroom';
+  const logoImageUrl = logoImgSetting?.settingValue || '';
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -122,11 +135,18 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       )}
       <nav className={`fixed top-0 h-full flex flex-col py-8 w-64 border-r border-outline/5 bg-surface z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:left-0`}>
       <div className="px-6 mb-8 flex flex-col items-start">
-        <div className="flex items-center gap-2.5 mb-1.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-200">
-            <span className="material-symbols-outlined text-[22px]">checkroom</span>
-          </div>
-          <h1 className="font-sans text-[20px] font-black tracking-tight leading-none bg-gradient-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent">FASHION POS</h1>
+        <div className="flex items-center gap-2.5 mb-1.5 w-full">
+          {logoType === 'icon' && (
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-200 shrink-0">
+              <span className="material-symbols-outlined text-[22px]">{logoIcon}</span>
+            </div>
+          )}
+          {logoType === 'image' && logoImageUrl && (
+            <img src={logoImageUrl} alt="Logo" className="h-12 max-w-[150px] object-contain shrink-0 mb-1" />
+          )}
+          <h1 className="font-sans text-base font-black tracking-tight leading-snug bg-gradient-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent uppercase break-words flex-1 min-w-0" title={dynamicStoreName}>
+            {dynamicStoreName}
+          </h1>
         </div>
         <p className="font-label-caps text-[10px] font-bold text-sky-600/70 uppercase tracking-widest pl-0.5">
           {ROLE_LABEL[user.role] || user.role.replace(/^ROLE_/, '').replace(/_/g, ' ')}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/redux/hooks';
 import { useLoginMutation } from '@/redux/api/authApi';
+import { useGetSettingsQuery } from '@/redux/api/settingApi';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { getDefaultRouteForPermissions } from '@/router/PermissionRoute';
@@ -14,6 +15,18 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [login, { isLoading }] = useLoginMutation();
   const { error } = useAppSelector((state) => state.auth);
+  const { data: settingsRes } = useGetSettingsQuery();
+  
+  const settings = settingsRes?.data || [];
+  const storeNameSetting = settings.find((s: any) => s.settingKey === 'STORE_NAME');
+  const logoTypeSetting = settings.find((s: any) => s.settingKey === 'STORE_LOGO_TYPE');
+  const logoIconSetting = settings.find((s: any) => s.settingKey === 'STORE_LOGO_ICON');
+  const logoImgSetting = settings.find((s: any) => s.settingKey === 'STORE_LOGO_IMAGE_URL');
+
+  const dynamicStoreName = storeNameSetting?.settingValue || 'FASHION POS';
+  const logoType = logoTypeSetting?.settingValue || 'icon';
+  const logoIcon = logoIconSetting?.settingValue || 'checkroom';
+  const logoImageUrl = logoImgSetting?.settingValue || '';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,12 +51,17 @@ export default function LoginPage() {
         <div className="w-full max-w-[480px] bg-surface-container-lowest border border-outline/10 p-lg flex flex-col">
           {/* Header Section */}
           <div className="flex flex-col items-center mb-xl">
-            <div className="h-12 w-12 bg-primary text-white rounded-xl flex items-center justify-center mb-md shadow-md">
-              <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                checkroom
-              </span>
-            </div>
-            <h1 className="font-display-lg text-2xl font-extrabold text-primary tracking-tight mb-xs text-center">FASHION POS</h1>
+            {logoType === 'icon' && (
+              <div className="h-12 w-12 bg-primary text-white rounded-xl flex items-center justify-center mb-md shadow-md">
+                <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {logoIcon}
+                </span>
+              </div>
+            )}
+            {logoType === 'image' && logoImageUrl && (
+              <img src={logoImageUrl} alt="Logo" className="h-24 max-w-[300px] object-contain mb-md shrink-0 drop-shadow-sm" />
+            )}
+            <h1 className="font-display-lg text-2xl font-extrabold text-primary tracking-tight mb-xs text-center uppercase">{dynamicStoreName}</h1>
             <p className="font-body-sm text-body-sm text-on-surface-variant text-center uppercase tracking-widest">
               Quản lý cửa hàng cao cấp
             </p>
