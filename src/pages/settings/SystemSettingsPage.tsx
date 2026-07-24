@@ -10,6 +10,17 @@ export default function SystemSettingsPage() {
   const [updateSetting, { isLoading: isUpdating }] = useUpdateSettingMutation();
   const { user } = useAppSelector(state => state.auth);
 
+  // Accordion open states (Default: Section 1 open, others collapsed)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    approvals: true,
+    payment: false,
+    shifts: false,
+  });
+
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const [requireReturnApproval, setRequireReturnApproval] = useState(true);
   const [requireCancelApproval, setRequireCancelApproval] = useState(true);
   const [maxPendingOrders, setMaxPendingOrders] = useState<number>(3);
@@ -134,184 +145,272 @@ export default function SystemSettingsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="text-2xl font-bold text-on-surface mb-6">Cấu hình Hệ thống</h1>
-      
-      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-on-surface mb-1">Yêu cầu Quản lý phê duyệt khi trả hàng</h2>
-            <p className="text-sm text-on-surface-variant">
-              Khi bật, nhân viên thu ngân (Sale) sẽ phải nhập mã PIN của Quản lý hoặc Admin để có thể hoàn tất giao dịch trả hàng.
-            </p>
-          </div>
-          
-          <button
-            type="button"
-            role="switch"
-            aria-checked={requireReturnApproval}
-            disabled={isUpdating}
-            onClick={handleToggleReturnApproval}
-            className={`${
-              requireReturnApproval ? 'bg-primary' : 'bg-surface-container-high'
-            } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-white/75 disabled:opacity-50`}
-          >
-            <span
-              aria-hidden="true"
-              className={`${
-                requireReturnApproval ? 'translate-x-5' : 'translate-x-0'
-              } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
-            />
-          </button>
-        </div>
-        <div className="h-px bg-outline/10 w-full my-6"></div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-on-surface mb-1">Yêu cầu Quản lý phê duyệt khi hủy đơn hàng</h2>
-            <p className="text-sm text-on-surface-variant">
-              Khi bật, nhân viên thu ngân (Sale) sẽ phải nhập mã PIN của Quản lý hoặc Admin để có thể hủy hóa đơn.
-            </p>
-          </div>
-          
-          <button
-            type="button"
-            role="switch"
-            aria-checked={requireCancelApproval}
-            disabled={isUpdating}
-            onClick={handleToggleCancelApproval}
-            className={`${
-              requireCancelApproval ? 'bg-primary' : 'bg-surface-container-high'
-            } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-white/75 disabled:opacity-50`}
-          >
-            <span
-              aria-hidden="true"
-              className={`${
-                requireCancelApproval ? 'translate-x-5' : 'translate-x-0'
-              } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
-            />
-          </button>
-        </div>
-        
-        <div className="h-px bg-outline/10 w-full my-6"></div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-on-surface mb-1">Giới hạn số lượng đơn giữ tạm cho mỗi khách hàng</h2>
-            <p className="text-sm text-on-surface-variant">
-              Quy định số lượng tối đa các đơn hàng (ở trạng thái PENDING) mà một khách hàng có thể giữ trên hệ thống.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min="1"
-              value={maxPendingOrders}
-              onChange={(e) => setMaxPendingOrders(parseInt(e.target.value) || 1)}
-              className="w-24 h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-center"
-            />
-            <button
-              onClick={handleSaveMaxPendingConfig}
-              disabled={isUpdating}
-              className="h-11 px-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              Lưu
-            </button>
-          </div>
-        </div>
-
-        <div className="h-px bg-outline/10 w-full my-6"></div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-on-surface mb-1">Thời gian tự động dọn dẹp đơn chờ chưa cọc (phút)</h2>
-            <p className="text-sm text-on-surface-variant">
-              Quy định số phút tự động hủy các đơn hàng chờ thanh toán (0đ) quá hạn để hoàn lại kho hàng khả dụng.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min="1"
-              max="1440"
-              value={pendingTimeoutMinutes}
-              onChange={(e) => setPendingTimeoutMinutes(parseInt(e.target.value) || 1)}
-              className="w-24 h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-center"
-            />
-            <button
-              onClick={handleSavePendingTimeoutConfig}
-              disabled={isUpdating}
-              className="h-11 px-4 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              Lưu
-            </button>
-          </div>
-        </div>
+    <div className="max-w-[1200px] mx-auto p-4 md:p-8 space-y-6 pb-12">
+      <div>
+        <h1 className="text-2xl font-bold text-on-surface tracking-tight">Cấu hình Hệ thống</h1>
+        <p className="text-xs text-on-surface-variant mt-1">Quản lý quy trình phê duyệt, tài khoản thanh toán QR và danh mục ca làm việc.</p>
       </div>
 
-      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm p-6 mt-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-on-surface mb-1">Cấu hình tài khoản nhận thanh toán QR</h2>
-          <p className="text-sm text-on-surface-variant">
-            Thông tin này sẽ được sử dụng để tạo mã QR thanh toán động cho các đơn hàng.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-on-surface mb-1">Ngân hàng</label>
-            <select
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-            >
-              <option value="">-- Chọn ngân hàng --</option>
-              {banks.map(bank => (
-                <option key={bank.id} value={bank.shortName}>
-                  {bank.shortName} - {bank.name}
-                </option>
-              ))}
-            </select>
+      {/* SECTION 1: Quy trình Phê duyệt & Giới hạn Đơn hàng */}
+      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
+        {/* Accordion Header */}
+        <button
+          type="button"
+          onClick={() => toggleSection('approvals')}
+          className="w-full p-6 flex items-center justify-between gap-4 text-left hover:bg-surface-container-low/50 transition-colors"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-sky-50 text-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px]">verified_user</span>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-on-surface">1. Quy trình Phê duyệt & Giới hạn Hóa đơn</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">Yêu cầu mã PIN Quản lý khi trả/hủy đơn và giới hạn đơn hàng tạm giữ.</p>
+            </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-on-surface mb-1">Số tài khoản</label>
-            <input
-              type="text"
-              value={bankAccount}
-              onChange={(e) => setBankAccount(e.target.value)}
-              placeholder="Ví dụ: 1023456789"
-              className="w-full h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-            />
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-sky-50 text-sky-700 rounded-full">
+              {requireReturnApproval || requireCancelApproval ? 'Đang bật duyệt' : 'Tắt duyệt'}
+            </span>
+            <span className="material-symbols-outlined text-on-surface-variant transition-transform duration-300">
+              {openSections.approvals ? 'expand_less' : 'expand_more'}
+            </span>
           </div>
+        </button>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-on-surface mb-1">Tên chủ tài khoản</label>
-            <input
-              type="text"
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              placeholder="Ví dụ: NGUYEN VAN A"
-              className="w-full h-11 px-4 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all uppercase"
-            />
-          </div>
-        </div>
+        {/* Accordion Content */}
+        {openSections.approvals && (
+          <div className="px-6 pb-6 pt-2 border-t border-outline/10 space-y-6 animate-in fade-in duration-200">
+            {/* Return Approval */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface mb-0.5">Yêu cầu Quản lý phê duyệt khi trả hàng</h3>
+                <p className="text-xs text-on-surface-variant">
+                  Khi bật, nhân viên thu ngân (Sale) sẽ phải nhập mã PIN của Quản lý hoặc Admin để có thể hoàn tất giao dịch trả hàng.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={requireReturnApproval}
+                disabled={isUpdating}
+                onClick={handleToggleReturnApproval}
+                className={`${
+                  requireReturnApproval ? 'bg-primary' : 'bg-surface-container-high'
+                } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-white/75 disabled:opacity-50`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`${
+                    requireReturnApproval ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                />
+              </button>
+            </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={handleSaveBankConfig}
-            disabled={isUpdating}
-            className="h-11 px-6 rounded-xl bg-primary text-on-primary font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            Lưu cấu hình ngân hàng
-          </button>
-        </div>
+            <div className="h-px bg-outline/10 w-full"></div>
+
+            {/* Cancel Approval */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface mb-0.5">Yêu cầu Quản lý phê duyệt khi hủy đơn hàng</h3>
+                <p className="text-xs text-on-surface-variant">
+                  Khi bật, nhân viên thu ngân (Sale) sẽ phải nhập mã PIN của Quản lý hoặc Admin để có thể hủy hóa đơn.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={requireCancelApproval}
+                disabled={isUpdating}
+                onClick={handleToggleCancelApproval}
+                className={`${
+                  requireCancelApproval ? 'bg-primary' : 'bg-surface-container-high'
+                } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-white/75 disabled:opacity-50`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`${
+                    requireCancelApproval ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                />
+              </button>
+            </div>
+
+            <div className="h-px bg-outline/10 w-full"></div>
+
+            {/* Max Pending Orders */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface mb-0.5">Giới hạn số lượng đơn giữ tạm cho mỗi khách hàng</h3>
+                <p className="text-xs text-on-surface-variant">
+                  Quy định số lượng tối đa các đơn hàng (ở trạng thái PENDING) mà một khách hàng có thể giữ trên hệ thống.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  type="number"
+                  min="1"
+                  value={maxPendingOrders}
+                  onChange={(e) => setMaxPendingOrders(parseInt(e.target.value) || 1)}
+                  className="w-20 h-10 px-3 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-center font-bold text-sm"
+                />
+                <button
+                  onClick={handleSaveMaxPendingConfig}
+                  disabled={isUpdating}
+                  className="h-10 px-4 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  Lưu
+                </button>
+              </div>
+            </div>
+
+            <div className="h-px bg-outline/10 w-full"></div>
+
+            {/* Pending Order Timeout */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-on-surface mb-0.5">Thời gian tự động dọn dẹp đơn chờ chưa cọc (phút)</h3>
+                <p className="text-xs text-on-surface-variant">
+                  Quy định số phút tự động hủy các đơn hàng chờ thanh toán (0đ) quá hạn để hoàn lại kho hàng khả dụng.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  value={pendingTimeoutMinutes}
+                  onChange={(e) => setPendingTimeoutMinutes(parseInt(e.target.value) || 1)}
+                  className="w-20 h-10 px-3 rounded-xl border border-outline/20 bg-surface text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-center font-bold text-sm"
+                />
+                <button
+                  onClick={handleSavePendingTimeoutConfig}
+                  disabled={isUpdating}
+                  className="h-10 px-4 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  Lưu
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Cấu hình danh mục Ca làm việc */}
-      <ShiftConfigSection />
+      {/* SECTION 2: Cấu hình Tài khoản Thanh toán QR */}
+      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
+        {/* Accordion Header */}
+        <button
+          type="button"
+          onClick={() => toggleSection('payment')}
+          className="w-full p-6 flex items-center justify-between gap-4 text-left hover:bg-surface-container-low/50 transition-colors"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px]">qr_code_2</span>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-on-surface">2. Cấu hình Tài khoản Thanh toán QR (VietQR / SePay)</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">Tài khoản ngân hàng nhận tiền chuyển khoản tự động cho cửa hàng.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full">
+              {bankName ? `${bankName} • ${bankAccount}` : 'Chưa cấu hình'}
+            </span>
+            <span className="material-symbols-outlined text-on-surface-variant transition-transform duration-300">
+              {openSections.payment ? 'expand_less' : 'expand_more'}
+            </span>
+          </div>
+        </button>
+
+        {/* Accordion Content */}
+        {openSections.payment && (
+          <div className="px-6 pb-6 pt-2 border-t border-outline/10 space-y-4 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div>
+                <label className="block text-xs font-bold text-on-surface mb-1">Ngân hàng</label>
+                <select
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl border border-outline/20 bg-surface text-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">-- Chọn ngân hàng --</option>
+                  {banks.map(bank => (
+                    <option key={bank.id} value={bank.shortName}>
+                      {bank.shortName} - {bank.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-on-surface mb-1">Số tài khoản</label>
+                <input
+                  type="text"
+                  value={bankAccount}
+                  onChange={(e) => setBankAccount(e.target.value)}
+                  placeholder="Ví dụ: 1023456789"
+                  className="w-full h-10 px-3 rounded-xl border border-outline/20 bg-surface text-sm text-on-surface font-mono font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-on-surface mb-1">Tên chủ tài khoản</label>
+                <input
+                  type="text"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  placeholder="Ví dụ: NGUYEN VAN A"
+                  className="w-full h-10 px-3 rounded-xl border border-outline/20 bg-surface text-sm text-on-surface font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all uppercase"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handleSaveBankConfig}
+                disabled={isUpdating}
+                className="h-10 px-5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-sm"
+              >
+                Lưu cấu hình ngân hàng
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 3: Quản lý Danh mục Ca làm việc */}
+      <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm overflow-hidden transition-all duration-300">
+        {/* Accordion Header */}
+        <button
+          type="button"
+          onClick={() => toggleSection('shifts')}
+          className="w-full p-6 flex items-center justify-between gap-4 text-left hover:bg-surface-container-low/50 transition-colors"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px]">history_toggle_off</span>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-on-surface">3. Quản lý Danh mục Ca làm việc (Enterprise Shift Settings)</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">Danh mục các ca làm việc cho thu ngân chọn khi bán hàng tại cửa hàng.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="material-symbols-outlined text-on-surface-variant transition-transform duration-300">
+              {openSections.shifts ? 'expand_less' : 'expand_more'}
+            </span>
+          </div>
+        </button>
+
+        {/* Accordion Content */}
+        {openSections.shifts && (
+          <div className="px-6 pb-6 pt-2 border-t border-outline/10 animate-in fade-in duration-200">
+            <ShiftConfigSection />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -366,16 +465,9 @@ function ShiftConfigSection() {
   };
 
   return (
-    <div className="bg-surface rounded-2xl border border-outline/10 shadow-sm p-6 mt-6">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-on-surface mb-1">Quản lý Danh mục Ca làm việc (Enterprise Shift Settings)</h2>
-        <p className="text-sm text-on-surface-variant">
-          Các ca làm việc được cấu hình ở đây sẽ hiển thị lên Dropdown chọn ca cho thu ngân tại màn hình bán hàng POS.
-        </p>
-      </div>
-
+    <div className="space-y-4 pt-2">
       {/* Bảng danh sách Ca */}
-      <div className="overflow-x-auto mb-6">
+      <div className="overflow-x-auto">
         <table className="w-full text-sm text-left border border-outline/10 rounded-xl overflow-hidden">
           <thead className="bg-outline/5 text-on-surface font-semibold text-xs uppercase">
             <tr>
@@ -415,7 +507,7 @@ function ShiftConfigSection() {
 
       {/* Form Thêm ca mới */}
       <form onSubmit={handleAddShift} className="bg-outline/5 p-4 rounded-xl border border-outline/10 flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-on-surface">Thêm Ca làm việc mới</h3>
+        <h3 className="text-xs font-bold text-on-surface uppercase tracking-wider">Thêm Ca làm việc mới</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium text-on-surface mb-1">Tên ca</label>
@@ -453,7 +545,7 @@ function ShiftConfigSection() {
           <button
             type="submit"
             disabled={loading}
-            className="h-10 px-5 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="h-9 px-4 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-sky-600 transition-colors disabled:opacity-50 shadow-sm"
           >
             {loading ? 'Đang thêm...' : '+ Thêm ca làm việc'}
           </button>

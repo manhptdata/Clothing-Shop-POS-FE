@@ -345,7 +345,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   {ROLE_LABEL[user.role] || user.role.replace(/^ROLE_/, '').replace(/_/g, ' ')}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-[#18754a] text-on-primary flex items-center justify-center font-bold text-sm shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">
                 {user.fullName.split(' ').pop()?.charAt(0).toUpperCase() || user.username.charAt(0).toUpperCase()}
               </div>
             </div>

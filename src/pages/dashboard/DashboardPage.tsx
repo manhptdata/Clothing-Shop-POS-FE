@@ -57,7 +57,7 @@ export default function DashboardPage() {
   };
 
   const columns: Column<Order>[] = [
-    { key: 'orderNumber', header: 'Mã Đơn', render: (row) => <span className="font-mono font-bold text-primary">{row.orderNumber || row.code}</span> },
+    { key: 'orderNumber', header: 'Mã Đơn', render: (row) => <span className="font-mono font-extrabold text-slate-900">{row.orderNumber || row.code}</span> },
     { key: 'customerName', header: 'Khách hàng', render: (row) => <span className="text-on-surface font-medium">{row.customerName || 'Khách lẻ vãng lai'}</span> },
     { key: 'createdAt', header: 'Ngày tạo', render: (row) => <span className="text-on-surface-variant text-xs">{new Date(row.createdAt).toLocaleString('vi-VN')}</span> },
     { key: 'totalAmount', header: 'Tổng tiền', render: (row) => <span className="text-on-surface font-bold">{formatCurrency(row.totalAmount)}</span> },
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                     </span>
                     <div>
                       <span className="font-bold text-on-surface block">{prod.productName}</span>
-                      <span className="text-[10px] text-on-surface-variant font-mono">SKU: {prod.productSku}</span>
+                      <span className="text-[11px] text-slate-900 font-bold font-mono">SKU: {prod.productSku}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                 <div key={item.variantId} className="py-3 flex items-center justify-between gap-3 hover:bg-rose-50/20 transition-colors px-2 rounded-lg">
                   <div>
                     <span className="font-bold text-on-surface block">{item.productName}</span>
-                    <span className="text-[10px] text-on-surface-variant font-mono">SKU: {item.sku}</span>
+                    <span className="text-[11px] text-slate-900 font-bold font-mono">SKU: {item.sku}</span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="px-2.5 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-full text-[11px]">

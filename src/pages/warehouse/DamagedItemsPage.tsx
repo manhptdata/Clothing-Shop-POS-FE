@@ -369,9 +369,9 @@ export default function DamagedItemsPage() {
                         hour: '2-digit', minute: '2-digit'
                       })}
                     </td>
-                    <td className="py-3.5 px-4 font-mono font-semibold text-primary">
+                    <td className="py-3.5 px-4 font-mono">
                       <span 
-                        className="cursor-pointer hover:underline" 
+                        className="font-extrabold text-slate-900 block hover:underline cursor-pointer" 
                         onClick={() => {
                           const match = returnOrders.find((r: ReturnOrder) => r.id === log.returnId);
                           if (match) setSelectedReturn(match);
@@ -379,13 +379,13 @@ export default function DamagedItemsPage() {
                       >
                         {log.returnNumber}
                       </span>
-                      <span className="block text-[10px] text-on-surface-variant font-normal">
+                      <span className="block text-[11px] text-slate-900 font-bold">
                         HĐ gốc: <span className="hover:underline cursor-pointer" onClick={() => navigate(`/orders/${log.originalOrderId}`)}>{log.originalOrderNumber}</span>
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="font-semibold block text-on-surface">{log.productName}</span>
-                      <span className="text-xs text-on-surface-variant font-mono">SKU: {log.productSku}</span>
+                      <span className="text-xs text-slate-900 font-bold font-mono">SKU: {log.productSku}</span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-700">

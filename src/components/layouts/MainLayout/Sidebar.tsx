@@ -121,9 +121,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         />
       )}
       <nav className={`fixed top-0 h-full flex flex-col py-8 w-64 border-r border-outline/5 bg-surface z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:left-0`}>
-      <div className="px-6 mb-12 flex flex-col items-start">
-        <h1 className="font-sans text-[42px] font-bold text-primary tracking-tight leading-none mb-1">Sapo</h1>
-        <p className="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-widest opacity-80">
+      <div className="px-6 mb-8 flex flex-col items-start">
+        <div className="flex items-center gap-2.5 mb-1.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-md shadow-sky-200">
+            <span className="material-symbols-outlined text-[22px]">checkroom</span>
+          </div>
+          <h1 className="font-sans text-[20px] font-black tracking-tight leading-none bg-gradient-to-r from-sky-600 to-sky-500 bg-clip-text text-transparent">FASHION POS</h1>
+        </div>
+        <p className="font-label-caps text-[10px] font-bold text-sky-600/70 uppercase tracking-widest pl-0.5">
           {ROLE_LABEL[user.role] || user.role.replace(/^ROLE_/, '').replace(/_/g, ' ')}
         </p>
       </div>
@@ -192,7 +197,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                             to={child.path}
                             onClick={onClose}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
-                              ? 'bg-gradient-to-r from-primary to-[#18754a] text-on-primary shadow-md'
+                              ? 'bg-primary text-white shadow-md shadow-sky-500/20'
                               : 'text-on-surface-variant hover:bg-surface-container-high/50 hover:text-primary'
                               }`}
                           >
@@ -219,7 +224,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               to={item.path}
               onClick={onClose}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg hover-lift transition-all duration-300 group ${isActive
-                ? 'bg-gradient-to-r from-primary to-[#18754a] text-on-primary shadow-md'
+                ? 'bg-primary text-white shadow-md shadow-sky-500/20'
                 : 'text-on-surface hover:bg-surface-container-high/50 hover:text-primary'
                 }`}
             >

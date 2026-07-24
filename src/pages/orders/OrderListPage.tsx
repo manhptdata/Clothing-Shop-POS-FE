@@ -174,7 +174,7 @@ export default function OrderListPage() {
       key: 'code', 
       header: 'Mã đơn', 
       render: (row) => (
-        <span className="font-semibold text-primary hover:underline cursor-pointer">
+        <span className="font-extrabold text-slate-900 hover:underline cursor-pointer">
           {row.orderNumber || row.code}
         </span>
       ) 
@@ -279,7 +279,7 @@ export default function OrderListPage() {
       key: 'returnNumber', 
       header: 'Mã phiếu trả', 
       render: (row) => (
-        <span className="font-semibold text-primary">
+        <span className="font-extrabold text-slate-900">
           {row.returnNumber}
         </span>
       ) 
@@ -288,7 +288,7 @@ export default function OrderListPage() {
       key: 'originalOrderNumber', 
       header: 'Mã hóa đơn gốc', 
       render: (row) => (
-        <span className="text-on-surface font-medium hover:underline text-primary cursor-pointer" onClick={(e) => {
+        <span className="font-bold text-slate-900 hover:underline cursor-pointer" onClick={(e) => {
           e.stopPropagation();
           navigate(`/orders/${row.originalOrderId}`);
         }}>
